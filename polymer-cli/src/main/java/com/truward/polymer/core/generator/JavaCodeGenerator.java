@@ -48,6 +48,10 @@ public final class JavaCodeGenerator {
   }
 
   public void packageDirective(String packageName) {
+    if (importInsertIndex >= 0) {
+      throw new IllegalStateException("Generating package name multiple times does not make sense");
+    }
+
     text("package").ch(' ').text(packageName).ch(';', '\n');
     importInsertIndex = elements.size();
   }
@@ -92,6 +96,30 @@ public final class JavaCodeGenerator {
     elements.add(classRef);
 
     return this;
+  }
+
+  // Generates member of some simple expression, i.e. varName.memberName
+  public JavaCodeGenerator member(String varName, String memberName) {
+    return text(varName).ch('.').text(memberName);
+  }
+
+  // Generates "this.member" string
+  public JavaCodeGenerator thisMember(String memberName) {
+    return member("this", memberName);
+  }
+
+  // Generates space-separated expressions
+  public JavaCodeGenerator text(String expr1, String... exprs) {
+    text(expr1);
+    for (final String expr : exprs) {
+      ch(' ').text(expr);
+    }
+    return this;
+  }
+
+  // Generates spaced text, i.e. ' ', expr, ' '
+  public JavaCodeGenerator spText(String expr) {
+    return ch(' ').text(expr).ch(' ');
   }
 
   //
