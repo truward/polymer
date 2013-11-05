@@ -1,23 +1,21 @@
-package com.truward.polymer;
+package com.truward.polymer.domain.synthesis;
 
 import com.google.common.collect.ImmutableList;
 import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.synthesis.DomainObjectImplementer;
 import org.junit.Test;
 
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Sample spring-driven test.
  */
-public class AppTest {
+public class DomainObjectImplementerTest {
 
   interface User {
     int getAge();

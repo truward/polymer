@@ -45,6 +45,10 @@ public class DomainObjectImplementer {
     generator.ch('\n');
     ImplementerUtil.generateToString(generator, implClassName, analysisResult.getDeclaredFields());
 
+    // equals
+    generator.ch('\n');
+    ImplementerUtil.generateEquals(generator, implClassName, analysisResult.getDeclaredFields());
+
     generator.ch('}'); // end of class body
   }
 
