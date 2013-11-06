@@ -1,6 +1,7 @@
 package com.truward.polymer.domain.analysis;
 
 import com.google.common.collect.ImmutableList;
+import com.truward.polymer.core.typesystem.NamingUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -57,7 +58,7 @@ public class DomainAnalysisResult {
     private MethodBasedDomainField(@Nonnull String name, @Nonnull Method originMethod) {
       this.name = name;
       this.originMethod = originMethod;
-      this.getterName = createGetterName(getFieldType(), getFieldName());
+      this.getterName = NamingUtil.createGetterName(getFieldType(), getFieldName());
 
       // all primitive types are not nullable
       if (getFieldType() instanceof Class && ((Class) getFieldType()).isPrimitive()) {
@@ -126,7 +127,7 @@ public class DomainAnalysisResult {
       throw new RuntimeException("Unsupported method " + method + "with parameters in the domain object");
     }
 
-    final String fieldName = asFieldName(method.getName());
+    final String fieldName = NamingUtil.asFieldName(method.getName());
 
     final DomainField field = new MethodBasedDomainField(fieldName, method);
 
@@ -136,27 +137,5 @@ public class DomainAnalysisResult {
     }
 
     return field;
-  }
-
-  private static String asFieldName(String methodName) {
-    final String getPrefix = "get";
-    final int getPrefixLength = getPrefix.length();
-
-    if (!methodName.startsWith(getPrefix)) {
-      throw new RuntimeException("Unsupported non-get method " + methodName + "in the domain object");
-    }
-    final char[] fieldNameChars = new char[methodName.length() - getPrefixLength];
-    methodName.getChars(getPrefixLength, methodName.length(), fieldNameChars, 0);
-    fieldNameChars[0] = Character.toLowerCase(fieldNameChars[0]);
-    return new String(fieldNameChars);
-  }
-
-  private static String createGetterName(Type fieldType, String fieldName) {
-    final String prefix = fieldType.equals(Boolean.TYPE) ? "is" : "get";
-    final StringBuilder nameBuilder = new StringBuilder(prefix.length() + fieldName.length());
-    nameBuilder.append(prefix);
-    nameBuilder.append(Character.toUpperCase(fieldName.charAt(0)));
-    nameBuilder.append(fieldName.subSequence(1, fieldName.length()));
-    return nameBuilder.toString();
   }
 }
