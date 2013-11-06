@@ -103,7 +103,7 @@ public final class JavaCodeGenerator {
     return text(varName).ch('.').text(memberName);
   }
 
-  // Generates "this.member" string
+  // Generates ["this", '.', member] sequence
   public JavaCodeGenerator thisMember(String memberName) {
     return member("this", memberName);
   }
@@ -117,7 +117,17 @@ public final class JavaCodeGenerator {
     return this;
   }
 
-  // Generates spaced text, i.e. ' ', expr, ' '
+  // Generates dotted access, e.g. ['.', field]
+  public JavaCodeGenerator dot(String member) {
+    return ch('.').text(member);
+  }
+
+  // Generates cast expression with space at the end
+  public JavaCodeGenerator cast(Class<?> clazz) {
+    return ch('(').type(clazz).ch(')', ' ');
+  }
+
+  // Generates spaced text, i.e. [' ', expr, ' ']
   public JavaCodeGenerator spText(String expr) {
     return ch(' ').text(expr).ch(' ');
   }

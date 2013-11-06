@@ -45,6 +45,10 @@ public class DomainObjectImplementer {
     generator.ch('\n');
     ImplementerUtil.generateToString(generator, implClassName, analysisResult.getDeclaredFields());
 
+    // hashCode
+    generator.ch('\n');
+    ImplementerUtil.generateHashCode(generator, analysisResult.getDeclaredFields());
+
     // equals
     generator.ch('\n');
     ImplementerUtil.generateEquals(generator, implClassName, analysisResult.getDeclaredFields());
@@ -101,9 +105,16 @@ public class DomainObjectImplementer {
       generator.ch(' ').text(field.getFieldName());
     }
     generator.ch(')', ' ', '{');
+
+    // verification of the input arguments
+    // TODO: optional?
+    for (final DomainField field : analysisResult.getDeclaredFields()) {
+
+    }
+
     // body
     for (final DomainField field : analysisResult.getDeclaredFields()) {
-      generator.text("this").ch('.').text(field.getFieldName()).ch(' ', '=', ' ').text(field.getFieldName()).ch(';');
+      generator.text("this").ch('.').text(field.getFieldName()).spText("=").text(field.getFieldName()).ch(';');
     }
     generator.ch('}');
   }

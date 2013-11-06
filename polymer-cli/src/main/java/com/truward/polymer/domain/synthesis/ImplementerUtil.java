@@ -3,7 +3,6 @@ package com.truward.polymer.domain.synthesis;
 import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.domain.analysis.DomainField;
 
-import java.lang.reflect.Type;
 import java.util.Collection;
 
 /**
@@ -23,27 +22,27 @@ public final class ImplementerUtil {
         .text("new").ch(' ').type(StringBuilder.class).ch('(', ')', ';');
 
     // ==> result.append("ClassName#{");
-    g.text("result").ch('.').text("append").ch('(', '\"').text(className + "#{").ch('\"', ')', ';');
+    g.text("result").dot("append").ch('(', '\"').text(className + "#{").ch('\"', ')', ';');
 
     // fields
     boolean next = false;
     for (final DomainField field : fields) {
       g.text("result");
       if (next) {
-        g.ch('.').text("append").ch('(', '\"').text(", ").ch('\"', ')');
+        g.dot("append").ch('(', '\"').text(", ").ch('\"', ')');
       } else {
         next = true;
       }
 
-      g.ch('.').text("append").ch('(', '\"').text(field.getFieldName()).text(": ").ch('\"', ')');
-      g.ch('.').text("append").ch('(').text(field.getGetterName()).ch('(', ')', ')', ';');
+      g.dot("append").ch('(', '\"').text(field.getFieldName()).text(": ").ch('\"', ')');
+      g.dot("append").ch('(').text(field.getGetterName()).ch('(', ')', ')', ';');
     }
 
     // ==> result.append('}');
-    g.text("result").ch('.').text("append").ch('(', '\'').text("}").ch('\'', ')', ';');
+    g.text("result").dot("append").ch('(', '\'').text("}").ch('\'', ')', ';');
 
     // ==> return result.toString();
-    g.text("return").ch(' ').text("result").ch('.').text("toString").ch('(', ')', ';');
+    g.text("return").ch(' ').text("result").dot("toString").ch('(', ')', ';');
 
     g.ch('}'); // end of function
   }
@@ -87,49 +86,118 @@ public final class ImplementerUtil {
     g.ch('}'); // end of function
   }
 
+  public static void generateHashCode(JavaCodeGenerator g, Collection<? extends DomainField> fields) {
+    final String result = "result";
+    final String temp = "temp";
+
+    g.ch('@').type(Override.class).ch('\n');
+    g.text("public").ch(' ').type(int.class).dot("hashCode").ch('(', ')', ' ', '{');
+
+    // int result = 0
+    g.type(int.class).ch(' ').text(result).spText("=").ch('0', ';');
+    // additional variable for calculating hash code for doubles
+    boolean tempLongRequired = false;
+    for (final DomainField field : fields) {
+      final Class<?> fieldClass = field.getFieldTypeAsClass();
+      if (Double.class.equals(fieldClass)) {
+        tempLongRequired = true;
+        break;
+      }
+    }
+
+    if (tempLongRequired) {
+      // long temp
+      g.type(long.class).ch(' ').text(temp).ch(';');
+    }
+
+    // result calculation
+    for (final DomainField field : fields) {
+      final Class<?> fieldClass = field.getFieldTypeAsClass();
+
+      // Common code predecessor: result = 31 * result + ...;
+      g.text(result).spText("=").text("31").spText("*").text(result).spText("+");
+      if (fieldClass != null && fieldClass.isPrimitive()) {
+        // special cases for primitive types
+        if (Boolean.TYPE.equals(fieldClass)) {
+          // (this.field ? 1 : 0)
+          g.ch('(').thisMember(field.getFieldName()).spText("?").ch('1').spText(":").ch('0').ch(')');
+        } else if (Byte.TYPE.equals(fieldClass) || Short.TYPE.equals(fieldClass) || Character.TYPE.equals(fieldClass)) {
+          // for byte, short and char: (int) fieldClass
+          g.cast(int.class).thisMember(field.getFieldName());
+        } else if (Integer.TYPE.equals(fieldClass)) {
+          // int type - use just member as is
+          g.thisMember(field.getFieldName());
+        } else if (Long.TYPE.equals(fieldClass)) {
+          // (int) (e ^ (e >>> 32))
+          g.cast(int.class).ch('(').thisMember(field.getFieldName()).spText("^")
+              .ch('(').thisMember(field.getFieldName()).spText(">>>").text("32").ch(')', ')');
+        } else {
+          throw new UnsupportedOperationException("Unsupported primitive type: " + fieldClass);
+        }
+      } else {
+        // object case:
+        if (field.isNullable()) {
+          // ...=> (this.field != null ? this.field.hashCode() : null)
+          g.ch('(').thisMember(field.getFieldName()).spText("!=").text("null").spText("?")
+              .thisMember(field.getFieldName()).dot("hashCode").ch('(', ')')
+              .spText(":").text("null")
+              .ch(')');
+        } else {
+          // ...=> this.field.hashCode()
+          g.thisMember(field.getFieldName()).dot("hashCode").ch('(', ')');
+        }
+      }
+
+      g.ch(';');
+    }
+
+    // return result;
+    g.text("return", result).ch(';');
+
+    g.ch('}'); // end of function
+  }
+
 
   //
   // Private
   //
 
   private static void generateNonEqualsIfCondition(JavaCodeGenerator g, DomainField field, String other) {
-    final Type fieldType = field.getFieldType();
     final String fieldName = field.getFieldName();
-    if (fieldType instanceof Class) {
-      final Class fieldClass = (Class) fieldType;
-      if (fieldClass.isPrimitive()) {
-        // float and double require special comparison
-        if (fieldClass.equals(Float.class)) {
-          // Float.compare(this.field, other.field) != 0
-          g.type(Float.class).ch('.').text("compare").ch('(')
-              .thisMember(fieldName).ch(',', ' ').member(other, fieldName)
-              .ch(')').spText("!=").ch('0');
-          return;
-        } else if (fieldClass.equals(Double.class)) {
-          // Double.compare(this.field, other.field) != 0
-          g.type(Float.class).ch('.').text("compare").ch('(')
-              .thisMember(fieldName).ch(',', ' ').member(other, fieldName)
-              .ch(')').spText("!=").ch('0');
-          return;
-        }
+    final Class<?> fieldClass = field.getFieldTypeAsClass();
 
-        // this.field != other.field
-        g.thisMember(fieldName).spText("!=").member(other, fieldName);
+    // special logic for primitive members
+    if (fieldClass != null && fieldClass.isPrimitive()) {
+      // float and double require special comparison
+      if (fieldClass.equals(Float.class)) {
+        // Float.compare(this.field, other.field) != 0
+        g.type(Float.class).dot("compare").ch('(')
+            .thisMember(fieldName).ch(',', ' ').member(other, fieldName)
+            .ch(')').spText("!=").ch('0');
+        return;
+      } else if (fieldClass.equals(Double.class)) {
+        // Double.compare(this.field, other.field) != 0
+        g.type(Float.class).dot("compare").ch('(')
+            .thisMember(fieldName).ch(',', ' ').member(other, fieldName)
+            .ch(')').spText("!=").ch('0');
         return;
       }
+
+      // this.field != other.field
+      g.thisMember(fieldName).spText("!=").member(other, fieldName);
+      return;
     }
 
     // generic class case, use equals
     if (field.isNullable()) {
       // this.field != null ? !this.field.equals(other.field) : other.field != null
       g.thisMember(fieldName).spText("!=").text("null").spText("?")
-          .ch('!').thisMember(fieldName).ch('.').text("equals").ch('(').member(other, fieldName).ch(')')
-          .spText(":")
-          .member(other, fieldName).spText("!=").text("null");
+          .ch('!').thisMember(fieldName).dot("equals").ch('(').member(other, fieldName).ch(')')
+          .spText(":").member(other, fieldName).spText("!=").text("null");
       return;
     }
 
     // !this.field.equals(other.equals)
-    g.ch('!').thisMember(fieldName).ch('.').text("equals").ch('(').member(other, fieldName).ch(')');
+    g.ch('!').thisMember(fieldName).dot("equals").ch('(').member(other, fieldName).ch(')');
   }
 }
