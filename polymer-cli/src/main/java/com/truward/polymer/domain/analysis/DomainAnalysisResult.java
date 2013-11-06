@@ -2,6 +2,8 @@ package com.truward.polymer.domain.analysis;
 
 import com.google.common.collect.ImmutableList;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -19,7 +21,7 @@ public class DomainAnalysisResult {
   private final Class<?> originClass;
   private final List<DomainField> declaredFields;
 
-  public DomainAnalysisResult(Class<?> clazz) {
+  public DomainAnalysisResult(@Nonnull Class<?> clazz) {
     originClass = clazz;
 
     final List<DomainField> fields = new ArrayList<>();
@@ -33,10 +35,12 @@ public class DomainAnalysisResult {
     this.declaredFields = ImmutableList.copyOf(fields);
   }
 
+  @Nonnull
   public Class<?> getOriginClass() {
     return originClass;
   }
 
+  @Nonnull
   public Collection<? extends DomainField> getDeclaredFields() {
     return declaredFields;
   }
@@ -50,14 +54,7 @@ public class DomainAnalysisResult {
     private final String getterName;
     private Boolean nullable;
 
-    private MethodBasedDomainField(String name, Method originMethod) {
-      if (name == null) {
-        throw new IllegalArgumentException("name");
-      }
-      if (originMethod == null) {
-        throw new IllegalArgumentException("originMethod");
-      }
-
+    private MethodBasedDomainField(@Nonnull String name, @Nonnull Method originMethod) {
       this.name = name;
       this.originMethod = originMethod;
       this.getterName = createGetterName(getFieldType(), getFieldName());
@@ -69,24 +66,34 @@ public class DomainAnalysisResult {
     }
 
     @Override
+    @Nonnull
     public String getFieldName() {
       return name;
     }
 
     @Override
+    @Nonnull
     public String getGetterName() {
       return getterName;
     }
 
     @Override
+    @Nonnull
     public Type getFieldType() {
       return originMethod.getGenericReturnType();
+    }
+
+    @Nullable
+    @Override
+    public Class<?> getFieldTypeAsClass() {
+      final Type fieldType = getFieldType();
+      return fieldType instanceof Class ? ((Class) fieldType) : null;
     }
 
     @Override
     public boolean isNullable() {
       if (this.nullable == null) {
-        throw new IllegalStateException("Nullable value twice");
+        throw new IllegalStateException("Nullable value is not known");
       }
       return nullable;
     }
