@@ -112,43 +112,7 @@ public final class ImplementerUtil {
 
     // result calculation
     for (final DomainField field : fields) {
-      final Class<?> fieldClass = field.getFieldTypeAsClass();
-
-      // Common code predecessor: result = 31 * result + ...;
-      g.text(result).spText("=").text("31").spText("*").text(result).spText("+");
-      if (fieldClass != null && fieldClass.isPrimitive()) {
-        // special cases for primitive types
-        if (Boolean.TYPE.equals(fieldClass)) {
-          // (this.field ? 1 : 0)
-          g.ch('(').thisMember(field.getFieldName()).spText("?").ch('1').spText(":").ch('0').ch(')');
-        } else if (Byte.TYPE.equals(fieldClass) || Short.TYPE.equals(fieldClass) || Character.TYPE.equals(fieldClass)) {
-          // for byte, short and char: (int) fieldClass
-          g.cast(int.class).thisMember(field.getFieldName());
-        } else if (Integer.TYPE.equals(fieldClass)) {
-          // int type - use just member as is
-          g.thisMember(field.getFieldName());
-        } else if (Long.TYPE.equals(fieldClass)) {
-          // (int) (e ^ (e >>> 32))
-          g.cast(int.class).ch('(').thisMember(field.getFieldName()).spText("^")
-              .ch('(').thisMember(field.getFieldName()).spText(">>>").text("32").ch(')', ')');
-        } else {
-          throw new UnsupportedOperationException("Unsupported primitive type: " + fieldClass);
-        }
-      } else {
-        // object case:
-        if (field.isNullable()) {
-          // ...=> (this.field != null ? this.field.hashCode() : null)
-          g.ch('(').thisMember(field.getFieldName()).spText("!=").text("null").spText("?")
-              .thisMember(field.getFieldName()).dot("hashCode").ch('(', ')')
-              .spText(":").text("null")
-              .ch(')');
-        } else {
-          // ...=> this.field.hashCode()
-          g.thisMember(field.getFieldName()).dot("hashCode").ch('(', ')');
-        }
-      }
-
-      g.ch(';');
+      generateHashCodeAddition(g, field, result, temp);
     }
 
     // return result;
@@ -161,6 +125,63 @@ public final class ImplementerUtil {
   //
   // Private
   //
+
+  private static void generateHashCodeAddition(JavaCodeGenerator g, DomainField field, String result, String temp) {
+    final Class<?> fieldClass = field.getFieldTypeAsClass();
+    final String fieldName = field.getFieldName();
+
+    boolean doubleField = false;
+    if (Double.TYPE.equals(fieldClass)) {
+      // special case: double field
+      doubleField = true;
+      // temp = Double.doubleToLongBits(g);
+      g.text(temp).spText("=").type(Double.class).dot("doubleToLongBits").ch('(').thisMember(fieldName).ch(')', ';');
+    }
+
+    // Common code predecessor: result = 31 * result + ...;
+    g.text(result).spText("=").text("31").spText("*").text(result).spText("+");
+    if (doubleField) {
+      // (int) (temp ^ (temp >>> 32))
+      g.cast(int.class).ch('(').text(temp).spText("^")
+          .ch('(').text(temp).spText(">>>").text("32").ch(')', ')');
+    } else if (fieldClass != null && fieldClass.isPrimitive()) {
+      // special cases for primitive types
+      if (Boolean.TYPE.equals(fieldClass)) {
+        // (this.field ? 1 : 0)
+        g.ch('(').thisMember(fieldName).spText("?").ch('1').spText(":").ch('0').ch(')');
+      } else if (Byte.TYPE.equals(fieldClass) || Short.TYPE.equals(fieldClass) || Character.TYPE.equals(fieldClass)) {
+        // for byte, short and char: (int) fieldClass
+        g.cast(int.class).thisMember(fieldName);
+      } else if (Integer.TYPE.equals(fieldClass)) {
+        // int type - use just member as is
+        g.thisMember(fieldName);
+      } else if (Long.TYPE.equals(fieldClass)) {
+        // (int) (e ^ (e >>> 32))
+        g.cast(int.class).ch('(').thisMember(fieldName).spText("^")
+            .ch('(').thisMember(fieldName).spText(">>>").text("32").ch(')', ')');
+      } else if (Float.TYPE.equals(fieldClass)) {
+        // (f != +0.0f ? Float.floatToIntBits(f) : 0)
+        g.ch('(').thisMember(fieldName).spText("!=").text("+0.0f").spText("?")
+            .type(Float.class).dot("floatToIntBits").ch('(').thisMember(fieldName).ch(')').spText(":").ch('0', ')');
+      } else {
+        throw new UnsupportedOperationException("Unsupported primitive type: " + fieldClass);
+      }
+    } else {
+      // object case:
+      if (field.isNullable()) {
+        // ...=> (this.field != null ? this.field.hashCode() : null)
+        g.ch('(').thisMember(fieldName).spText("!=").text("null").spText("?")
+            .thisMember(fieldName).dot("hashCode").ch('(', ')')
+            .spText(":").text("null")
+            .ch(')');
+      } else {
+        // ...=> this.field.hashCode()
+        g.thisMember(fieldName).dot("hashCode").ch('(', ')');
+      }
+    }
+
+    g.ch(';');
+  }
 
   private static void generateNonEqualsIfCondition(JavaCodeGenerator g, DomainField field, String other) {
     final String fieldName = field.getFieldName();

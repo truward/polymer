@@ -28,6 +28,16 @@ public class DomainObjectImplementerTest {
     List<String> getResponsibilities();
   }
 
+  interface Primitive {
+    byte getA();
+    short getB();
+    char getC();
+    int getD();
+    long getE();
+    float getF();
+    double getG();
+  }
+
   @Test
   public void shouldAnalyzeClass() {
     final DomainAnalysisContext analyzer = new DomainAnalysisContext();
@@ -40,6 +50,16 @@ public class DomainObjectImplementerTest {
   public void shouldImplement() {
     final DomainAnalysisContext analysisContext = new DomainAnalysisContext();
     final DomainAnalysisResult result = analysisContext.analyze(User.class);
+    final JavaCodeGenerator generator = new JavaCodeGenerator();
+    final DomainObjectImplementer implementer = new DomainObjectImplementer(generator, result);
+    implementer.generateCompilationUnit();
+    generator.printContents();
+  }
+
+  @Test
+  public void shouldImplementEqualsAndHashCodeForPrimitiveType() {
+    final DomainAnalysisContext analysisContext = new DomainAnalysisContext();
+    final DomainAnalysisResult result = analysisContext.analyze(Primitive.class);
     final JavaCodeGenerator generator = new JavaCodeGenerator();
     final DomainObjectImplementer implementer = new DomainObjectImplementer(generator, result);
     implementer.generateCompilationUnit();
