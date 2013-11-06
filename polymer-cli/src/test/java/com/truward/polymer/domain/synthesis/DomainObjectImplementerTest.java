@@ -5,6 +5,8 @@ import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
+import com.truward.polymer.domain.analysis.support.DefaultDomainAnalysisContext;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Date;
@@ -38,19 +40,25 @@ public class DomainObjectImplementerTest {
     double getG();
   }
 
+  private DomainAnalysisContext analysisContext;
+  private JavaCodeGenerator generator;
+
+  @Before
+  public void setup() {
+    analysisContext = new DefaultDomainAnalysisContext();
+    generator = new JavaCodeGenerator();
+  }
+
   @Test
   public void shouldAnalyzeClass() {
-    final DomainAnalysisContext analyzer = new DomainAnalysisContext();
-    final DomainAnalysisResult result = analyzer.analyze(Employee.class);
+    final DomainAnalysisResult result = analysisContext.analyze(Employee.class);
     final List<DomainField> fields = ImmutableList.copyOf(result.getDeclaredFields());
     assertNotNull(fields);
   }
 
   @Test
   public void shouldImplement() {
-    final DomainAnalysisContext analysisContext = new DomainAnalysisContext();
     final DomainAnalysisResult result = analysisContext.analyze(User.class);
-    final JavaCodeGenerator generator = new JavaCodeGenerator();
     final DomainObjectImplementer implementer = new DomainObjectImplementer(generator, result);
     implementer.generateCompilationUnit();
     generator.printContents();
@@ -58,9 +66,7 @@ public class DomainObjectImplementerTest {
 
   @Test
   public void shouldImplementEqualsAndHashCodeForPrimitiveType() {
-    final DomainAnalysisContext analysisContext = new DomainAnalysisContext();
     final DomainAnalysisResult result = analysisContext.analyze(Primitive.class);
-    final JavaCodeGenerator generator = new JavaCodeGenerator();
     final DomainObjectImplementer implementer = new DomainObjectImplementer(generator, result);
     implementer.generateCompilationUnit();
     generator.printContents();

@@ -1,15 +1,11 @@
 package com.truward.polymer.domain.analysis;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Alexander Shabanov
  */
-public class DomainAnalysisContext {
-
-  public DomainAnalysisResult analyze(Class<?> clazz) {
-    if (!clazz.isInterface()) {
-      throw new IllegalArgumentException("Only interfaces are expected, got " + clazz);
-    }
-
-    return new DomainAnalysisResult(clazz);
-  }
+public interface DomainAnalysisContext {
+  @Nonnull
+  DomainAnalysisResult analyze(@Nonnull Class<?> clazz);
 }
