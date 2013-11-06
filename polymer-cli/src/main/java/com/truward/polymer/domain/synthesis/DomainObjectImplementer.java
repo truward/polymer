@@ -26,6 +26,8 @@ public class DomainObjectImplementer {
     generator.packageDirective(pkgName);
 
     generator.textWithSpaces("public", "class", implClassName);
+    // implements
+    generator.ch(' ').text("implements").ch(' ').type(analysisResult.getOriginClass());
     generator.ch(' ', '{');
 
     // fields
