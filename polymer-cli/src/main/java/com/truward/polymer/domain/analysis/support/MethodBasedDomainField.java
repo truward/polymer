@@ -48,13 +48,6 @@ public final class MethodBasedDomainField implements DomainField {
     return originMethod.getGenericReturnType();
   }
 
-  @Nullable
-  @Override
-  public Class<?> getFieldTypeAsClass() {
-    final Type fieldType = getFieldType();
-    return fieldType instanceof Class ? ((Class) fieldType) : null;
-  }
-
   @Override
   public boolean isNullable() {
     if (this.nullable == null) {

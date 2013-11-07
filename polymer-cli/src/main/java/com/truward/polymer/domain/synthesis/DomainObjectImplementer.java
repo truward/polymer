@@ -4,8 +4,6 @@ import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
 
-import java.lang.reflect.Type;
-
 /**
  * @author Alexander Shabanov
  */
@@ -62,23 +60,14 @@ public class DomainObjectImplementer {
   // Private
   //
 
-  // TODO: rework this so return type would be Frag.TypeRef
-  private String typeRef(Type type) {
-    if (type instanceof Class) {
-      final Class c = (Class) type;
-      return c.getSimpleName();
-    } else {
-      throw new UnsupportedOperationException(); // TODO: impl
-    }
-  }
-
   private void generateFinalField(DomainField field) {
-    generator.text("private").ch(' ').text("final").ch(' ').text(typeRef(field.getFieldType())).ch(' ')
+    generator.text("private").ch(' ').text("final").ch(' ').type(field.getFieldType()).ch(' ')
         .text(field.getFieldName()).ch(';');
   }
 
   private void generateFinalGetter(DomainField field) {
-    generator.ch('\n').text("public").ch(' ').text("final").ch(' ').text(typeRef(field.getFieldType())).ch(' ')
+    generator.ch('\n')
+        .annotate(Override.class).text("public").ch(' ').text("final").ch(' ').type(field.getFieldType()).ch(' ')
         .text(field.getGetterName()).ch('(', ')', ' ', '{');
     generator.text("return").ch(' ').text("this").ch('.').text(field.getFieldName()).ch(';');
     generator.ch('}');
@@ -98,7 +87,7 @@ public class DomainObjectImplementer {
 
       // type
       if (field.getFieldType() instanceof Class) {
-        generator.type((Class) field.getFieldType());
+        generator.type(field.getFieldType());
       } else {
         throw new UnsupportedOperationException("Implement parameterized types support"); // TODO: impl
       }
@@ -111,7 +100,7 @@ public class DomainObjectImplementer {
     // verification of the input arguments
     // TODO: optional?
     for (final DomainField field : analysisResult.getDeclaredFields()) {
-
+      ImplementerUtil.generateNullCheckIfNeeded(generator, field);
     }
 
     // body

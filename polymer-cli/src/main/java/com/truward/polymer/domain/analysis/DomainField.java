@@ -17,9 +17,6 @@ public interface DomainField {
   @Nonnull
   Type getFieldType();
 
-  @Nullable
-  Class<?> getFieldTypeAsClass();
-
   /**
    * Determines whether the given property is nullable or not.
    * The only way the object can not be null is only when in all the field assignment it is

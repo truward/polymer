@@ -2,6 +2,7 @@ package com.truward.polymer.domain.synthesis;
 
 import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.domain.analysis.DomainField;
+import com.truward.polymer.domain.analysis.TypeUtil;
 
 import java.util.Collection;
 
@@ -14,8 +15,7 @@ import java.util.Collection;
 public final class ImplementerUtil {
 
   public static void generateToString(JavaCodeGenerator g, String className, Collection<? extends DomainField> fields) {
-    g.ch('@').type(Override.class).ch('\n');
-    g.text("public").ch(' ').type(String.class).ch(' ').text("toString").ch('(', ')', ' ', '{');
+    g.annotate(Override.class).text("public").ch(' ').type(String.class).ch(' ').text("toString").ch('(', ')', ' ', '{');
 
     // ==> final StringBuilder result = new StringBuilder();
     g.text("final").ch(' ').type(StringBuilder.class).ch(' ').text("result").ch(' ', '=', ' ')
@@ -51,8 +51,7 @@ public final class ImplementerUtil {
     final String objectParam = "o";
     final String other = "other";
 
-    g.ch('@').type(Override.class).ch('\n');
-    g.text("public").ch(' ').type(boolean.class).ch(' ').text("equals").ch('(')
+    g.annotate(Override.class).text("public").ch(' ').type(boolean.class).ch(' ').text("equals").ch('(')
         .type(Object.class).ch(' ').text(objectParam).ch(')', ' ', '{');
 
     // if (this == o) return true;
@@ -90,15 +89,14 @@ public final class ImplementerUtil {
     final String result = "result";
     final String temp = "temp";
 
-    g.ch('@').type(Override.class).ch('\n');
-    g.text("public").ch(' ').type(int.class).dot("hashCode").ch('(', ')', ' ', '{');
+    g.annotate(Override.class).text("public").ch(' ').type(int.class).dot("hashCode").ch('(', ')', ' ', '{');
 
     // int result = 0
     g.type(int.class).ch(' ').text(result).spText("=").ch('0', ';');
     // additional variable for calculating hash code for doubles
     boolean tempLongRequired = false;
     for (final DomainField field : fields) {
-      final Class<?> fieldClass = field.getFieldTypeAsClass();
+      final Class<?> fieldClass = TypeUtil.asClass(field);
       if (Double.class.equals(fieldClass)) {
         tempLongRequired = true;
         break;
@@ -121,13 +119,26 @@ public final class ImplementerUtil {
     g.ch('}'); // end of function
   }
 
+  public static void generateNullCheckIfNeeded(JavaCodeGenerator g, DomainField field) {
+    if (!TypeUtil.isNullCheckRequired(field)) {
+      return;
+    }
+
+    // assuming param name equals to the field name
+    final String paramName = field.getFieldName();
+    g.text("if").ch(' ').ch('(').text(paramName).spText("==").text("null").ch(')', ' ', '{');
+    g.text("throw").spText("new").type(IllegalArgumentException.class).ch('(', '\"')
+        .text("Parameter " + paramName + " is null")
+        .ch('\"', ')', ';');
+    g.ch('}');
+  }
 
   //
   // Private
   //
 
   private static void generateHashCodeAddition(JavaCodeGenerator g, DomainField field, String result, String temp) {
-    final Class<?> fieldClass = field.getFieldTypeAsClass();
+    final Class<?> fieldClass = TypeUtil.asClass(field);
     final String fieldName = field.getFieldName();
 
     boolean doubleField = false;
@@ -185,7 +196,7 @@ public final class ImplementerUtil {
 
   private static void generateNonEqualsIfCondition(JavaCodeGenerator g, DomainField field, String other) {
     final String fieldName = field.getFieldName();
-    final Class<?> fieldClass = field.getFieldTypeAsClass();
+    final Class<?> fieldClass = TypeUtil.asClass(field);
 
     // special logic for primitive members
     if (fieldClass != null && fieldClass.isPrimitive()) {
