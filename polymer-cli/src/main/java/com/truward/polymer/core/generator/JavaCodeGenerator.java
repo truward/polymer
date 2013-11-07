@@ -5,6 +5,7 @@ import com.truward.polymer.core.generator.model.ClassRef;
 import com.truward.polymer.core.generator.model.CodeObjectVisitor;
 import com.truward.polymer.core.generator.support.IndentationAwarePrinter;
 
+import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -87,15 +88,26 @@ public final class JavaCodeGenerator {
     return this;
   }
 
-  public JavaCodeGenerator type(Class<?> clazz) {
-    ClassRef classRef = classToStub.get(clazz);
-    if (classRef == null) {
-      classRef = new ClassRef(clazz);
-      classToStub.put(clazz, classRef);
+  public JavaCodeGenerator type(Type type) {
+    if (type instanceof Class) {
+      // non-generic type
+      final Class<?> clazz = (Class) type;
+      ClassRef classRef = classToStub.get(clazz);
+      if (classRef == null) {
+        classRef = new ClassRef(clazz);
+        classToStub.put(clazz, classRef);
+      }
+      elements.add(classRef);
+    } else {
+      // TODO: generic types
+      throw new UnsupportedOperationException("Unsupported type: " + type);
     }
-    elements.add(classRef);
 
     return this;
+  }
+
+  public JavaCodeGenerator annotate(Class<?> annotationClass) {
+    return ch('@').type(annotationClass).ch('\n');
   }
 
   // Generates member of some simple expression, i.e. varName.memberName
