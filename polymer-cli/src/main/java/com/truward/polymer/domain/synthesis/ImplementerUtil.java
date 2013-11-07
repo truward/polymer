@@ -97,7 +97,7 @@ public final class ImplementerUtil {
     boolean tempLongRequired = false;
     for (final DomainField field : fields) {
       final Class<?> fieldClass = TypeUtil.asClass(field);
-      if (Double.class.equals(fieldClass)) {
+      if (Double.TYPE.equals(fieldClass)) {
         tempLongRequired = true;
         break;
       }
