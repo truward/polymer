@@ -2,6 +2,7 @@ package com.truward.polymer.domain.analysis;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Tries to reinterpret incoming class as a domain object, extracts information about its
@@ -15,4 +16,9 @@ public interface DomainAnalysisResult {
 
   @Nonnull
   Collection<? extends DomainField> getDeclaredFields();
+
+  @Nonnull
+  Collection<DomainAnalysisResult> getParents();
+
+  boolean isStub();
 }

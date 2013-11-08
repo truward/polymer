@@ -16,52 +16,37 @@ import java.util.List;
  */
 public final class DefaultDomainAnalysisResult implements DomainAnalysisResult {
   private final Class<?> originClass;
+  private final List<DomainAnalysisResult> parents;
   private final List<DomainField> declaredFields;
 
-  public DefaultDomainAnalysisResult(@Nonnull Class<?> clazz) {
-    originClass = clazz;
-
-    final List<DomainField> fields = new ArrayList<>();
-
-    //final Type[] gts = clazz.getGenericInterfaces();
-    //final Method[] declaredMethods = clazz.getDeclaredMethods();
-    for (final Method method : clazz.getDeclaredMethods()) {
-      fields.add(inferField(method));
-    }
-
-    this.declaredFields = ImmutableList.copyOf(fields);
+  public DefaultDomainAnalysisResult(@Nonnull Class<?> clazz,
+                                     @Nonnull List<DomainAnalysisResult> parents,
+                                     @Nonnull List<DomainField> declaredFields) {
+    this.originClass = clazz;
+    this.parents = ImmutableList.copyOf(parents);
+    this.declaredFields = ImmutableList.copyOf(declaredFields);
   }
 
-  @Override
   @Nonnull
+  @Override
   public Class<?> getOriginClass() {
     return originClass;
   }
 
-  @Override
   @Nonnull
+  @Override
   public Collection<? extends DomainField> getDeclaredFields() {
     return declaredFields;
   }
 
-  //
-  // Private
-  //
+  @Nonnull
+  @Override
+  public Collection<DomainAnalysisResult> getParents() {
+    return parents;
+  }
 
-  private DomainField inferField(Method method) {
-    if (method.getParameterTypes().length > 0) {
-      throw new RuntimeException("Unsupported method " + method + "with parameters in the domain object");
-    }
-
-    final String fieldName = NamingUtil.asFieldName(method.getName());
-
-    final DomainField field = new MethodBasedDomainField(fieldName, method);
-
-    // TODO: infer nullability
-    if (field.isNullableUndecided()) {
-      field.setNullable(false);
-    }
-
-    return field;
+  @Override
+  public boolean isStub() {
+    return false;
   }
 }
