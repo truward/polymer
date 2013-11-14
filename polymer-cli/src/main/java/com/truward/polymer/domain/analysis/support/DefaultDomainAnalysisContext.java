@@ -1,6 +1,5 @@
 package com.truward.polymer.domain.analysis.support;
 
-import com.truward.polymer.core.typesystem.NamingUtil;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;

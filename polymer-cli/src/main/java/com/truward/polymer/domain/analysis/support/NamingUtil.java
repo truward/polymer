@@ -1,4 +1,4 @@
-package com.truward.polymer.core.typesystem;
+package com.truward.polymer.domain.analysis.support;
 
 import java.lang.reflect.Type;
 

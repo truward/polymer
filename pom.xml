@@ -36,6 +36,13 @@
   <dependencyManagement>
 
     <dependencies>
+      <!-- Project dependencies -->
+      <dependency>
+        <groupId>com.truward.polymer</groupId>
+        <artifactId>polymer-domain</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
       <!-- Logging -->
       <dependency>
         <groupId>org.slf4j</groupId>
