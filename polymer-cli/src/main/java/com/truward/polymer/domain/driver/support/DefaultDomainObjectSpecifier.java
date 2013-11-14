@@ -15,6 +15,8 @@ import java.lang.reflect.Proxy;
 import java.util.List;
 
 /**
+ * TODO: split into two classes: DefaultDomainObjectSpecifier & DomainSpecificationDriver
+ *
  * @author Alexander Shabanov
  */
 public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier, SpecificationDriver {
