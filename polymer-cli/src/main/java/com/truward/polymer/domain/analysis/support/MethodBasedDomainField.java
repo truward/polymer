@@ -1,10 +1,8 @@
 package com.truward.polymer.domain.analysis.support;
 
-import com.truward.polymer.core.typesystem.NamingUtil;
 import com.truward.polymer.domain.analysis.DomainField;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 

@@ -1,13 +1,10 @@
 package com.truward.polymer.domain.analysis.support;
 
 import com.google.common.collect.ImmutableList;
-import com.truward.polymer.core.typesystem.NamingUtil;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 

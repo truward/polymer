@@ -13,6 +13,17 @@
   <name>Polymer Command Line Application</name>
 
   <dependencies>
+    <dependency>
+      <groupId>com.truward.polymer</groupId>
+      <artifactId>polymer-domain</artifactId>
+    </dependency>
+
+    <!-- Logging -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+    </dependency>
+
     <!-- JSR Non-Null annotation -->
     <dependency>
       <groupId>com.google.code.findbugs</groupId>

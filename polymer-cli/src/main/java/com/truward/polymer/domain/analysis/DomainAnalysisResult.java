@@ -5,8 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Tries to reinterpret incoming class as a domain object, extracts information about its
- * fields and field names.
+ * Contains the result of analyzing certain class.
  *
  * @author Alexander Shabanov
  */
