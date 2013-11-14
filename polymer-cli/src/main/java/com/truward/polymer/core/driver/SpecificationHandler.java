@@ -52,7 +52,7 @@ public final class SpecificationHandler {
     try {
       final Object instance = clazz.newInstance();
       provideResources(clazz, instance);
-      invokeSpecificationMethods(clazz, instance);
+      invokeSpecificationMethods(specificationMethods, instance);
       return true;
     } catch (InstantiationException | IllegalAccessException e) {
       throw new RuntimeException("Uninstantiable class: no public default constructor", e);
@@ -63,9 +63,9 @@ public final class SpecificationHandler {
   // Private
   //
 
-  private void invokeSpecificationMethods(Class<?> clazz, Object instance) {
+  private void invokeSpecificationMethods(List<Method> specificationMethods, Object instance) {
     try {
-      for (final Method method : clazz.getMethods()) {
+      for (final Method method : specificationMethods) {
         // all the drivers put to recording state
         // TODO: only the specific drivers should know about it
         for (final SpecificationDriver driver : drivers) {

@@ -4,6 +4,8 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
+ * TODO: to know about the other drivers
+ *
  * @author Alexander Shabanov
  */
 public interface SpecificationDriver {
