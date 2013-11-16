@@ -1,25 +1,18 @@
 package com.truward.polymer.domain.driver.support;
 
-import com.google.common.collect.ImmutableList;
-import com.truward.polymer.core.driver.SpecificationDriver;
-import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.util.DefaultValues;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.List;
 
 /**
- * TODO: split into two classes: DefaultDomainObjectSpecifier & DomainSpecificationDriver
- *
  * @author Alexander Shabanov
  */
-public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier, SpecificationDriver {
+public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier {
   private final Logger log = LoggerFactory.getLogger(DefaultDomainObjectSpecifier.class);
 
   @Override
@@ -50,26 +43,6 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   @Override
   public DomainObjectSpecifier isNonNegative(int field) {
     return this;
-  }
-
-  @Nonnull
-  @Override
-  public List<Class<?>> getProvidedResourceClasses() {
-    return ImmutableList.<Class<?>>of(DomainObjectSpecifier.class);
-  }
-
-  @Nonnull
-  @Override
-  public Object provide(@Nonnull Class<?> clazz) {
-    if (clazz.equals(DomainObjectSpecifier.class)) {
-      return this;
-    }
-    throw new IllegalStateException("Unable to provide resource for class " + clazz);
-  }
-
-  @Override
-  public void setState(@Nonnull SpecificationState state) {
-    log.debug("Changed state to {}", state);
   }
 
   //

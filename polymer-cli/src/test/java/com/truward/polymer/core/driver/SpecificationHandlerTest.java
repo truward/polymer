@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.truward.polymer.annotation.Specification;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.driver.support.DefaultDomainObjectSpecifier;
+import com.truward.polymer.domain.driver.support.DomainSpecificationDriver;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,7 +21,7 @@ public class SpecificationHandlerTest {
   @Before
   public void init() {
     specificationHandler = new SpecificationHandler(ImmutableList.<SpecificationDriver>of(
-        new DefaultDomainObjectSpecifier()));
+        new DomainSpecificationDriver()));
   }
 
   @Test
