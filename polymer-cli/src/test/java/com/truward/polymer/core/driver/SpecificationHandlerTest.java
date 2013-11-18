@@ -29,7 +29,6 @@ public class SpecificationHandlerTest {
     assertTrue(specificationHandler.parseClass(TestSpec.class));
   }
 
-
   //
   // Test data, should be public
   //
