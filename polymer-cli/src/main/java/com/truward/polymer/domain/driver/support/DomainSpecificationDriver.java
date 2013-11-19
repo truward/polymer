@@ -3,6 +3,7 @@ package com.truward.polymer.domain.driver.support;
 import com.google.common.collect.ImmutableList;
 import com.truward.polymer.core.driver.SpecificationDriver;
 import com.truward.polymer.core.driver.SpecificationState;
+import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,7 @@ import java.util.List;
  *
  * @author Alexander Shabanov
  */
-public final class DomainSpecificationDriver implements SpecificationDriver {
+public final class DomainSpecificationDriver implements SpecificationDriver, SpecificationStateAware {
   private final Logger log = LoggerFactory.getLogger(DomainSpecificationDriver.class);
   private final DomainObjectSpecifier specifier;
 

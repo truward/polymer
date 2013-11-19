@@ -1,7 +1,7 @@
-package com.truward.polymer;
+package com.truward.polymer.app;
 
 /**
- * Entry point.
+ * Main entry point.
  */
 public final class App {
   public static void main(String[] args) {

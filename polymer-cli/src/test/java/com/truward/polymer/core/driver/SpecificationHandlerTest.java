@@ -1,10 +1,8 @@
 package com.truward.polymer.core.driver;
 
-import com.google.common.collect.ImmutableList;
 import com.truward.polymer.annotation.Specification;
+import com.truward.polymer.app.PolymerModule;
 import com.truward.polymer.domain.DomainObjectSpecifier;
-import com.truward.polymer.domain.driver.support.DefaultDomainObjectSpecifier;
-import com.truward.polymer.domain.driver.support.DomainSpecificationDriver;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,10 +16,12 @@ import static org.junit.Assert.assertTrue;
 public class SpecificationHandlerTest {
   private SpecificationHandler specificationHandler;
 
+
   @Before
   public void init() {
-    specificationHandler = new SpecificationHandler(ImmutableList.<SpecificationDriver>of(
-        new DomainSpecificationDriver()));
+    specificationHandler = new PolymerModule()
+        .addDefaults()
+        .getInjectionContext().getBean(SpecificationHandler.class);
   }
 
   @Test

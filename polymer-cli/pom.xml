@@ -8,6 +8,10 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
+  <artifactId>polymer-cli</artifactId>
+  <packaging>jar</packaging>
+  <name>Polymer Command Line Application</name>
+
   <repositories>
     <repository>
       <snapshots>
@@ -18,10 +22,6 @@
       <url>https://raw.github.com/avshabanov/maven-repo/master/libs-release</url>
     </repository>
   </repositories>
-
-  <artifactId>polymer-cli</artifactId>
-  <packaging>jar</packaging>
-  <name>Polymer Command Line Application</name>
 
   <dependencies>
     <dependency>
@@ -52,5 +52,10 @@
       <artifactId>micro-di</artifactId>
       <version>1.0.2</version>
     </dependency>
+    <!--<dependency>-->
+      <!--<groupId>com.google.inject</groupId>-->
+      <!--<artifactId>guice</artifactId>-->
+      <!--<version>3.0</version>-->
+    <!--</dependency>-->
   </dependencies>
 </project>

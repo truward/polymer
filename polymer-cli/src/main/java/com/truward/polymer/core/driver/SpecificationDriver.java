@@ -14,6 +14,4 @@ public interface SpecificationDriver {
 
   @Nonnull
   Object provide(@Nonnull Class<?> clazz);
-
-  void setState(@Nonnull SpecificationState state);
 }
