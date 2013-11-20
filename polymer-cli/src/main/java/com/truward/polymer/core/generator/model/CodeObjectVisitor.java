@@ -7,7 +7,7 @@ import java.util.List;
  */
 public abstract class CodeObjectVisitor {
   public void visitObject(Object obj) {
-    throw new IllegalStateException("Object is not visited");
+    throw new IllegalStateException("Object is not visited: " + obj);
   }
 
   public void visitChar(char obj) {

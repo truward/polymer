@@ -47,15 +47,30 @@
       <artifactId>guava</artifactId>
     </dependency>
 
+    <!-- Micro dependency injection -->
     <dependency>
       <groupId>com.truward.di</groupId>
       <artifactId>micro-di</artifactId>
       <version>1.0.2</version>
     </dependency>
-    <!--<dependency>-->
-      <!--<groupId>com.google.inject</groupId>-->
-      <!--<artifactId>guice</artifactId>-->
-      <!--<version>3.0</version>-->
-    <!--</dependency>-->
   </dependencies>
+
+  <build>
+    <plugins>
+      <!--
+        Allows to start application from the command line using maven:
+        mvn exec:java -Dexec.args="&dash;&dash;version"
+          - where &dash; is '-'.
+      -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.2.1</version>
+        <configuration>
+          <executable>java</executable>
+          <mainClass>com.truward.polymer.app.App</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

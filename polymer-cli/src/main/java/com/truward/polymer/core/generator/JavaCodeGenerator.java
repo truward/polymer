@@ -5,6 +5,7 @@ import com.truward.polymer.core.generator.model.ClassRef;
 import com.truward.polymer.core.generator.model.CodeObjectVisitor;
 import com.truward.polymer.core.generator.support.IndentationAwarePrinter;
 
+import java.io.PrintStream;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -31,7 +32,7 @@ public final class JavaCodeGenerator {
     importInsertIndex = -1;
   }
 
-  public void printContents() {
+  public void printContents(PrintStream out) {
     // now we need to generate imports
     assert importInsertIndex > 0;
     final List<String> imports = getImportNames();
@@ -42,7 +43,7 @@ public final class JavaCodeGenerator {
     elements.add(insertIndex, '\n');
 
     // print elements
-    final IndentationAwarePrinter visitor = new IndentationAwarePrinter(System.out);
+    final IndentationAwarePrinter visitor = new IndentationAwarePrinter(out);
     for (final Object o : elements) {
       CodeObjectVisitor.apply(visitor, o);
     }
