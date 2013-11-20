@@ -6,6 +6,7 @@ import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.support.DefaultDomainAnalysisContext;
+import com.truward.polymer.testutil.CodeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Sample spring-driven test.
@@ -61,7 +63,8 @@ public class DomainObjectImplementerTest {
     final DomainAnalysisResult result = analysisContext.analyze(User.class);
     final DomainObjectImplementer implementer = new DomainObjectImplementer(generator, result);
     implementer.generateCompilationUnit();
-    generator.printContents();
+    final String code = CodeUtil.printToString(generator);
+    assertTrue(code.contains("package")); // TODO: more complex verification
   }
 
   @Test
@@ -69,6 +72,7 @@ public class DomainObjectImplementerTest {
     final DomainAnalysisResult result = analysisContext.analyze(Primitive.class);
     final DomainObjectImplementer implementer = new DomainObjectImplementer(generator, result);
     implementer.generateCompilationUnit();
-    generator.printContents();
+    final String code = CodeUtil.printToString(generator);
+    assertTrue(code.contains("package")); // TODO: more complex verification
   }
 }

@@ -1,6 +1,9 @@
 package com.truward.polymer.core.generator;
 
+import com.truward.polymer.testutil.CodeUtil;
 import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Alexander Shabanov
@@ -20,6 +23,9 @@ public class JavaCodeGeneratorTest {
 
     g.ch('}');
 
-    g.printContents();
+    final String content = CodeUtil.printToString(g);
+
+    // verify content
+    assertTrue("Should contain package", content.contains("package"));
   }
 }
