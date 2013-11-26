@@ -2,7 +2,6 @@ package com.truward.polymer.core.driver.support;
 
 import com.truward.di.InjectionContext;
 import com.truward.polymer.annotation.Specification;
-import com.truward.polymer.core.driver.SpecificationDriver;
 import com.truward.polymer.core.driver.SpecificationHandler;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
