@@ -1,6 +1,6 @@
 package com.truward.polymer.core.driver.support;
 
-import com.google.common.collect.ImmutableMap;
+import com.truward.di.InjectionContext;
 import com.truward.polymer.annotation.Specification;
 import com.truward.polymer.core.driver.SpecificationDriver;
 import com.truward.polymer.core.driver.SpecificationHandler;
@@ -9,15 +9,14 @@ import com.truward.polymer.core.driver.SpecificationStateAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Default implementation of {@link SpecificationHandler}
@@ -28,12 +27,14 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
 
   private final Logger log = LoggerFactory.getLogger(DefaultSpecificationHandler.class);
 
-  private final Map<Class<?>, SpecificationDriver> driverMap;
-  private final List<SpecificationStateAware> stateAwareBeans;
+  private List<SpecificationStateAware> stateAwareBeans;
 
-  public DefaultSpecificationHandler(List<SpecificationDriver> drivers, List<SpecificationStateAware> stateAwareBeans) {
-    this.driverMap = toMap(drivers);
-    this.stateAwareBeans = stateAwareBeans;
+  @Resource
+  private InjectionContext injectionContext;
+
+  @PostConstruct
+  public void init() {
+    stateAwareBeans = injectionContext.getBeans(SpecificationStateAware.class);
   }
 
   @Override
@@ -130,34 +131,16 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
       log.warn("Resource name ignored: '" + resource.mappedName() + "' for " + clazz);
     }
 
-    final SpecificationDriver driver = driverMap.get(field.getType());
-    if (driver == null) {
-      throw new RuntimeException("Unable to provide resource for field " + field);
-    }
-
     boolean wasAccessible = field.isAccessible();
     field.setAccessible(true);
 
     assert field.get(instance) == null : "Unexpected assigned value";
-    field.set(instance, driver.provide(field.getType()));
+
+    // TODO: handle injection exception
+    field.set(instance, injectionContext.getBean(field.getType()));
 
     if (!wasAccessible) {
       field.setAccessible(wasAccessible);
     }
-  }
-
-  private static Map<Class<?>, SpecificationDriver> toMap(List<SpecificationDriver> drivers) {
-    final Map<Class<?>, SpecificationDriver> result = new HashMap<>();
-    for (final SpecificationDriver driver : drivers) {
-      for (final Class<?> clazz : driver.getProvidedResourceClasses()) {
-        if (result.containsKey(clazz)) {
-          throw new RuntimeException("Driver " + driver + " and " + result.get(clazz) + " provide same class " + clazz);
-        }
-
-        result.put(clazz, driver);
-      }
-    }
-
-    return ImmutableMap.copyOf(result);
   }
 }
