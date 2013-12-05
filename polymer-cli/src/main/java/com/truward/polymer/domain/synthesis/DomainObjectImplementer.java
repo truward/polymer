@@ -13,10 +13,10 @@ public class DomainObjectImplementer {
   private final String pkgName;
   private final String implClassName;
 
-  public DomainObjectImplementer(JavaCodeGenerator generator, DomainAnalysisResult analysisResult) {
+  public DomainObjectImplementer(String packageName, JavaCodeGenerator generator, DomainAnalysisResult analysisResult) {
     this.generator = generator;
     this.analysisResult = analysisResult;
-    pkgName = "com.mysite.sample"; // TODO: properties
+    pkgName = packageName;
     implClassName = analysisResult.getOriginClass().getSimpleName() + "Impl";
   }
 
