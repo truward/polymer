@@ -1,19 +1,27 @@
 package com.truward.polymer.domain.driver.support;
 
+import com.truward.polymer.core.driver.SpecificationState;
+import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.core.util.DefaultValues;
 import com.truward.polymer.domain.DomainObjectSpecifier;
+import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Alexander Shabanov
  */
-public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier {
+public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier, SpecificationStateAware {
   private final Logger log = LoggerFactory.getLogger(DefaultDomainObjectSpecifier.class);
+  private List<DomainAnalysisResult> analysisResults = new ArrayList<>();
+  private SpecificationState state = SpecificationState.HOLD;
 
   @Override
   public <T> T domainObject(Class<T> clazz) {
@@ -43,6 +51,11 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   @Override
   public DomainObjectSpecifier isNonNegative(int field) {
     return this;
+  }
+
+  @Override
+  public void setState(@Nonnull SpecificationState state) {
+    this.state = state;
   }
 
   //
