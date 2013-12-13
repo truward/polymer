@@ -4,8 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.truward.di.InjectionContext;
 import com.truward.polymer.app.util.ClassScanner;
 import com.truward.polymer.core.driver.SpecificationHandler;
-import com.truward.polymer.core.generator.JavaCodeGenerator;
-import com.truward.polymer.domain.synthesis.DomainObjectImplementer;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -54,10 +52,27 @@ public final class App {
     // TODO: run application
     System.out.println("Run App: target=" + result.getTargetDir() + ", sp=" + result.getSpecificationPackage());
 
-    final List<Class<?>> classes = ClassScanner.scan(result.getSpecificationPackage());
-    if (classes.isEmpty()) {
+    final List<Class<?>> specificationClasses = ClassScanner.scan(result.getSpecificationPackage());
+    if (specificationClasses.isEmpty()) {
       throw new RuntimeException("No classes to analyze");
     }
+
+    runCodeGenerator(new CodeGeneratorSettings() {
+      @Override
+      public List<Class<?>> getSpecificationClasses() {
+        return specificationClasses;
+      }
+
+      @Override
+      public String getTargetPackageName() {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public OutputStream createStreamForFile(String targetFile) throws IOException {
+        throw new UnsupportedOperationException();
+      }
+    });
   }
 
   @VisibleForTesting

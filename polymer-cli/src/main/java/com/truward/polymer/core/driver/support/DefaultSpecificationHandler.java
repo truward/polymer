@@ -1,8 +1,10 @@
 package com.truward.polymer.core.driver.support;
 
+import com.google.common.collect.ImmutableList;
 import com.truward.di.InjectionContext;
 import com.truward.polymer.annotation.Specification;
 import com.truward.polymer.core.driver.SpecificationHandler;
+import com.truward.polymer.core.driver.SpecificationParameterProvider;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
 import org.slf4j.Logger;
@@ -10,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -99,15 +102,48 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
       throw new RuntimeException("Non-public specification method: " + method);
     }
 
-    if (method.getParameterTypes().length != 0) {
-      throw new RuntimeException("Only parameterless specification methods are supported, got: " + method);
+    // fetch parameters
+    final Object[] parameters;
+    final Class<?>[] parameterTypes = method.getParameterTypes();
+    final int parameterCount = parameterTypes.length;
+    if (parameterCount > 0) {
+      final Annotation[][] paramListAnnotations = method.getParameterAnnotations();
+      parameters = new Object[parameterCount];
+      final List<SpecificationParameterProvider> parameterProviders = injectionContext.getBeans(SpecificationParameterProvider.class);
+      if (parameterProviders.size() == 0) {
+        throw new RuntimeException("No specification parameter provides; method parameters will be left unprovided");
+      }
+
+      // provide parameters
+      for (int i = 0; i < parameterCount; ++i) {
+        boolean provided = false;
+        final Class<?> parameterType = parameterTypes[i];
+        final List<Annotation> paramAnnotations = ImmutableList.copyOf(paramListAnnotations[i]);
+        for (final SpecificationParameterProvider parameterProvider : parameterProviders) {
+          if (parameterProvider.canProvideParameter(paramAnnotations, parameterType)) {
+            if (!provided) {
+              parameters[i] = parameterProvider.provideParameter(paramAnnotations, parameterType);
+              provided = true;
+            } else {
+              log.warn("Multiple specifiers can provide same parameter"); // TODO: error?
+            }
+          }
+        }
+
+        if (!provided) {
+          throw new RuntimeException("Unable to provide parameter for specification method");
+        }
+      }
+    } else {
+      parameters = new Object[0];
     }
 
+    // unexpected result
     if (!void.class.equals(method.getReturnType())) {
       log.warn("Result of the specification method " + method + " will be ignored");
     }
 
-    method.invoke(instance);
+    method.invoke(instance, parameters);
   }
 
   private void provideResources(Class<?> clazz, Object instance) {
