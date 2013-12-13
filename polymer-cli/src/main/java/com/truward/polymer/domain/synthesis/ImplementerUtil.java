@@ -179,7 +179,7 @@ public final class ImplementerUtil {
       }
     } else {
       // object case:
-      if (field.isNullable()) {
+      if (TypeUtil.isNullCheckRequired(field)) {
         // ...=> (this.field != null ? this.field.hashCode() : null)
         g.ch('(').thisMember(fieldName).spText("!=").text("null").spText("?")
             .thisMember(fieldName).dot("hashCode").ch('(', ')')
@@ -221,7 +221,7 @@ public final class ImplementerUtil {
     }
 
     // generic class case, use equals
-    if (field.isNullable()) {
+    if (TypeUtil.isNullCheckRequired(field)) {
       // this.field != null ? !this.field.equals(other.field) : other.field != null
       g.thisMember(fieldName).spText("!=").text("null").spText("?")
           .ch('!').thisMember(fieldName).dot("equals").ch('(').member(other, fieldName).ch(')')

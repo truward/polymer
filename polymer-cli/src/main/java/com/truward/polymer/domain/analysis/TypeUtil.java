@@ -17,7 +17,6 @@ public final class TypeUtil {
   }
 
   public static boolean isNullCheckRequired(@Nonnull DomainField field) {
-    Class<?> clazz = asClass(field);
-    return !(clazz != null && clazz.isPrimitive()) && !field.isNullable();
+    return field.isNullableUndecided() || field.isNullable();
   }
 }

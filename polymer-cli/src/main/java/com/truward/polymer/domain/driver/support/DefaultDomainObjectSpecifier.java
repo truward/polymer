@@ -1,28 +1,30 @@
 package com.truward.polymer.domain.driver.support;
 
 import com.google.common.base.Predicate;
+import com.truward.polymer.core.driver.SpecificationParameterProvider;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.core.util.DefaultValues;
+import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.analysis.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.Resource;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.List;
 
 /**
  * @author Alexander Shabanov
  */
-public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier, SpecificationStateAware {
+public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier, SpecificationStateAware, SpecificationParameterProvider {
   private final Logger log = LoggerFactory.getLogger(DefaultDomainObjectSpecifier.class);
 
   private SpecificationState state = SpecificationState.HOLD;
@@ -34,7 +36,8 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   private DomainField currentField;
 
   @Override
-  public <T> T domainObject(Class<T> clazz) {
+  @Nonnull
+  public <T> T domainObject(@Nonnull Class<T> clazz) {
     if (!clazz.isInterface()) {
       throw new RuntimeException("Domain class expected to be an interface");
     }
@@ -51,6 +54,22 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   }
 
   @Override
+  public <T extends Annotation, R> boolean canProvideParameter(@Nonnull List<T> annotations,
+                                                               @Nonnull Class<R> resultType) {
+    return annotations.size() == 1 && DomainObject.class.isAssignableFrom(annotations.get(0).getClass());
+  }
+
+  @Override
+  public <T extends Annotation, R> R provideParameter(@Nonnull List<T> annotations, @Nonnull Class<R> resultType) {
+    if (!canProvideParameter(annotations, resultType)) {
+      throw new IllegalStateException("Unexpected param annotation type"); // should not come here if used properly
+    }
+
+    return domainObject(resultType);
+  }
+
+  @Override
+  @Nonnull
   public DomainObjectSpecifier isNullable(Object field) {
     checkSpecStateAndField();
     try {
@@ -71,13 +90,16 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   }
 
   @Override
+  @Nonnull
   public DomainObjectSpecifier hasLength(String field) {
     checkSpecStateAndField();
     // TODO: hasLength, check return type
+    // TODO: tear-off constraint to field?
     return this;
   }
 
   @Override
+  @Nonnull
   public DomainObjectSpecifier isNonNegative(int field) {
     checkSpecStateAndField();
     // TODO: isNonNegative

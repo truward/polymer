@@ -74,13 +74,6 @@ public final class DefaultDomainAnalysisContext implements DomainAnalysisContext
 
     final String fieldName = NamingUtil.asFieldName(method.getName());
 
-    final DomainField field = new MethodBasedDomainField(fieldName, method);
-
-    // TODO: infer nullability
-    if (field.isNullableUndecided()) {
-      field.setNullable(false); // all fields are non-null by default
-    }
-
-    return field;
+    return new MethodBasedDomainField(fieldName, method);
   }
 }
