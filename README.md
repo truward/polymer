@@ -1,2 +1,7 @@
 Polymer
 =======
+
+## Motivation
+
+## Sample Usage
+

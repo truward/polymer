@@ -13,5 +13,11 @@
   <name>Polymer Domain Model</name>
 
   <dependencies>
+
+    <!-- JSR Non-Null annotation -->
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+    </dependency>
   </dependencies>
 </project>
