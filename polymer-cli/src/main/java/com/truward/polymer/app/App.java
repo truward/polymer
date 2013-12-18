@@ -4,6 +4,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.truward.di.InjectionContext;
 import com.truward.polymer.app.util.ClassScanner;
 import com.truward.polymer.core.driver.SpecificationHandler;
+import com.truward.polymer.core.generator.JavaCodeGenerator;
+import com.truward.polymer.domain.analysis.DomainAnalysisContext;
+import com.truward.polymer.domain.synthesis.DomainObjectImplementer;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -85,9 +88,11 @@ public final class App {
       handler.parseClass(specificationClass);
     }
 
-    // TODO: wire implementer
+//    // TODO: wire implementer
 //    final DomainObjectImplementer implementer = new DomainObjectImplementer(settings.getTargetPackageName(),
-//        injectionContext.getBean(JavaCodeGenerator.class), injectionContext.getBean());
+//        injectionContext.getBean(JavaCodeGenerator.class),
+//        injectionContext.getBean(DomainAnalysisContext.class).
+//    );
   }
 
   public interface CodeGeneratorSettings {
