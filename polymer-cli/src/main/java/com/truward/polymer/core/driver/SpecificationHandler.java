@@ -7,5 +7,5 @@ package com.truward.polymer.core.driver;
  */
 public interface SpecificationHandler {
 
-  boolean parseClass(Class<?> clazz);
+  void parseClass(Class<?> clazz);
 }

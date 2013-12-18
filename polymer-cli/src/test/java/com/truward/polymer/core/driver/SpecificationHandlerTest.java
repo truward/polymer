@@ -26,7 +26,7 @@ public class SpecificationHandlerTest {
 
   @Test
   public void shouldGenerateCode() {
-    assertTrue(specificationHandler.parseClass(TestSpec.class));
+    specificationHandler.parseClass(TestSpec.class);
   }
 
   //

@@ -40,10 +40,10 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
   }
 
   @Override
-  public boolean parseClass(Class<?> clazz) {
+  public void parseClass(Class<?> clazz) {
     if (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) {
-      log.debug("Skipping interface or abstract class: {}", clazz);
-      return false;
+      log.warn("Skipping interface or abstract class: {}", clazz);
+      return;
     }
 
     final List<Method> specificationMethods = new ArrayList<>();
@@ -54,14 +54,14 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
     }
 
     if (specificationMethods.isEmpty()) {
-      return false;
+      log.warn("No specification methods in class {}", clazz);
+      return;
     }
 
     try {
       final Object instance = clazz.newInstance();
       provideResources(clazz, instance);
       invokeSpecificationMethods(specificationMethods, instance);
-      return true;
     } catch (InstantiationException | IllegalAccessException e) {
       throw new RuntimeException("Uninstantiable class: no public default constructor", e);
     }
