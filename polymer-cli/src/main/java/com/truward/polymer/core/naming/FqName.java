@@ -2,6 +2,7 @@ package com.truward.polymer.core.naming;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
 
 /**
  * Represents fully qualified name
@@ -79,6 +80,40 @@ public final class FqName {
 
   @Override
   public String toString() {
-    return isRoot() ? getName() : (getParent().toString() + '.' + getName());
+    if (isRoot()) {
+      return getName();
+    }
+
+    // calc symbols count
+    int symCount = 0;
+    FqName i = this;
+    for (;; i = i.getParent()) {
+      if (symCount > 0) {
+        ++symCount; // count dot
+      }
+      symCount += i.getName().length();
+      if (i.isRoot()) {
+        break;
+      }
+    }
+
+    // append all name parts
+    final StringBuilder builder = new StringBuilder(symCount);
+    try {
+      appendTo(builder);
+    } catch (IOException e) {
+      throw new IllegalStateException(e); // should never happen
+    }
+
+    assert builder.length() == symCount;
+    return builder.toString();
+  }
+
+  public void appendTo(Appendable appendable) throws IOException {
+    if (!isRoot()) {
+      getParent().appendTo(appendable);
+      appendable.append('.');
+    }
+    appendable.append(getName());
   }
 }

@@ -6,6 +6,7 @@ import com.truward.polymer.core.naming.FqName;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
+import com.truward.polymer.domain.analysis.DomainImplTarget;
 import com.truward.polymer.domain.analysis.support.DefaultDomainAnalysisContext;
 import com.truward.polymer.testutil.CodeUtil;
 import org.junit.Before;
@@ -63,8 +64,8 @@ public class DomainObjectImplementerTest {
   @Test
   public void shouldImplement() {
     final DomainAnalysisResult result = analysisContext.analyze(User.class);
-    final DomainObjectImplementer implementer = new DomainObjectImplementer(generator, result);
-    implementer.generateCompilationUnit();
+    final DomainObjectImplementer implementer = new DomainObjectImplementer(generator, implTarget(result));
+    implementer.generateCode();
     final String code = CodeUtil.printToString(generator);
     assertTrue(code.contains("package")); // TODO: more complex verification
   }
@@ -72,9 +73,17 @@ public class DomainObjectImplementerTest {
   @Test
   public void shouldImplementEqualsAndHashCodeForPrimitiveType() {
     final DomainAnalysisResult result = analysisContext.analyze(Primitive.class);
-    final DomainObjectImplementer implementer = new DomainObjectImplementer("com.sample", generator, result);
-    implementer.generateCompilationUnit();
+    final DomainObjectImplementer implementer = new DomainObjectImplementer(generator, implTarget(result));
+    implementer.generateCode();
     final String code = CodeUtil.printToString(generator);
     assertTrue(code.contains("package")); // TODO: more complex verification
+  }
+
+  //
+  // Private
+  //
+
+  private List<DomainImplTarget> implTarget(DomainAnalysisResult result) {
+    return ImmutableList.of(new DomainImplTarget(result, implClassName));
   }
 }
