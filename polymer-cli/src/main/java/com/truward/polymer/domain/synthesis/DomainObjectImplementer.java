@@ -9,6 +9,7 @@ import com.truward.polymer.domain.analysis.DomainImplTarget;
 import java.util.List;
 
 /**
+ * TODO: break down to helper classes
  * @author Alexander Shabanov
  */
 public class DomainObjectImplementer {
