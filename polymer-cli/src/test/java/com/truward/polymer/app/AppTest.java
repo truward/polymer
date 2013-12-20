@@ -32,11 +32,6 @@ public class AppTest {
       }
 
       @Override
-      public String getTargetPackageName() {
-        return "com.mysite";
-      }
-
-      @Override
       public OutputStream createStreamForFile(final String targetFile) throws IOException {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream(500);
         return new OutputStream() {
