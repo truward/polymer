@@ -46,9 +46,16 @@ public final class FqName {
     return name;
   }
 
-  @Nullable
+  @Nonnull
   public FqName getParent() {
+    if (parent == null) {
+      throw new IllegalStateException("There is no parent of the root fqName");
+    }
     return parent;
+  }
+
+  public boolean isRoot() {
+    return parent == null;
   }
 
   @Override
@@ -72,6 +79,6 @@ public final class FqName {
 
   @Override
   public String toString() {
-    return getParent() != null ? (getParent().toString() + '.' + getName()) : getName();
+    return isRoot() ? getName() : (getParent().toString() + '.' + getName());
   }
 }

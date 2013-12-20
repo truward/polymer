@@ -1,27 +1,40 @@
 package com.truward.polymer.domain.synthesis;
 
 import com.truward.polymer.core.generator.JavaCodeGenerator;
+import com.truward.polymer.core.naming.FqName;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
+import com.truward.polymer.domain.analysis.DomainImplTarget;
+
+import java.util.List;
 
 /**
  * @author Alexander Shabanov
  */
 public class DomainObjectImplementer {
   private final JavaCodeGenerator generator;
-  private final DomainAnalysisResult analysisResult;
-  private final String pkgName;
-  private final String implClassName;
+  private List<DomainImplTarget> implTargets;
 
-  public DomainObjectImplementer(String packageName, JavaCodeGenerator generator, DomainAnalysisResult analysisResult) {
+  public DomainObjectImplementer(JavaCodeGenerator generator, List<DomainImplTarget> implTargets) {
     this.generator = generator;
-    this.analysisResult = analysisResult;
-    pkgName = packageName;
-    implClassName = analysisResult.getOriginClass().getSimpleName() + "Impl";
+    this.implTargets = implTargets;
   }
 
-  public void generateCompilationUnit() {
-    generator.packageDirective(pkgName);
+  public void generateCode() {
+    for (final DomainImplTarget target : implTargets) {
+      generateCompilationUnit(target);
+    }
+  }
+
+  private void generateCompilationUnit(DomainImplTarget target) {
+    final FqName classFqName = target.getClassName();
+    final DomainAnalysisResult analysisResult = target.getSource();
+    final String implClassName = classFqName.getName();
+
+    if (!classFqName.isRoot()) {
+      generator.packageDirective(classFqName.getParent().toString());
+    }
+
 
     generator.textWithSpaces("public", "class", implClassName);
     // implements
@@ -34,7 +47,7 @@ public class DomainObjectImplementer {
     }
 
     // ctor
-    generateConstructor();
+    generateConstructor(analysisResult, implClassName);
 
     // getters
     for (final DomainField field : analysisResult.getDeclaredFields()) {
@@ -73,7 +86,7 @@ public class DomainObjectImplementer {
     generator.ch('}');
   }
 
-  private void generateConstructor() {
+  private void generateConstructor(DomainAnalysisResult analysisResult, String implClassName) {
     generator.ch('\n');
     generator.text("public").ch(' ').text(implClassName).ch('(');
     boolean next = false;
