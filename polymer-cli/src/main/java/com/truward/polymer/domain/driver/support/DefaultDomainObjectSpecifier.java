@@ -1,15 +1,15 @@
 package com.truward.polymer.domain.driver.support;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.truward.polymer.core.driver.SpecificationParameterProvider;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
+import com.truward.polymer.core.naming.FqName;
 import com.truward.polymer.core.util.DefaultValues;
 import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSpecifier;
-import com.truward.polymer.domain.analysis.DomainAnalysisContext;
-import com.truward.polymer.domain.analysis.DomainAnalysisResult;
-import com.truward.polymer.domain.analysis.DomainField;
+import com.truward.polymer.domain.analysis.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,12 +19,14 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Alexander Shabanov
  */
-public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier, SpecificationStateAware, SpecificationParameterProvider {
+public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier, SpecificationStateAware,
+    SpecificationParameterProvider, DomainImplTargetProvider {
   private final Logger log = LoggerFactory.getLogger(DefaultDomainObjectSpecifier.class);
 
   private SpecificationState state = SpecificationState.HOLD;
@@ -34,6 +36,7 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
 
   private DomainAnalysisResult currentAnalysisResult;
   private DomainField currentField;
+  private List<DomainImplTarget> implementationTargets = new ArrayList<>();
 
   @Override
   @Nonnull
@@ -49,6 +52,10 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
     log.debug("Returned proxy instance for class {}", clazz);
 
     currentAnalysisResult = analysisContext.analyze(clazz);
+
+    // automatically introduce implementation target
+    implementationTargets.add(new DomainImplTarget(currentAnalysisResult,
+        FqName.parse("com.mysite." + currentAnalysisResult.getOriginClass().getName() + "Impl")));
 
     return instance;
   }
@@ -109,6 +116,12 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   @Override
   public void setState(@Nonnull SpecificationState state) {
     this.state = state;
+  }
+
+  @Nonnull
+  @Override
+  public List<DomainImplTarget> getImplementationTargets() {
+    return ImmutableList.copyOf(implementationTargets);
   }
 
   //

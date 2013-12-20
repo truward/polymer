@@ -2,21 +2,18 @@ package com.truward.polymer.core.naming;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  * @author Alexander Shabanov
  */
-public class FqNameTest {
+public final class FqNameTest {
 
   @Test
   public void shouldParseNestedName() {
     final FqName fqName = FqName.parse("root.child");
-    assertNotNull(fqName.getParent());
     assertEquals("root", fqName.getParent().getName());
-    assertNull("root", fqName.getParent().getParent());
+    assertTrue(fqName.getParent().isRoot());
     assertEquals("child", fqName.getName());
     assertEquals("root.child", fqName.toString());
   }
@@ -24,8 +21,13 @@ public class FqNameTest {
   @Test
   public void shouldParseRootName() {
     final FqName rootName = FqName.parse("root");
-    assertNull(rootName.getParent());
+    assertTrue(rootName.isRoot());
     assertEquals("root", rootName.getName());
     assertEquals("root", rootName.toString());
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void shouldDisallowAccessToParentOfRoot() {
+    FqName.parse("root").getParent();
   }
 }

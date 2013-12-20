@@ -2,6 +2,7 @@ package com.truward.polymer.domain.synthesis;
 
 import com.google.common.collect.ImmutableList;
 import com.truward.polymer.core.generator.JavaCodeGenerator;
+import com.truward.polymer.core.naming.FqName;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
@@ -44,6 +45,7 @@ public class DomainObjectImplementerTest {
 
   private DomainAnalysisContext analysisContext;
   private JavaCodeGenerator generator;
+  private final FqName implClassName = FqName.parse("com.mysite.SampleImpl");
 
   @Before
   public void setup() {
@@ -61,7 +63,7 @@ public class DomainObjectImplementerTest {
   @Test
   public void shouldImplement() {
     final DomainAnalysisResult result = analysisContext.analyze(User.class);
-    final DomainObjectImplementer implementer = new DomainObjectImplementer("com.sample", generator, result);
+    final DomainObjectImplementer implementer = new DomainObjectImplementer(generator, result);
     implementer.generateCompilationUnit();
     final String code = CodeUtil.printToString(generator);
     assertTrue(code.contains("package")); // TODO: more complex verification
