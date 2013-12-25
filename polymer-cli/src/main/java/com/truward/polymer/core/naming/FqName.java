@@ -67,7 +67,6 @@ public final class FqName {
     FqName fqName = (FqName) o;
 
     return name.equals(fqName.name) && !(parent != null ? !parent.equals(fqName.parent) : fqName.parent != null);
-
   }
 
   @Override
@@ -110,9 +109,13 @@ public final class FqName {
   }
 
   public void appendTo(Appendable appendable) throws IOException {
+    appendTo(appendable, '.');
+  }
+
+  public void appendTo(Appendable appendable, char separator) throws IOException {
     if (!isRoot()) {
       getParent().appendTo(appendable);
-      appendable.append('.');
+      appendable.append(separator);
     }
     appendable.append(getName());
   }

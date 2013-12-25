@@ -1,15 +1,18 @@
 package com.truward.polymer.app;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.io.Files;
 import com.truward.di.InjectionContext;
 import com.truward.polymer.app.util.ClassScanner;
 import com.truward.polymer.core.driver.SpecificationHandler;
-import com.truward.polymer.core.generator.JavaCodeGenerator;
+import com.truward.polymer.core.generator.OutputStreamProvider;
+import com.truward.polymer.core.generator.support.FSOutputStreamProvider;
 import com.truward.polymer.domain.analysis.DomainImplTargetProvider;
 import com.truward.polymer.domain.synthesis.DomainObjectImplementer;
 
+import javax.annotation.Nonnull;
+import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 
 /**
@@ -60,40 +63,36 @@ public final class App {
       throw new RuntimeException("No classes to analyze");
     }
 
-    runCodeGenerator(new CodeGeneratorSettings() {
-      @Override
-      public List<Class<?>> getSpecificationClasses() {
-        return specificationClasses;
-      }
-
-      @Override
-      public OutputStream createStreamForFile(String targetFile) throws IOException {
-        throw new UnsupportedOperationException();
-      }
-    });
+    File tempDirName = Files.createTempDir();
+    tempDirName = new File(tempDirName, "generated");
+    System.out.println("Output dir for code generation: " + tempDirName);
+    try {
+      runCodeGenerator(specificationClasses, new FSOutputStreamProvider(tempDirName));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @VisibleForTesting
-  public static void runCodeGenerator(CodeGeneratorSettings settings) {
+  public static void runCodeGenerator(@Nonnull List<Class<?>> specificationClasses,
+                                      @Nonnull OutputStreamProvider outputStreamProvider) {
     final PolymerModule module = new PolymerModule();
     final InjectionContext injectionContext = module.addDefaults().getInjectionContext();
     final SpecificationHandler handler = injectionContext.getBean(SpecificationHandler.class);
 
-    for (final Class<?> specificationClass : settings.getSpecificationClasses()) {
+    for (final Class<?> specificationClass : specificationClasses) {
       handler.parseClass(specificationClass);
     }
 
     // TODO: wire implementer
     final DomainObjectImplementer implementer = new DomainObjectImplementer(
-        injectionContext.getBean(JavaCodeGenerator.class),
-        injectionContext.getBean(DomainImplTargetProvider.class).getImplementationTargets()
+        injectionContext.getBean(DomainImplTargetProvider.class).getImplementationTargets(),
+        outputStreamProvider
     );
     implementer.generateCode();
   }
 
+  @Deprecated
   public interface CodeGeneratorSettings {
-    List<Class<?>> getSpecificationClasses();
-
-    OutputStream createStreamForFile(String targetFile) throws IOException;
   }
 }
