@@ -1,11 +1,17 @@
 package com.truward.polymer.domain.synthesis;
 
 import com.truward.polymer.core.generator.JavaCodeGenerator;
+import com.truward.polymer.core.generator.OutputStreamProvider;
 import com.truward.polymer.core.naming.FqName;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.DomainImplTarget;
 
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -13,27 +19,38 @@ import java.util.List;
  * @author Alexander Shabanov
  */
 public class DomainObjectImplementer {
-  private final JavaCodeGenerator generator;
   private List<DomainImplTarget> implTargets;
+  private OutputStreamProvider outputStreamProvider;
 
-  public DomainObjectImplementer(JavaCodeGenerator generator, List<DomainImplTarget> implTargets) {
-    this.generator = generator;
+  public DomainObjectImplementer(@Nonnull List<DomainImplTarget> implTargets,
+                                 @Nonnull OutputStreamProvider outputStreamProvider) {
     this.implTargets = implTargets;
+    this.outputStreamProvider = outputStreamProvider;
   }
 
   public void generateCode() {
     for (final DomainImplTarget target : implTargets) {
-      generateCompilationUnit(target);
+      final JavaCodeGenerator generator = new JavaCodeGenerator();
+      generateCompilationUnit(target, generator);
+      try {
+        try (final OutputStream stream = outputStreamProvider.createStreamForFile(target.getClassName(), "java")) {
+          try (final PrintStream printStream = new PrintStream(stream, true, StandardCharsets.UTF_8.name())) {
+            generator.printContents(printStream);
+          }
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 
-  private void generateCompilationUnit(DomainImplTarget target) {
+  private void generateCompilationUnit(DomainImplTarget target, JavaCodeGenerator generator) {
     final FqName classFqName = target.getClassName();
     final DomainAnalysisResult analysisResult = target.getSource();
     final String implClassName = classFqName.getName();
 
     if (!classFqName.isRoot()) {
-      generator.packageDirective(classFqName.getParent().toString());
+      generator.packageDirective(classFqName.getParent());
     }
 
 
@@ -44,15 +61,15 @@ public class DomainObjectImplementer {
 
     // fields
     for (final DomainField field : analysisResult.getDeclaredFields()) {
-      generateFinalField(field);
+      generateFinalField(field, generator);
     }
 
     // ctor
-    generateConstructor(analysisResult, implClassName);
+    generateConstructor(analysisResult, implClassName, generator);
 
     // getters
     for (final DomainField field : analysisResult.getDeclaredFields()) {
-      generateFinalGetter(field);
+      generateFinalGetter(field, generator);
     }
 
     // toString
@@ -74,12 +91,12 @@ public class DomainObjectImplementer {
   // Private
   //
 
-  private void generateFinalField(DomainField field) {
+  private static void generateFinalField(DomainField field, JavaCodeGenerator generator) {
     generator.text("private").ch(' ').text("final").ch(' ').type(field.getFieldType()).ch(' ')
         .text(field.getFieldName()).ch(';');
   }
 
-  private void generateFinalGetter(DomainField field) {
+  private static void generateFinalGetter(DomainField field, JavaCodeGenerator generator) {
     generator.ch('\n')
         .annotate(Override.class).text("public").ch(' ').text("final").ch(' ').type(field.getFieldType()).ch(' ')
         .text(field.getGetterName()).ch('(', ')', ' ', '{');
@@ -87,7 +104,7 @@ public class DomainObjectImplementer {
     generator.ch('}');
   }
 
-  private void generateConstructor(DomainAnalysisResult analysisResult, String implClassName) {
+  private static void generateConstructor(DomainAnalysisResult analysisResult, String implClassName, JavaCodeGenerator generator) {
     generator.ch('\n');
     generator.text("public").ch(' ').text(implClassName).ch('(');
     boolean next = false;

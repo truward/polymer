@@ -25,7 +25,6 @@ public class PolymerModule {
     injectionContext.registerBean(DefaultDomainObjectSpecifier.class);
 
     // general-purpose ones
-    injectionContext.registerBean(new JavaCodeGenerator());
     injectionContext.registerBean(DefaultSpecificationHandler.class);
     return this;
   }

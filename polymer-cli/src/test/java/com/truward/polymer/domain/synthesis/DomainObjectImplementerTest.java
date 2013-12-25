@@ -1,17 +1,17 @@
 package com.truward.polymer.domain.synthesis;
 
 import com.google.common.collect.ImmutableList;
-import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.core.naming.FqName;
+import com.truward.polymer.testutil.MemOutputStreamProvider;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.DomainImplTarget;
 import com.truward.polymer.domain.analysis.support.DefaultDomainAnalysisContext;
-import com.truward.polymer.testutil.CodeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.annotation.Generated;
 import java.util.Date;
 import java.util.List;
 
@@ -23,17 +23,20 @@ import static org.junit.Assert.assertTrue;
  */
 public class DomainObjectImplementerTest {
 
+  @Generated("test")
   interface User {
     int getAge();
     String getName();
     Date getBirthDate();
   }
 
+  @Generated("test")
   interface Employee extends User {
     int getWage();
     List<String> getResponsibilities();
   }
 
+  @Generated("test")
   interface Primitive {
     byte getA();
     short getB();
@@ -45,13 +48,13 @@ public class DomainObjectImplementerTest {
   }
 
   private DomainAnalysisContext analysisContext;
-  private JavaCodeGenerator generator;
+  private MemOutputStreamProvider mosp;
   private final FqName implClassName = FqName.parse("com.mysite.SampleImpl");
 
   @Before
   public void setup() {
     analysisContext = new DefaultDomainAnalysisContext();
-    generator = new JavaCodeGenerator();
+    mosp = new MemOutputStreamProvider();
   }
 
   @Test
@@ -64,18 +67,18 @@ public class DomainObjectImplementerTest {
   @Test
   public void shouldImplement() {
     final DomainAnalysisResult result = analysisContext.analyze(User.class);
-    final DomainObjectImplementer implementer = new DomainObjectImplementer(generator, implTarget(result));
+    final DomainObjectImplementer implementer = new DomainObjectImplementer(implTarget(result), mosp);
     implementer.generateCode();
-    final String code = CodeUtil.printToString(generator);
+    final String code = mosp.getOneContent();
     assertTrue(code.contains("package")); // TODO: more complex verification
   }
 
   @Test
   public void shouldImplementEqualsAndHashCodeForPrimitiveType() {
     final DomainAnalysisResult result = analysisContext.analyze(Primitive.class);
-    final DomainObjectImplementer implementer = new DomainObjectImplementer(generator, implTarget(result));
+    final DomainObjectImplementer implementer = new DomainObjectImplementer(implTarget(result), mosp);
     implementer.generateCode();
-    final String code = CodeUtil.printToString(generator);
+    final String code = mosp.getOneContent();
     assertTrue(code.contains("package")); // TODO: more complex verification
   }
 

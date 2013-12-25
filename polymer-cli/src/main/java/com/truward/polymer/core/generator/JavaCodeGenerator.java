@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.truward.polymer.core.generator.model.ClassRef;
 import com.truward.polymer.core.generator.model.CodeObjectVisitor;
 import com.truward.polymer.core.generator.support.IndentationAwarePrinter;
+import com.truward.polymer.core.naming.FqName;
 
 import java.io.PrintStream;
 import java.lang.reflect.Type;
@@ -49,12 +50,22 @@ public final class JavaCodeGenerator {
     }
   }
 
-  public void packageDirective(String packageName) {
+  public void packageDirective(FqName packageName) {
     if (importInsertIndex >= 0) {
       throw new IllegalStateException("Generating package name multiple times does not make sense");
     }
 
-    text("package").ch(' ').text(packageName).ch(';', '\n');
+    text("package").ch(' ');
+    for (boolean next = false;;packageName = packageName.getParent(), next = true) {
+      if (next) {
+        ch('.');
+      }
+      text(packageName.getName());
+      if (packageName.isRoot()) {
+        break;
+      }
+    }
+    ch(';', '\n');
     importInsertIndex = elements.size();
   }
 
