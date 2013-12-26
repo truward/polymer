@@ -3,6 +3,7 @@ package com.truward.polymer.domain.synthesis;
 import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.core.generator.OutputStreamProvider;
 import com.truward.polymer.core.naming.FqName;
+import com.truward.polymer.core.output.DefaultFileTypes;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.DomainImplTarget;
@@ -19,6 +20,7 @@ import java.util.List;
  * @author Alexander Shabanov
  */
 public class DomainObjectImplementer {
+
   private List<DomainImplTarget> implTargets;
   private OutputStreamProvider outputStreamProvider;
 
@@ -33,7 +35,8 @@ public class DomainObjectImplementer {
       final JavaCodeGenerator generator = new JavaCodeGenerator();
       generateCompilationUnit(target, generator);
       try {
-        try (final OutputStream stream = outputStreamProvider.createStreamForFile(target.getClassName(), "java")) {
+        try (final OutputStream stream = outputStreamProvider.createStreamForFile(
+            target.getClassName(), DefaultFileTypes.JAVA)) {
           try (final PrintStream printStream = new PrintStream(stream, true, StandardCharsets.UTF_8.name())) {
             generator.printContents(printStream);
           }

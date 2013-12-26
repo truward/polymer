@@ -2,6 +2,7 @@ package com.truward.polymer.core.generator.support;
 
 import com.truward.polymer.core.generator.OutputStreamProvider;
 import com.truward.polymer.core.naming.FqName;
+import com.truward.polymer.core.output.FileType;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -20,7 +21,8 @@ public final class FSOutputStreamProvider implements OutputStreamProvider {
   }
 
   @Override
-  public OutputStream createStreamForFile(FqName name, String extension) throws IOException {
+  @Nonnull
+  public OutputStream createStreamForFile(@Nonnull FqName name, @Nonnull FileType fileType) throws IOException {
     final StringBuilder fileNameBuilder = new StringBuilder(500);
     final char separator = File.separatorChar;
 
@@ -35,7 +37,7 @@ public final class FSOutputStreamProvider implements OutputStreamProvider {
       throw new IOException("Unable to create/access to the parent directory");
     }
 
-    fileNameBuilder.append(separator).append(name.getName()).append('.').append(extension);
+    fileNameBuilder.append(separator).append(name.getName()).append('.').append(fileType.getExtension());
     final String fileName = fileNameBuilder.toString();
     return new FileOutputStream(fileName);
   }
