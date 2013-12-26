@@ -3,7 +3,9 @@ package com.truward.polymer.testutil;
 import com.google.common.collect.ImmutableMap;
 import com.truward.polymer.core.generator.OutputStreamProvider;
 import com.truward.polymer.core.naming.FqName;
+import com.truward.polymer.core.output.FileType;
 
+import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -28,7 +30,9 @@ public final class MemOutputStreamProvider implements OutputStreamProvider {
   }
 
   @Override
-  public OutputStream createStreamForFile(final FqName name, final String extension) throws IOException {
+  @Nonnull
+  public OutputStream createStreamForFile(@Nonnull final FqName name,
+                                          @Nonnull final FileType fileType) throws IOException {
     final ByteArrayOutputStream bos = new ByteArrayOutputStream(500);
     return new OutputStream() {
       @Override
@@ -38,13 +42,13 @@ public final class MemOutputStreamProvider implements OutputStreamProvider {
 
       @Override
       public void close() throws IOException {
-        result.put(toUnifiedName(name, extension), bos.toString("UTF-8"));
+        result.put(toUnifiedName(name, fileType), bos.toString("UTF-8"));
         bos.close();
       }
     };
   }
 
-  public static String toUnifiedName(FqName name, String extension) {
-    return name.toString() + '.' + extension;
+  public static String toUnifiedName(@Nonnull FqName name, @Nonnull FileType fileType) {
+    return name.toString() + '.' + fileType.getExtension();
   }
 }
