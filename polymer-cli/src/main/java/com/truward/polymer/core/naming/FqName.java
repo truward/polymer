@@ -61,18 +61,36 @@ public final class FqName {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof FqName)) {
+      return false;
+    }
 
-    FqName fqName = (FqName) o;
+    FqName other = (FqName) o;
+    FqName self = this;
+    for (;;) {
+      if (!other.getName().equals(self.getName())) {
+        return false;
+      }
 
-    return name.equals(fqName.name) && !(parent != null ? !parent.equals(fqName.parent) : fqName.parent != null);
+      other = other.parent;
+      self = self.parent;
+      if (other == self) {
+        return true; // matched parents
+      } else if (other == null || self == null) {
+        return false;
+      }
+    }
   }
 
   @Override
   public int hashCode() {
     int result = name.hashCode();
-    result = 31 * result + (parent != null ? parent.hashCode() : 0);
+    for (FqName i = parent; i != null; i = i.parent) {
+      result = 31 * result + i.name.hashCode();
+    }
     return result;
   }
 
