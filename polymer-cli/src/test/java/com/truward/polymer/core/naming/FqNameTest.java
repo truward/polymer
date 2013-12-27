@@ -2,6 +2,8 @@ package com.truward.polymer.core.naming;
 
 import org.junit.Test;
 
+import java.io.IOException;
+
 import static org.junit.Assert.*;
 
 /**
@@ -52,6 +54,14 @@ public final class FqNameTest {
         }
       }
     }
+  }
+
+  @Test
+  public void shouldAppendWithCustomSeparator() throws IOException {
+    final FqName name = FqName.parse("com.mysite.Foo");
+    final StringBuilder builder = new StringBuilder();
+    name.appendTo(builder, '/');
+    assertEquals("com/mysite/Foo", builder.toString());
   }
 
   @Test

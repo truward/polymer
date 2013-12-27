@@ -55,19 +55,15 @@ public final class App {
 
   @VisibleForTesting
   public static void generateCode(CliOptionsParser.ProcessSpecResult result) {
-    // TODO: run application
-    System.out.println("Run App: target=" + result.getTargetDir() + ", sp=" + result.getSpecificationPackage());
+    System.out.println("Run App: target=" + result.getTargetDir() + ", specificationPackage=" + result.getSpecificationPackage());
 
     final List<Class<?>> specificationClasses = ClassScanner.scan(result.getSpecificationPackage());
     if (specificationClasses.isEmpty()) {
       throw new RuntimeException("No classes to analyze");
     }
 
-    File tempDirName = Files.createTempDir();
-    tempDirName = new File(tempDirName, "generated");
-    System.out.println("Output dir for code generation: " + tempDirName);
     try {
-      runCodeGenerator(specificationClasses, new FSOutputStreamProvider(tempDirName));
+      runCodeGenerator(specificationClasses, new FSOutputStreamProvider(new File(result.getTargetDir())));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
