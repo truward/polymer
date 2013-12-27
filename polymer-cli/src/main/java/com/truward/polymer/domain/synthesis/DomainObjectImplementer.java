@@ -19,18 +19,13 @@ import java.util.List;
  * TODO: break down to helper classes
  * @author Alexander Shabanov
  */
-public class DomainObjectImplementer {
+public final class DomainObjectImplementer {
 
-  private List<DomainImplTarget> implTargets;
-  private OutputStreamProvider outputStreamProvider;
-
-  public DomainObjectImplementer(@Nonnull List<DomainImplTarget> implTargets,
-                                 @Nonnull OutputStreamProvider outputStreamProvider) {
-    this.implTargets = implTargets;
-    this.outputStreamProvider = outputStreamProvider;
+  private DomainObjectImplementer() {
   }
 
-  public void generateCode() {
+  public static void generateCode(@Nonnull List<DomainImplTarget> implTargets,
+                                  @Nonnull OutputStreamProvider outputStreamProvider) {
     for (final DomainImplTarget target : implTargets) {
       final JavaCodeGenerator generator = new JavaCodeGenerator();
       generateCompilationUnit(target, generator);
@@ -47,7 +42,7 @@ public class DomainObjectImplementer {
     }
   }
 
-  private void generateCompilationUnit(DomainImplTarget target, JavaCodeGenerator generator) {
+  private static void generateCompilationUnit(DomainImplTarget target, JavaCodeGenerator generator) {
     final FqName classFqName = target.getClassName();
     final DomainAnalysisResult analysisResult = target.getSource();
     final String implClassName = classFqName.getName();
