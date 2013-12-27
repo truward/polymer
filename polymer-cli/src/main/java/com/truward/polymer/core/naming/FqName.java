@@ -12,8 +12,7 @@ import java.io.IOException;
 public final class FqName {
   private final String name;
   private final FqName parent;
-
-  /** Precalculated hash code, optimized for immutable FqName */
+  /** Precalculated hash code, optimized for immutable FqName, default to 0 */
   private transient int hash;
 
   public static FqName parse(String fqName) {
@@ -110,20 +109,8 @@ public final class FqName {
       return getName();
     }
 
-    // calc symbols count to avoid redundant memory allocations
-    int symCount = 0;
-    FqName i = this;
-    for (;; i = i.getParent()) {
-      if (symCount > 0) {
-        ++symCount; // count dot
-      }
-      symCount += i.getName().length();
-      if (i.isRoot()) {
-        break;
-      }
-    }
-
     // append all name parts
+    final int symCount = length();
     final StringBuilder builder = new StringBuilder(symCount);
     try {
       appendTo(builder);
@@ -133,6 +120,24 @@ public final class FqName {
 
     assert builder.length() == symCount;
     return builder.toString();
+  }
+
+  /**
+   * @return Count of chars in the toString representation, separated by dots
+   */
+  public int length() {
+    int symCount = 0;
+    FqName i = this;
+    for (;; i = i.getParent()) {
+      if (symCount > 0) {
+        ++symCount; // separator char - 'dot'
+      }
+      symCount += i.getName().length();
+      if (i.isRoot()) {
+        break;
+      }
+    }
+    return symCount;
   }
 
   public void appendTo(Appendable appendable) throws IOException {
