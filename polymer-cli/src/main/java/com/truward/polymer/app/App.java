@@ -85,14 +85,8 @@ public final class App {
     }
 
     // TODO: wire implementer
-    final DomainObjectImplementer implementer = new DomainObjectImplementer(
+    DomainObjectImplementer.generateCode(
         injectionContext.getBean(DomainImplTargetProvider.class).getImplementationTargets(),
-        outputStreamProvider
-    );
-    implementer.generateCode();
-  }
-
-  @Deprecated
-  public interface CodeGeneratorSettings {
+        outputStreamProvider);
   }
 }
