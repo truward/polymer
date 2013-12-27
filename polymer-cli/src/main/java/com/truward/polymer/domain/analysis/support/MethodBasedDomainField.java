@@ -1,5 +1,6 @@
 package com.truward.polymer.domain.analysis.support;
 
+import com.truward.polymer.core.trait.TraitContainerSupport;
 import com.truward.polymer.domain.analysis.DomainField;
 
 import javax.annotation.Nonnull;
@@ -11,7 +12,7 @@ import java.lang.reflect.Type;
  *
  * @author Alexander Shabanov
  */
-public final class MethodBasedDomainField implements DomainField {
+public final class MethodBasedDomainField extends TraitContainerSupport implements DomainField {
   private final String name;
   private final Method originMethod;
   private final String getterName;
