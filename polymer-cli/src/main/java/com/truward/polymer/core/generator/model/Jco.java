@@ -1,7 +1,7 @@
 package com.truward.polymer.core.generator.model;
 
 import com.google.common.collect.ImmutableList;
-import com.truward.polymer.core.freezable.CannotBeFrozenException;
+import com.google.common.collect.ImmutableSet;
 import com.truward.polymer.core.naming.FqName;
 import com.truward.polymer.core.freezable.Freezable;
 import com.truward.polymer.core.freezable.FreezableSupport;
@@ -9,7 +9,9 @@ import com.truward.polymer.core.freezable.FreezableSupport;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class holder, that contains java code objects
@@ -37,6 +39,30 @@ public final class Jco {
   }
 
   public interface Comment extends Expr {
+    @Nonnull
+    List<Expr> getExprs();
+
+    void addExpr(@Nonnull Expr expr);
+  }
+
+  public static final class SimpleComment implements Comment {
+    private List<Expr> exprs = new ArrayList<>();
+
+    @Nonnull
+    @Override
+    public List<Expr> getExprs() {
+      return ImmutableList.copyOf(exprs);
+    }
+
+    @Override
+    public void addExpr(@Nonnull Expr expr) {
+      exprs.add(expr);
+    }
+
+    @Override
+    public void freeze() {
+      exprs = ImmutableList.copyOf(exprs);
+    }
   }
 
 
@@ -68,6 +94,7 @@ public final class Jco {
   public enum DefaultModifiers implements Modifier {
     PUBLIC("public"),
     PRIVATE("public"),
+    STATIC("static"),
     FINAL("final");
 
     @Nonnull
@@ -116,43 +143,60 @@ public final class Jco {
     }
   }
 
-  public static class Annotated<TSelf> extends FreezableSupport implements Node {
-    private List<Modifier> modifiers = new ArrayList<>();
+  public interface Annotated extends Node {
+    @Nonnull
+    Set<Modifier> getModifiers();
+
+    @Nonnull
+    List<Annotation> getAnnotations();
+  }
+
+  public interface ClassMember extends Annotated {
+    @Nonnull
+    String getName();
+  }
+
+  public static class AnnotatedSupport extends FreezableSupport implements Annotated {
+    private Set<Modifier> modifiers = new LinkedHashSet<>();
     private List<Annotation> annotations = new ArrayList<>();
-    private String name;
+    private Comment comment;
 
+    @Override
     @Nonnull
-    public final List<Modifier> getModifiers() {
-      return ImmutableList.copyOf(modifiers);
+    public final Set<Modifier> getModifiers() {
+      return ImmutableSet.copyOf(modifiers);
     }
 
     @SuppressWarnings("unchecked")
-    public final TSelf addModifier(@Nonnull Modifier modifier) {
+    public final void addModifier(@Nonnull Modifier modifier) {
       modifiers.add(modifier);
-      return (TSelf) this;
     }
 
+    @Override
     @Nonnull
-    public String getName() {
-      if (name == null) {
-        throw new NullPointerException("Name is null");
-      }
-      return name;
+    public List<Annotation> getAnnotations() {
+      return ImmutableList.copyOf(annotations);
     }
 
-    @SuppressWarnings("unchecked")
-    public TSelf setName(@Nonnull String name) {
+    public void addAnnotation(@Nonnull Annotation annotation) {
+      this.annotations.add(annotation);
+    }
+
+    @Nullable
+    public Comment getComment() {
+      return comment;
+    }
+
+    public void setComment(@Nullable Comment comment) {
       checkNonFrozen();
-      this.name = name;
-      return (TSelf) this;
+      this.comment = comment;
     }
 
     @Override
     public final void freeze() {
       onFreezeBegin();
-      cannotBeFrozenIf(name == null, "Name can not be null");
       super.freeze();
-      modifiers = ImmutableList.copyOf(modifiers);
+      modifiers = ImmutableSet.copyOf(modifiers);
       annotations = ImmutableList.copyOf(annotations);
       onFreeze();
     }
@@ -166,8 +210,58 @@ public final class Jco {
     }
   }
 
-  public static final class ClassDecl extends Annotated<ClassDecl> {
+  public static final class ClassDecl extends AnnotatedSupport implements ClassMember {
+    private FqName fqName;
 
+    @Nonnull
+    @Override
+    public String getName() {
+      return getFqName().getName();
+    }
+
+    @Nonnull
+    public FqName getFqName() {
+      if (fqName == null) {
+        throw new NullPointerException("Name is null");
+      }
+      return fqName;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void setFqName(@Nonnull FqName name) {
+      checkNonFrozen();
+      this.fqName = name;
+    }
+
+    @Override
+    protected void onFreezeBegin() {
+      cannotBeFrozenIf(fqName == null, "Fully qualified name is not specified");
+    }
+  }
+
+  public static abstract class SimpleClassMember<TSelf> extends AnnotatedSupport implements ClassMember {
+    private String name;
+    private TypeExpr typeExpr;
+
+    @Nonnull
+    public String getName() {
+      if (name == null) {
+        throw new NullPointerException("Name is null");
+      }
+      return name;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void setName(@Nonnull String name) {
+      checkNonFrozen();
+      this.name = name;
+    }
+
+    @Override
+    protected void onFreezeBegin() {
+      cannotBeFrozenIf(name == null, "Name is not specified");
+      cannotBeFrozenIf(typeExpr == null, "Type is not specified");
+    }
   }
 
 
@@ -175,6 +269,7 @@ public final class Jco {
     private Comment moduleComment;
     private FqName packageName;
     private List<Import> imports = new ArrayList<>();
+    private List<ClassDecl> classDecls = new ArrayList<>();
 
     @Nullable
     public Comment getModuleComment() {
