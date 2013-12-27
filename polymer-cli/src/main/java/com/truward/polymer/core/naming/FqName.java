@@ -13,6 +13,9 @@ public final class FqName {
   private final String name;
   private final FqName parent;
 
+  /** Precalculated hash code, optimized for immutable FqName */
+  private transient int hash;
+
   public static FqName parse(String fqName) {
     int dotIndex;
     int nextIndex = 0;
@@ -87,11 +90,17 @@ public final class FqName {
 
   @Override
   public int hashCode() {
+    if (hash != 0) {
+      return hash; // optimized access
+    }
+
     int result = name.hashCode();
     for (FqName i = parent; i != null; i = i.parent) {
       result = 31 * result + i.name.hashCode();
     }
-    return result;
+
+    hash = result;
+    return hash;
   }
 
 
@@ -101,7 +110,7 @@ public final class FqName {
       return getName();
     }
 
-    // calc symbols count
+    // calc symbols count to avoid redundant memory allocations
     int symCount = 0;
     FqName i = this;
     for (;; i = i.getParent()) {
@@ -132,7 +141,7 @@ public final class FqName {
 
   public void appendTo(Appendable appendable, char separator) throws IOException {
     if (!isRoot()) {
-      getParent().appendTo(appendable);
+      getParent().appendTo(appendable, separator);
       appendable.append(separator);
     }
     appendable.append(getName());
