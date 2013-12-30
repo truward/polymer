@@ -1,7 +1,7 @@
-package com.truward.polymer.core.generator.support;
+package com.truward.polymer.core.output;
 
-import com.truward.polymer.core.generator.OutputStreamProvider;
-import com.truward.polymer.core.naming.FqName;
+import com.truward.polymer.core.output.OutputStreamProvider;
+import com.truward.polymer.code.naming.FqName;
 import com.truward.polymer.core.output.FileType;
 
 import javax.annotation.Nonnull;

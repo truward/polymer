@@ -1,7 +1,7 @@
 package com.truward.polymer.domain.synthesis;
 
 import com.google.common.collect.ImmutableList;
-import com.truward.polymer.core.naming.FqName;
+import com.truward.polymer.code.naming.FqName;
 import com.truward.polymer.testutil.MemOutputStreamProvider;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;

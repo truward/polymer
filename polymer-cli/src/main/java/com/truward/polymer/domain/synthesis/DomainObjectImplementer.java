@@ -1,8 +1,8 @@
 package com.truward.polymer.domain.synthesis;
 
 import com.truward.polymer.core.generator.JavaCodeGenerator;
-import com.truward.polymer.core.generator.OutputStreamProvider;
-import com.truward.polymer.core.naming.FqName;
+import com.truward.polymer.core.output.OutputStreamProvider;
+import com.truward.polymer.code.naming.FqName;
 import com.truward.polymer.core.output.DefaultFileTypes;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;

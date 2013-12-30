@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.truward.polymer.core.generator.model.ClassRef;
 import com.truward.polymer.core.generator.model.CodeObjectVisitor;
 import com.truward.polymer.core.generator.support.IndentationAwarePrinter;
-import com.truward.polymer.core.naming.FqName;
+import com.truward.polymer.code.naming.FqName;
 
 import java.io.PrintStream;
 import java.lang.reflect.Type;

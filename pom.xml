@@ -10,6 +10,7 @@
 
   <modules>
     <module>polymer-domain</module>
+    <module>polymer-code</module>
     <module>polymer-cli</module>
   </modules>
 
@@ -40,6 +41,12 @@
       <dependency>
         <groupId>com.truward.polymer</groupId>
         <artifactId>polymer-domain</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.truward.polymer</groupId>
+        <artifactId>polymer-code</artifactId>
         <version>${project.version}</version>
       </dependency>
 

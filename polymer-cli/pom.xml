@@ -29,6 +29,11 @@
       <artifactId>polymer-domain</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.truward.polymer</groupId>
+      <artifactId>polymer-code</artifactId>
+    </dependency>
+
     <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
