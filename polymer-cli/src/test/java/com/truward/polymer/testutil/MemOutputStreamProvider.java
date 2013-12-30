@@ -1,8 +1,8 @@
 package com.truward.polymer.testutil;
 
 import com.google.common.collect.ImmutableMap;
-import com.truward.polymer.core.generator.OutputStreamProvider;
-import com.truward.polymer.core.naming.FqName;
+import com.truward.polymer.core.output.OutputStreamProvider;
+import com.truward.polymer.code.naming.FqName;
 import com.truward.polymer.core.output.FileType;
 
 import javax.annotation.Nonnull;

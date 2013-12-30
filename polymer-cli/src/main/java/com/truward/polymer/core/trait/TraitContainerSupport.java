@@ -1,7 +1,7 @@
 package com.truward.polymer.core.trait;
 
 import com.google.common.collect.ImmutableMap;
-import com.truward.polymer.core.freezable.Freezable;
+import com.truward.polymer.code.freezable.Freezable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

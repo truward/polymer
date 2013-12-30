@@ -1,10 +1,10 @@
-package com.truward.polymer.core.generator.model;
+package com.truward.polymer.code;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.truward.polymer.core.naming.FqName;
-import com.truward.polymer.core.freezable.Freezable;
-import com.truward.polymer.core.freezable.FreezableSupport;
+import com.truward.polymer.code.freezable.Freezable;
+import com.truward.polymer.code.freezable.FreezableSupport;
+import com.truward.polymer.code.naming.FqName;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

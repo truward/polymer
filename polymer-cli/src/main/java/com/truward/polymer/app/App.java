@@ -1,12 +1,11 @@
 package com.truward.polymer.app;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.io.Files;
 import com.truward.di.InjectionContext;
 import com.truward.polymer.app.util.ClassScanner;
 import com.truward.polymer.core.driver.SpecificationHandler;
-import com.truward.polymer.core.generator.OutputStreamProvider;
-import com.truward.polymer.core.generator.support.FSOutputStreamProvider;
+import com.truward.polymer.core.output.OutputStreamProvider;
+import com.truward.polymer.core.output.FSOutputStreamProvider;
 import com.truward.polymer.domain.analysis.DomainImplTargetProvider;
 import com.truward.polymer.domain.synthesis.DomainObjectImplementer;
 

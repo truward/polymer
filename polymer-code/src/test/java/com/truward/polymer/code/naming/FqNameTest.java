@@ -1,4 +1,4 @@
-package com.truward.polymer.core.naming;
+package com.truward.polymer.code.naming;
 
 import org.junit.Test;
 
