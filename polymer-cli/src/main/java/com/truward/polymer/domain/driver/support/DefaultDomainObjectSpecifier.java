@@ -80,15 +80,17 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   public DomainObjectSpecifier isNullable(Object field) {
     checkSpecStateAndField();
     try {
-      if (!currentField.isNullableUndecided()) {
-        if (currentField.isNullable()) {
-          log.warn("Duplicate nullability specifier");
-          return this;
-        }
-        throw new UnsupportedOperationException("Nullability has already been specified");
+      // TODO: simplify?
+      if (currentField.hasTrait(SimpleDomainFieldTrait.NONNULL)) {
+        throw new RuntimeException("Can't designate field as nullable which is already specified as nonnull");
       }
 
-      currentField.setNullable(true);
+      if (currentField.hasTrait(SimpleDomainFieldTrait.NULLABLE)) {
+        log.warn("Duplicate nullability specifier");
+        return this;
+      }
+
+      currentField.putTrait(SimpleDomainFieldTrait.NULLABLE);
     } finally {
       currentField = null;
     }
@@ -100,8 +102,7 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   @Nonnull
   public DomainObjectSpecifier hasLength(String field) {
     checkSpecStateAndField();
-    // TODO: hasLength, check return type
-    // TODO: tear-off constraint to field?
+    currentField.putTrait(SimpleDomainFieldTrait.HAS_LENGTH); // TODO: check type
     return this;
   }
 
@@ -109,7 +110,8 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   @Nonnull
   public DomainObjectSpecifier isNonNegative(int field) {
     checkSpecStateAndField();
-    // TODO: isNonNegative
+    // TODO: check type
+    currentField.putTrait(SimpleDomainFieldTrait.NON_NEGATIVE);
     return this;
   }
 
