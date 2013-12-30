@@ -78,41 +78,25 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   @Override
   @Nonnull
   public DomainObjectSpecifier isNullable(Object field) {
-    checkSpecStateAndField();
-    try {
-      // TODO: simplify?
-      if (currentField.hasTrait(SimpleDomainFieldTrait.NONNULL)) {
-        throw new RuntimeException("Can't designate field as nullable which is already specified as nonnull");
-      }
+    return setupTrait(SimpleDomainFieldTrait.NULLABLE);
+  }
 
-      if (currentField.hasTrait(SimpleDomainFieldTrait.NULLABLE)) {
-        log.warn("Duplicate nullability specifier");
-        return this;
-      }
-
-      currentField.putTrait(SimpleDomainFieldTrait.NULLABLE);
-    } finally {
-      currentField = null;
-    }
-
-    return this;
+  @Nonnull
+  @Override
+  public DomainObjectSpecifier isNonNull(Object field) {
+    return setupTrait(SimpleDomainFieldTrait.NONNULL);
   }
 
   @Override
   @Nonnull
   public DomainObjectSpecifier hasLength(String field) {
-    checkSpecStateAndField();
-    currentField.putTrait(SimpleDomainFieldTrait.HAS_LENGTH); // TODO: check type
-    return this;
+    return setupTrait(SimpleDomainFieldTrait.HAS_LENGTH);
   }
 
   @Override
   @Nonnull
   public DomainObjectSpecifier isNonNegative(int field) {
-    checkSpecStateAndField();
-    // TODO: check type
-    currentField.putTrait(SimpleDomainFieldTrait.NON_NEGATIVE);
-    return this;
+    return setupTrait(SimpleDomainFieldTrait.NON_NEGATIVE);
   }
 
   @Override
@@ -129,6 +113,18 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   //
   // Private
   //
+
+  private DomainObjectSpecifier setupTrait(@Nonnull SimpleDomainFieldTrait fieldTrait) {
+    checkSpecStateAndField();
+    try {
+      fieldTrait.verifyCompatibility(currentField);
+      currentField.putTrait(fieldTrait);
+    } finally {
+      currentField = null;
+    }
+
+    return this;
+  }
 
   private void checkSpecStateAndField() {
     checkSpecState();
