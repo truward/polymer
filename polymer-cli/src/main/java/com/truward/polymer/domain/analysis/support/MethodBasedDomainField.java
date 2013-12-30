@@ -2,6 +2,7 @@ package com.truward.polymer.domain.analysis.support;
 
 import com.truward.polymer.core.trait.TraitContainerSupport;
 import com.truward.polymer.domain.analysis.DomainField;
+import com.truward.polymer.domain.analysis.SimpleDomainFieldTrait;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
@@ -16,7 +17,6 @@ public final class MethodBasedDomainField extends TraitContainerSupport implemen
   private final String name;
   private final Method originMethod;
   private final String getterName;
-  private Boolean nullable;
 
   MethodBasedDomainField(@Nonnull String name, @Nonnull Method originMethod) {
     this.name = name;
@@ -25,7 +25,7 @@ public final class MethodBasedDomainField extends TraitContainerSupport implemen
 
     // all primitive types are not nullable
     if (getFieldType() instanceof Class && ((Class) getFieldType()).isPrimitive()) {
-      setNullable(false);
+      putTrait(SimpleDomainFieldTrait.NONNULL);
     }
   }
 
@@ -45,27 +45,6 @@ public final class MethodBasedDomainField extends TraitContainerSupport implemen
   @Nonnull
   public Type getFieldType() {
     return originMethod.getGenericReturnType();
-  }
-
-  @Override
-  public boolean isNullable() {
-    if (this.nullable == null) {
-      throw new IllegalStateException("Nullable value is not known");
-    }
-    return nullable;
-  }
-
-  @Override
-  public boolean isNullableUndecided() {
-    return nullable == null;
-  }
-
-  @Override
-  public void setNullable(boolean nullable) {
-    if (this.nullable != null) {
-      throw new IllegalStateException("Unable to assign nullable value twice");
-    }
-    this.nullable = nullable;
   }
 
   @Override

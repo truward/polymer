@@ -17,6 +17,6 @@ public final class TypeUtil {
   }
 
   public static boolean isNullCheckRequired(@Nonnull DomainField field) {
-    return field.isNullableUndecided() || field.isNullable();
+    return field.hasTrait(SimpleDomainFieldTrait.NONNULL) || !field.hasTrait(SimpleDomainFieldTrait.NULLABLE);
   }
 }

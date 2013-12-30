@@ -22,6 +22,11 @@ public abstract class TraitContainerSupport implements TraitContainer, Freezable
     return key.getTraitClass().cast(result);
   }
 
+  @Override
+  public boolean hasTrait(@Nonnull TraitKey<?> key) {
+    return traitMap.containsKey(key);
+  }
+
   @Nullable
   @Override
   public <T extends Trait> Trait putTrait(@Nonnull T trait) {
