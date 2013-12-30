@@ -1,7 +1,6 @@
 package com.truward.polymer.domain;
 
 import javax.annotation.Nonnull;
-import java.lang.annotation.Annotation;
 
 /**
  * Specification service for configuring domain object generation for the given classes.
@@ -21,6 +20,9 @@ public interface DomainObjectSpecifier {
    */
   @Nonnull
   DomainObjectSpecifier isNullable(Object field);
+
+  @Nonnull
+  DomainObjectSpecifier isNonNull(Object field);
 
   @Nonnull
   DomainObjectSpecifier hasLength(String field);
