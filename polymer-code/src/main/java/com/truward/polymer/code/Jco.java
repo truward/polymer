@@ -2,6 +2,7 @@ package com.truward.polymer.code;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.truward.polymer.code.freezable.EmptyFreezable;
 import com.truward.polymer.code.freezable.Freezable;
 import com.truward.polymer.code.freezable.FreezableSupport;
 import com.truward.polymer.code.naming.FqName;
@@ -32,31 +33,100 @@ public final class Jco {
   public interface Expr extends Node {
   }
 
+  public static final class CharExpr extends EmptyFreezable implements Expr {
+    private final char ch;
+    private static final CharExpr[] CACHED = new CharExpr[128];
+
+    static {
+      for (int i = 0; i < CACHED.length; ++i) {
+        CACHED[i] = new CharExpr((char) i);
+      }
+    }
+
+    public CharExpr(char ch) {
+      this.ch = ch;
+    }
+
+    public static CharExpr valueOf(char ch) {
+      if (ch >= 0 && ch < CACHED.length) {
+        return CACHED[ch];
+      }
+
+      return new CharExpr(ch);
+    }
+
+    public char getCharacter() {
+      return ch;
+    }
+  }
+
+  public static final class Text extends EmptyFreezable implements Expr {
+    private final String text;
+
+    public Text(@Nonnull String text) {
+      this.text = text;
+    }
+
+    public String getText() {
+      return text;
+    }
+  }
+
+  public static final class Value extends EmptyFreezable implements Expr {
+    private final Object value;
+
+    public Value(Object value) {
+      this.value = value;
+    }
+
+    public Object getValue() {
+      return value;
+    }
+  }
+
   public interface TypeExpr extends Node {
   }
 
   public interface ClassRef extends TypeExpr {
   }
 
-  public interface Comment extends Expr {
-    @Nonnull
-    List<Expr> getExprs();
+  public static final class ClassDeclRef extends EmptyFreezable implements ClassRef {
+    private final ClassDecl classDecl;
 
-    void addExpr(@Nonnull Expr expr);
+    public ClassDeclRef(@Nonnull ClassDecl classDecl) {
+      this.classDecl = classDecl;
+    }
+
+    @Nonnull
+    public ClassDecl getClassDecl() {
+      return classDecl;
+    }
   }
 
-  public static final class SimpleComment implements Comment {
+  public static final class Comment extends FreezableSupport implements Node {
     private List<Expr> exprs = new ArrayList<>();
+    private boolean multiline;
 
     @Nonnull
-    @Override
     public List<Expr> getExprs() {
       return ImmutableList.copyOf(exprs);
     }
 
-    @Override
     public void addExpr(@Nonnull Expr expr) {
       exprs.add(expr);
+    }
+
+    public void addExprs(@Nonnull List<Expr> exprs) {
+      exprs.addAll(exprs);
+    }
+
+    public boolean isMultiline() {
+      return multiline;
+    }
+
+    public void setMultiline(boolean multiline) {
+      checkNonFrozen();
+      this.multiline = multiline;
     }
 
     @Override
@@ -67,7 +137,6 @@ public final class Jco {
 
 
   public static final class Import {
-    @Nonnull
     private final FqName qualifier;
     private final boolean isStatic;
 
@@ -151,15 +220,29 @@ public final class Jco {
     List<Annotation> getAnnotations();
   }
 
-  public interface ClassMember extends Annotated {
-    @Nonnull
-    String getName();
+  public static interface Host extends Node {
   }
 
-  public static class AnnotatedSupport extends FreezableSupport implements Annotated {
+  public static abstract class ClassMember extends FreezableSupport implements Annotated {
     private Set<Modifier> modifiers = new LinkedHashSet<>();
     private List<Annotation> annotations = new ArrayList<>();
     private Comment comment;
+    private TypeExpr typeExpr;
+    private String name;
+    private Host parent;
+
+    @Nonnull
+    public final String getName() {
+      if (name == null) {
+        throw new NullPointerException("Name is null");
+      }
+      return name;
+    }
+
+    public final void setName(@Nonnull String name) {
+      checkNonFrozen();
+      this.name = name;
+    }
 
     @Override
     @Nonnull
@@ -167,7 +250,6 @@ public final class Jco {
       return ImmutableSet.copyOf(modifiers);
     }
 
-    @SuppressWarnings("unchecked")
     public final void addModifier(@Nonnull Modifier modifier) {
       modifiers.add(modifier);
     }
@@ -192,6 +274,33 @@ public final class Jco {
       this.comment = comment;
     }
 
+    @Nonnull
+    public TypeExpr getTypeExpr() {
+      if (typeExpr == null) {
+        throw new RuntimeException("Type expr has not been assigned yet");
+      }
+
+      return typeExpr;
+    }
+
+    public void setTypeExpr(@Nonnull TypeExpr typeExpr) {
+      checkNonFrozen();
+      this.typeExpr = typeExpr;
+    }
+
+    @Nonnull
+    public Host getParent() {
+      if (parent == null) {
+        throw new RuntimeException("Parent has not been assigned yet");
+      }
+      return parent;
+    }
+
+    public void setParent(@Nonnull Host parent) {
+      checkNonFrozen();
+      this.parent = parent;
+    }
+
     @Override
     public final void freeze() {
       onFreezeBegin();
@@ -202,7 +311,9 @@ public final class Jco {
     }
 
     protected void onFreezeBegin() {
-      // do nothing
+      cannotBeFrozenIf(typeExpr == null, "Type expr has not been assigned yet");
+      cannotBeFrozenIf(name == null, "Name is not specified");
+      cannotBeFrozenIf(parent == null, "Name is not specified");
     }
 
     protected void onFreeze() {
@@ -210,62 +321,17 @@ public final class Jco {
     }
   }
 
-  public static final class ClassDecl extends AnnotatedSupport implements ClassMember {
-    private FqName fqName;
-
-    @Nonnull
-    @Override
-    public String getName() {
-      return getFqName().getName();
-    }
-
-    @Nonnull
-    public FqName getFqName() {
-      if (fqName == null) {
-        throw new NullPointerException("Name is null");
-      }
-      return fqName;
-    }
-
-    @SuppressWarnings("unchecked")
-    public void setFqName(@Nonnull FqName name) {
-      checkNonFrozen();
-      this.fqName = name;
-    }
-
-    @Override
-    protected void onFreezeBegin() {
-      cannotBeFrozenIf(fqName == null, "Fully qualified name is not specified");
-    }
+  public static final class ClassDecl extends ClassMember implements Host {
   }
 
-  public static abstract class SimpleClassMember<TSelf> extends AnnotatedSupport implements ClassMember {
-    private String name;
-    private TypeExpr typeExpr;
+  public static final class Var extends ClassMember {
+  }
 
-    @Nonnull
-    public String getName() {
-      if (name == null) {
-        throw new NullPointerException("Name is null");
-      }
-      return name;
-    }
-
-    @SuppressWarnings("unchecked")
-    public void setName(@Nonnull String name) {
-      checkNonFrozen();
-      this.name = name;
-    }
-
-    @Override
-    protected void onFreezeBegin() {
-      cannotBeFrozenIf(name == null, "Name is not specified");
-      cannotBeFrozenIf(typeExpr == null, "Type is not specified");
-    }
+  public static final class Method extends ClassMember implements Host {
   }
 
 
-  public static final class ClassModule extends FreezableSupport implements Node {
+  public static final class ClassModule extends FreezableSupport implements Host {
     private Comment moduleComment;
     private FqName packageName;
     private List<Import> imports = new ArrayList<>();
@@ -276,11 +342,9 @@ public final class Jco {
       return moduleComment;
     }
 
-    @Nonnull
-    public ClassModule setModuleComment(@Nullable Comment moduleComment) {
+    public void setModuleComment(@Nullable Comment moduleComment) {
       checkNonFrozen();
       this.moduleComment = moduleComment;
-      return this;
     }
 
     @Nullable
@@ -288,34 +352,39 @@ public final class Jco {
       return packageName;
     }
 
-    @Nonnull
-    public ClassModule setPackageName(@Nullable FqName packageName) {
+    public void setPackageName(@Nullable FqName packageName) {
       checkNonFrozen();
       this.packageName = packageName;
-      return this;
     }
 
     @Nonnull
     public List<Import> getImports() {
-      return imports;
+      return ImmutableList.copyOf(imports);
     }
 
-    @Nonnull
-    public ClassModule addImport(@Nonnull FqName importName) {
-      return addImport(importName, false);
+    public void addImport(@Nonnull FqName importName) {
+      addImport(importName, false);
     }
 
-    @Nonnull
-    public ClassModule addImport(@Nonnull FqName importName, boolean isStatic) {
+    public void addImport(@Nonnull FqName importName, boolean isStatic) {
       checkNonFrozen();
       imports.add(new Import(importName, isStatic));
-      return this;
+    }
+
+    @Nonnull
+    public List<ClassDecl> getClassDecls() {
+      return ImmutableList.copyOf(classDecls);
+    }
+
+    public void addClassDecls(@Nonnull ClassDecl classDecl) {
+      this.classDecls.add(classDecl);
     }
 
     @Override
     public void freeze() {
       super.freeze();
       imports = ImmutableList.copyOf(imports);
+      classDecls = ImmutableList.copyOf(classDecls);
     }
   }
 
