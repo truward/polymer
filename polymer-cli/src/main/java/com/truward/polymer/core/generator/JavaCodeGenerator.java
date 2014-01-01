@@ -118,6 +118,10 @@ public final class JavaCodeGenerator {
     return this;
   }
 
+  public JavaCodeGenerator typedVar(Type type, String name) {
+    return type(type).ch(' ').text(name);
+  }
+
   public JavaCodeGenerator annotate(Class<?> annotationClass) {
     return ch('@').type(annotationClass).ch('\n');
   }

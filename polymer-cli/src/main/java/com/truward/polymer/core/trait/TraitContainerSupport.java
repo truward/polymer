@@ -18,7 +18,7 @@ public abstract class TraitContainerSupport implements TraitContainer, Freezable
   @Override
   public <T extends Trait> T findTrait(@Nonnull TraitKey<T> key) {
     final Trait result = traitMap.get(key);
-    assert result.getKey().equals(key);
+    assert result == null || result.getKey().equals(key);
     return key.getTraitClass().cast(result);
   }
 

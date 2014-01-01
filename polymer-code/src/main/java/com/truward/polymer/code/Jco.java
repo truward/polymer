@@ -15,7 +15,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class holder, that contains java code objects
+ * Class holder, that contains java code objects.
+ * TODO: 'freezable' will probably complicate the overall design - remove?
  *
  * @author Alexander Shabanov
  */
@@ -467,7 +468,7 @@ public final class Jco {
       return ImmutableList.copyOf(classDecls);
     }
 
-    public void addClassDecls(@Nonnull ClassDecl classDecl) {
+    public void addClassDecl(@Nonnull ClassDecl classDecl) {
       this.classDecls.add(classDecl);
     }
 

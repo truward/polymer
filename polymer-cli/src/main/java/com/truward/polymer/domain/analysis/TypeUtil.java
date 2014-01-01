@@ -1,6 +1,7 @@
 package com.truward.polymer.domain.analysis;
 
 import com.google.common.collect.ImmutableSet;
+import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

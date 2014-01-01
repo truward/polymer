@@ -7,6 +7,8 @@ import com.truward.polymer.core.output.DefaultFileTypes;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.DomainImplTarget;
+import com.truward.polymer.domain.analysis.trait.SetterTrait;
+import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -59,7 +61,7 @@ public final class DomainObjectImplementer {
 
     // fields
     for (final DomainField field : analysisResult.getDeclaredFields()) {
-      generateFinalField(field, generator);
+      generateField(field, generator);
     }
 
     // ctor
@@ -68,6 +70,11 @@ public final class DomainObjectImplementer {
     // getters
     for (final DomainField field : analysisResult.getDeclaredFields()) {
       generateFinalGetter(field, generator);
+    }
+
+    // setters
+    for (final DomainField field : analysisResult.getDeclaredFields()) {
+      generateFinalSetter(field, generator);
     }
 
     // toString
@@ -85,20 +92,43 @@ public final class DomainObjectImplementer {
     generator.ch('}'); // end of class body
   }
 
+  private static void generateFinalSetter(DomainField field, JavaCodeGenerator generator) {
+    final SetterTrait setterTrait = field.findTrait(SetterTrait.KEY);
+    if (setterTrait == null) {
+      // no setter
+      return;
+    }
+
+    final String fieldName = field.getFieldName();
+
+    generator.ch('\n')
+        .annotate(Override.class).text("public").ch(' ').text("final").ch(' ').type(field.getFieldType()).ch(' ')
+        .text(setterTrait.getSetterName()).ch('(');
+    // arg
+    generator.typedVar(field.getFieldType(), fieldName);
+    generator.ch(')', ' ', '{');
+    // impl
+    generator.thisMember(fieldName).ch(' ').text("=").ch(' ').text(fieldName).ch(';');
+    generator.ch('}');
+  }
+
   //
   // Private
   //
 
-  private static void generateFinalField(DomainField field, JavaCodeGenerator generator) {
-    generator.text("private").ch(' ').text("final").ch(' ').type(field.getFieldType()).ch(' ')
-        .text(field.getFieldName()).ch(';');
+  private static void generateField(DomainField field, JavaCodeGenerator generator) {
+    generator.text("private").ch(' ');
+    if (!field.hasTrait(SimpleDomainFieldTrait.MUTABLE)) {
+      generator.text("final").ch(' ');
+    }
+    generator.typedVar(field.getFieldType(), field.getFieldName()).ch(';');
   }
 
   private static void generateFinalGetter(DomainField field, JavaCodeGenerator generator) {
     generator.ch('\n')
         .annotate(Override.class).text("public").ch(' ').text("final").ch(' ').type(field.getFieldType()).ch(' ')
         .text(field.getGetterName()).ch('(', ')', ' ', '{');
-    generator.text("return").ch(' ').text("this").ch('.').text(field.getFieldName()).ch(';');
+    generator.text("return").ch(' ').thisMember(field.getFieldName()).ch(';');
     generator.ch('}');
   }
 
@@ -134,7 +164,7 @@ public final class DomainObjectImplementer {
 
     // body
     for (final DomainField field : analysisResult.getDeclaredFields()) {
-      generator.text("this").ch('.').text(field.getFieldName()).spText("=").text(field.getFieldName()).ch(';');
+      generator.thisMember(field.getFieldName()).spText("=").text(field.getFieldName()).ch(';');
     }
     generator.ch('}');
   }

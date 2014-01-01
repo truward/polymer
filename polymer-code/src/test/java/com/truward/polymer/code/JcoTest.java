@@ -17,7 +17,7 @@ public final class JcoTest {
     cd.setParent(m);
     cd.setName("Foo");
     cd.setTypeExpr(new Jco.ClassDeclRef(cd)); // always a reference to itself
-    m.addClassDecls(cd);
+    m.addClassDecl(cd);
 
     final JcoPrinter p = new JcoPrinter(System.out);
     p.print(m);

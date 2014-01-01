@@ -10,6 +10,7 @@ import com.truward.polymer.core.util.DefaultValues;
 import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.analysis.*;
+import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
