@@ -10,6 +10,7 @@ import com.truward.polymer.core.util.DefaultValues;
 import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.analysis.*;
+import com.truward.polymer.domain.analysis.trait.GetterTrait;
 import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,7 +155,8 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
       currentField = getField(currentAnalysisResult, new Predicate<DomainField>() {
         @Override
         public boolean apply(DomainField input) {
-          return methodName.equals(input.getGetterName());
+          final GetterTrait getterTrait = input.findTrait(GetterTrait.KEY);
+          return getterTrait != null && methodName.equals(getterTrait.getGetterName());
         }
       });
 

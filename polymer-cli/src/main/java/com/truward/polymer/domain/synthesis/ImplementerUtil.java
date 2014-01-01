@@ -35,7 +35,8 @@ public final class ImplementerUtil {
       }
 
       g.dot("append").ch('(', '\"').text(field.getFieldName()).text(": ").ch('\"', ')');
-      g.dot("append").ch('(').text(field.getGetterName()).ch('(', ')', ')', ';');
+      // TODO: another way to retrieve field - e.g. getter?
+      g.dot("append").ch('(').thisMember(field.getFieldName()).ch(')', ';');
     }
 
     // ==> result.append('}');

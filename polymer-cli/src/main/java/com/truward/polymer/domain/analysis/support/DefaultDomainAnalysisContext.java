@@ -3,6 +3,7 @@ package com.truward.polymer.domain.analysis.support;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
+import com.truward.polymer.domain.analysis.trait.GetterTrait;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
@@ -67,13 +68,19 @@ public final class DefaultDomainAnalysisContext implements DomainAnalysisContext
     return new DefaultDomainAnalysisResult(clazz, parents, declaredFields);
   }
 
-  private static DomainField inferField(Method method) {
-    if (method.getParameterTypes().length > 0) {
-      throw new RuntimeException("Unsupported method " + method + "with parameters in the domain object");
+  @Nonnull
+  private static DomainField inferField(@Nonnull Method method) {
+    final String methodName = method.getName();
+    if (NamingUtil.isJavaBeanGetter(methodName)) {
+      if (method.getParameterTypes().length > 0) {
+        throw new RuntimeException("Unsupported getter " + method + "with parameters in the domain object");
+      }
+
+      final DomainField result = new DefaultDomainField(NamingUtil.asFieldName(method.getName()), method);
+      result.putTrait(new GetterTrait(methodName));
+      return result;
     }
 
-    final String fieldName = NamingUtil.asFieldName(method.getName());
-
-    return new MethodBasedDomainField(fieldName, method);
+    throw new RuntimeException("Unknown method signature: " + method);
   }
 }
