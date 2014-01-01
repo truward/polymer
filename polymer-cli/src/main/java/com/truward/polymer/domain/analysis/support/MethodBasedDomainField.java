@@ -2,7 +2,7 @@ package com.truward.polymer.domain.analysis.support;
 
 import com.truward.polymer.core.trait.TraitContainerSupport;
 import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.analysis.SimpleDomainFieldTrait;
+import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;

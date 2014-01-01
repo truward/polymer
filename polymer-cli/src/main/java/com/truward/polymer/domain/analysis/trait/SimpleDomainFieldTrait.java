@@ -1,13 +1,13 @@
-package com.truward.polymer.domain.analysis;
+package com.truward.polymer.domain.analysis.trait;
 
-import com.google.common.collect.ImmutableSet;
 import com.truward.polymer.core.trait.Trait;
-import com.truward.polymer.core.trait.TraitContainer;
 import com.truward.polymer.core.trait.TraitKey;
+import com.truward.polymer.core.trait.TraitUtil;
+import com.truward.polymer.domain.analysis.DomainField;
+import com.truward.polymer.domain.analysis.TypeUtil;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Type;
-import java.util.Set;
 
 /**
  * @author Alexander Shabanov
@@ -20,21 +20,17 @@ public enum SimpleDomainFieldTrait implements Trait<SimpleDomainFieldTrait>, Tra
   NULLABLE {
     @Override
     public void verifyCompatibility(@Nonnull DomainField field) {
-      if (field.hasTrait(NONNULL)) {
-        throw new RuntimeException("Nullable trait can not be assigned to a field with the existing nonnull trait");
-      }
+      TraitUtil.incompatibleWith(this, field, NONNULL);
     }
   },
 
   /**
-   * Designates a non-nullable field
+   * Designates a non-nullable field.
    */
   NONNULL {
     @Override
     public void verifyCompatibility(@Nonnull DomainField field) {
-      if (field.hasTrait(NULLABLE)) {
-        throw new RuntimeException("Nonnull trait can not be assigned to a field with the existing nullable trait");
-      }
+      TraitUtil.incompatibleWith(this, field, NULLABLE);
     }
   },
 
@@ -43,7 +39,23 @@ public enum SimpleDomainFieldTrait implements Trait<SimpleDomainFieldTrait>, Tra
    * if applied given a List element the domain driver might pick <code>ArrayList</code> if mutable trait is assigned
    * or guava's <code>ImmutableList</code> if not.
    */
-  MUTABLE,
+  MUTABLE {
+    @Override
+    public void verifyCompatibility(@Nonnull DomainField field) {
+      TraitUtil.incompatibleWith(this, field, IMMUTABLE);
+    }
+  },
+
+  /**
+   * Explicitly designates an object to be immutable. All the attempts to specify setters to mutate object will result in
+   * error.
+   */
+  IMMUTABLE {
+    @Override
+    public void verifyCompatibility(@Nonnull DomainField field) {
+      TraitUtil.incompatibleWith(this, field, MUTABLE);
+    }
+  },
 
   /**
    * Designates a given field to be a non-negative one.
