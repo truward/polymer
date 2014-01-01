@@ -7,6 +7,7 @@ import com.truward.polymer.core.output.DefaultFileTypes;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.DomainImplTarget;
+import com.truward.polymer.domain.analysis.trait.GetterTrait;
 import com.truward.polymer.domain.analysis.trait.SetterTrait;
 import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;
 
@@ -101,13 +102,14 @@ public final class DomainObjectImplementer {
 
     final String fieldName = field.getFieldName();
 
+    // @Override public void set{FieldName}
     generator.ch('\n')
-        .annotate(Override.class).text("public").ch(' ').text("final").ch(' ').type(field.getFieldType()).ch(' ')
+        .annotate(Override.class).text("public").ch(' ').text("final").ch(' ').type(void.class).ch(' ')
         .text(setterTrait.getSetterName()).ch('(');
-    // arg
+    // arg - ({FieldType} {FieldName})
     generator.typedVar(field.getFieldType(), fieldName);
     generator.ch(')', ' ', '{');
-    // impl
+    // impl { this.{FieldName} = {FieldName}; }
     generator.thisMember(fieldName).ch(' ').text("=").ch(' ').text(fieldName).ch(';');
     generator.ch('}');
   }
@@ -125,9 +127,14 @@ public final class DomainObjectImplementer {
   }
 
   private static void generateFinalGetter(DomainField field, JavaCodeGenerator generator) {
+    final GetterTrait getterTrait = field.findTrait(GetterTrait.KEY);
+    if (getterTrait == null) {
+      return; // no getter trait
+    }
+
     generator.ch('\n')
         .annotate(Override.class).text("public").ch(' ').text("final").ch(' ').type(field.getFieldType()).ch(' ')
-        .text(field.getGetterName()).ch('(', ')', ' ', '{');
+        .text(getterTrait.getGetterName()).ch('(', ')', ' ', '{');
     generator.text("return").ch(' ').thisMember(field.getFieldName()).ch(';');
     generator.ch('}');
   }

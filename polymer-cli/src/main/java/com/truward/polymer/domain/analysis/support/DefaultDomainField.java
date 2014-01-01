@@ -13,15 +13,14 @@ import java.lang.reflect.Type;
  *
  * @author Alexander Shabanov
  */
-public final class MethodBasedDomainField extends TraitContainerSupport implements DomainField {
+public final class DefaultDomainField extends TraitContainerSupport implements DomainField {
   private final String name;
   private final Method originMethod;
-  private final String getterName;
 
-  MethodBasedDomainField(@Nonnull String name, @Nonnull Method originMethod) {
+  DefaultDomainField(@Nonnull String name, @Nonnull Method originMethod) {
     this.name = name;
     this.originMethod = originMethod;
-    this.getterName = NamingUtil.createGetterName(getFieldType(), getFieldName());
+    //this.getterName = NamingUtil.createGetterName(getFieldType(), getFieldName());
 
     // all primitive types are not nullable
     if (getFieldType() instanceof Class && ((Class) getFieldType()).isPrimitive()) {
@@ -33,12 +32,6 @@ public final class MethodBasedDomainField extends TraitContainerSupport implemen
   @Nonnull
   public String getFieldName() {
     return name;
-  }
-
-  @Override
-  @Nonnull
-  public String getGetterName() {
-    return getterName;
   }
 
   @Override
