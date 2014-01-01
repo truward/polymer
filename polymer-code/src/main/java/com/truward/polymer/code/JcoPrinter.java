@@ -12,6 +12,7 @@ import java.io.PrintStream;
  */
 public final class JcoPrinter {
   private IndentationAwarePrinter printer;
+  private final PrintVisitor printVisitor = new PrintVisitor();
 
   public JcoPrinter(@Nonnull PrintStream writer) {
     this.printer = new IndentationAwarePrinter(writer);
@@ -87,12 +88,39 @@ public final class JcoPrinter {
       return;
     }
 
+    final boolean isMultiline = comment.isMultiline();
+    if (isMultiline) {
+      printer.printText("/**").printChar('\n');
+    }
+    final String prefix = isMultiline ? " * " : "// ";
+    for (final Jco.Expr expr : comment.getExprs()) {
+      printer.printText(prefix);
+      print(expr);
+      printer.printChar('\n');
+    }
+
+    if (isMultiline) {
+      printer.printText(" */").printChar('\n');
+    }
+
     // TODO: impl
     printer.printText("/* TODO: impl!!! */").printChar('\n');
   }
 
-  private final class PrintVisitor extends JcoVisitor {
+  private void print(@Nonnull Jco.Node node) {
+    PrintVisitor.apply(printVisitor, node);
+  }
 
+  private final class PrintVisitor extends JcoVisitor {
+    @Override
+    public void visitCharExpr(@Nonnull Jco.CharExpr node) {
+      printer.printChar(node.getCharacter());
+    }
+
+    @Override
+    public void visitText(@Nonnull Jco.Text node) {
+      printer.printText(node.getText());
+    }
   }
 
   private static final class IndentationAwarePrinter {
@@ -107,43 +135,6 @@ public final class JcoPrinter {
       this.out = out;
       indentUnit = DEFAULT_INDENT_UNIT; // TODO: parameterizable indentation level
     }
-
-//    @Override
-//    public void visitCharSequence(CharSequence obj) {
-//      printText(obj);
-//    }
-//
-//    @Override
-//    public void visitChar(char obj) {
-//      printChar(obj);
-//    }
-//
-//    @Override
-//    public void visitList(List<?> obj) {
-//      for (final Object child : obj) {
-//        CodeObjectVisitor.apply(this, child);
-//      }
-//    }
-//
-//    @Override
-//    public void visitSingleLineComment(SingleLineComment node) {
-//      for (final Object line : node.getLines()) {
-//        printText("// ");
-//        CodeObjectVisitor.apply(this, line);
-//        printChar('\n');
-//      }
-//    }
-//
-//    @Override
-//    public void visitCommentBlock(CommentBlock node) {
-//      printText("/**").printChar('\n');
-//      for (final Object line : node.getLines()) {
-//        printText(" * ");
-//        CodeObjectVisitor.apply(this, line);
-//        printChar('\n');
-//      }
-//      printText(" */").printChar('\n');
-//    }
 
     public IndentationAwarePrinter printText(CharSequence text) {
       indentIfNeeded();

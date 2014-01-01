@@ -87,7 +87,14 @@ public final class Jco {
   public interface TypeExpr extends Node {
   }
 
-  public interface ClassRef extends TypeExpr {
+  public interface GenericArg extends Node {
+  }
+
+  // Generic type variable - e.g. '?' or 'T' in List<?> or List<T>
+  public interface GenericTypeVar extends Node {
+  }
+
+  public interface ClassRef extends TypeExpr, GenericArg {
   }
 
   public static final class ClassDeclRef extends EmptyFreezable implements ClassRef {
@@ -100,6 +107,90 @@ public final class Jco {
     @Nonnull
     public ClassDecl getClassDecl() {
       return classDecl;
+    }
+  }
+
+  public static final class JavaClassRef extends EmptyFreezable implements ClassRef {
+    private final Class<?> javaClass;
+
+    public JavaClassRef(@Nonnull Class<?> javaClass) {
+      this.javaClass = javaClass;
+    }
+
+    @Nonnull
+    public Class<?> getJavaClass() {
+      return javaClass;
+    }
+  }
+
+  public static final class GenericTypeExpr extends EmptyFreezable implements TypeExpr {
+    private final ClassRef classRef;
+    private final List<GenericArg> args;
+
+    public GenericTypeExpr(@Nonnull ClassRef classRef, @Nonnull List<GenericArg> args) {
+      this.classRef = classRef;
+      this.args = ImmutableList.copyOf(args);
+    }
+
+    @Nonnull
+    public ClassRef getClassRef() {
+      return classRef;
+    }
+
+    @Nonnull
+    public List<GenericArg> getArgs() {
+      return args;
+    }
+  }
+
+  public static final class Wildcard extends EmptyFreezable implements GenericArg, GenericTypeVar {
+    private static final Wildcard INSTANCE = new Wildcard();
+
+    private Wildcard() {}
+
+    public static Wildcard getInstance() {
+      return INSTANCE;
+    }
+  }
+
+  public static final class TypeParam extends EmptyFreezable implements GenericArg, GenericTypeVar {
+    private final String name;
+
+    public TypeParam(@Nonnull String name) {
+      this.name = name;
+    }
+
+    public String getName() {
+      return name;
+    }
+  }
+
+  public static final class GenericArgExpr extends EmptyFreezable implements GenericArg {
+    public static enum Kind {
+      EXTENDS,
+      IMPLEMENTS
+    }
+
+    private final GenericTypeVar typeVar; // e.g. ? or T
+    private final Kind kind;              // e.g. extends or implements
+    private final ClassRef classRef;      // e.g. Number
+
+    public GenericArgExpr(@Nonnull GenericTypeVar typeVar, @Nonnull Kind kind, @Nonnull ClassRef classRef) {
+      this.typeVar = typeVar;
+      this.kind = kind;
+      this.classRef = classRef;
+    }
+
+    public GenericTypeVar getTypeVar() {
+      return typeVar;
+    }
+
+    public Kind getKind() {
+      return kind;
+    }
+
+    public ClassRef getClassRef() {
+      return classRef;
     }
   }
 
