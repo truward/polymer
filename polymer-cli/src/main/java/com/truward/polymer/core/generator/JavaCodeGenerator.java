@@ -1,14 +1,16 @@
 package com.truward.polymer.core.generator;
 
 import com.google.common.collect.ImmutableList;
-import com.truward.polymer.core.generator.model.ClassRef;
-import com.truward.polymer.core.generator.model.CodeObjectVisitor;
-import com.truward.polymer.core.generator.support.IndentationAwarePrinter;
 import com.truward.polymer.code.naming.FqName;
+import com.truward.polymer.core.generator.model.CodeObjectPrinter;
+import com.truward.polymer.core.generator.model.SingleLineComment;
+import com.truward.polymer.core.generator.support.IndentationAwarePrinter;
 
+import javax.annotation.Nonnull;
 import java.io.PrintStream;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Alexander Shabanov
@@ -16,7 +18,8 @@ import java.util.*;
 public final class JavaCodeGenerator {
   private final List<Object> elements;
   private int importInsertIndex;
-  private final Map<Class<?>, ClassRef> classToStub = new HashMap<>(100);
+  private JavaTypeRefManager typeRefManager = new JavaTypeRefManager();
+
 
   public JavaCodeGenerator(int initialSize) {
     elements = new ArrayList<>(initialSize);
@@ -29,14 +32,14 @@ public final class JavaCodeGenerator {
 
   public void clear() {
     elements.clear();
-    classToStub.clear();
     importInsertIndex = -1;
+    typeRefManager.clear();
   }
 
-  public void printContents(PrintStream out) {
+  public void printContents(@Nonnull PrintStream out) {
     // now we need to generate imports
     assert importInsertIndex > 0;
-    final List<String> imports = getImportNames();
+    final List<String> imports = typeRefManager.getImportNames();
     int insertIndex = importInsertIndex;
     for (final String importedEntity : imports) {
       elements.add(insertIndex++, ImmutableList.of("import", ' ', importedEntity, ';'));
@@ -44,9 +47,9 @@ public final class JavaCodeGenerator {
     elements.add(insertIndex, '\n');
 
     // print elements
-    final IndentationAwarePrinter visitor = new IndentationAwarePrinter(out);
+    final CodeObjectPrinter printer = new IndentationAwarePrinter(out);
     for (final Object o : elements) {
-      CodeObjectVisitor.apply(visitor, o);
+      printer.print(o);
     }
   }
 
@@ -101,20 +104,7 @@ public final class JavaCodeGenerator {
   }
 
   public JavaCodeGenerator type(Type type) {
-    if (type instanceof Class) {
-      // non-generic type
-      final Class<?> clazz = (Class) type;
-      ClassRef classRef = classToStub.get(clazz);
-      if (classRef == null) {
-        classRef = new ClassRef(clazz);
-        classToStub.put(clazz, classRef);
-      }
-      elements.add(classRef);
-    } else {
-      // TODO: generic types
-      throw new UnsupportedOperationException("Unsupported type: " + type);
-    }
-
+    elements.add(typeRefManager.adaptType(type));
     return this;
   }
 
@@ -134,6 +124,11 @@ public final class JavaCodeGenerator {
   // Generates ["this", '.', member] sequence
   public JavaCodeGenerator thisMember(String memberName) {
     return member("this", memberName);
+  }
+
+  public JavaCodeGenerator singleLineComment(String... lines) {
+    elements.add(new SingleLineComment(ImmutableList.<Object>copyOf(lines)));
+    return this;
   }
 
   // Generates space-separated expressions
@@ -158,54 +153,5 @@ public final class JavaCodeGenerator {
   // Generates spaced text, i.e. [' ', expr, ' ']
   public JavaCodeGenerator spText(String expr) {
     return ch(' ').text(expr).ch(' ');
-  }
-
-  //
-  // Private
-  //
-
-  private List<String> getImportNames() {
-    final Map<String, ClassRef> simpleNameToRef = new HashMap<>(classToStub.size());
-
-    // add those referenced classes that are visible by default
-    for (final ClassRef classRef : classToStub.values()) {
-      final String simpleName = classRef.getSimpleName();
-      if (!classRef.isVisibleByDefault()) {
-        continue;
-      }
-
-      if (simpleNameToRef.containsKey(simpleName)) {
-        // theoretically can't happen
-        throw new IllegalStateException("Expectation failed: primitive builtin type duplicated");
-      }
-
-      simpleNameToRef.put(simpleName, classRef);
-    }
-
-    // add all the rest classes that might not be visible
-    for (final ClassRef classRef : classToStub.values()) {
-      if (classRef.isVisibleByDefault()) {
-        continue;
-      }
-
-      final String simpleName = classRef.getSimpleName();
-      if (simpleNameToRef.containsKey(simpleName)) {
-        assert !classRef.isSimpleNameEnabled();
-        continue;
-      }
-
-      classRef.setSimpleNameEnabled(true);
-      simpleNameToRef.put(simpleName, classRef);
-    }
-
-    final Set<String> importStatements = new TreeSet<>();
-    for (final ClassRef classRef : simpleNameToRef.values()) {
-      if (classRef.isVisibleByDefault() || !classRef.isSimpleNameEnabled()) {
-        continue;
-      }
-      importStatements.add(classRef.getQualifiedName());
-    }
-
-    return ImmutableList.copyOf(importStatements);
   }
 }

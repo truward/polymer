@@ -8,9 +8,11 @@ import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.code.naming.FqName;
 import com.truward.polymer.core.util.DefaultValues;
 import com.truward.polymer.domain.DomainObject;
+import com.truward.polymer.domain.DomainObjectSettings;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.analysis.*;
 import com.truward.polymer.domain.analysis.trait.GetterTrait;
+import com.truward.polymer.domain.analysis.trait.ImplementationNameTrait;
 import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,6 +114,12 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
     return ImmutableList.copyOf(implementationTargets);
   }
 
+  @Nonnull
+  @Override
+  public DomainObjectSettings getSettingsFor(@Nonnull Class<?> clazz) {
+    return new DefaultDomainObjectSettings(analysisContext.analyze(clazz));
+  }
+
   //
   // Private
   //
@@ -142,6 +150,25 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
 
     if (state != SpecificationState.RECORDING) {
       throw new IllegalStateException("Illegal specification state");
+    }
+  }
+
+  private static final class DefaultDomainObjectSettings implements DomainObjectSettings {
+
+    private final DomainAnalysisResult analysisResult;
+
+    private DefaultDomainObjectSettings(@Nonnull DomainAnalysisResult analysisResult) {
+      this.analysisResult = analysisResult;
+    }
+
+    @Override
+    public void assignBuilder(@Nonnull Class<?> builder) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setImplementationName(@Nonnull String implementationName) {
+      analysisResult.putTrait(new ImplementationNameTrait(implementationName));
     }
   }
 

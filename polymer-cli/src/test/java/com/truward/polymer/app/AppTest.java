@@ -2,8 +2,10 @@ package com.truward.polymer.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
+import com.truward.polymer.testspec.p1.UserRoleSpecification;
+import com.truward.polymer.testspec.p2.UserSpecification;
 import com.truward.polymer.testutil.MemOutputStreamProvider;
-import com.truward.polymer.testspec.p1.UserSpecification;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -29,7 +31,14 @@ public class AppTest {
   }
 
   @Test
-  public void shouldGenerateCodeToString() {
+  public void shouldGenerateCodeForP1UserRoleSpecification() {
+    final MemOutputStreamProvider mosp = new MemOutputStreamProvider();
+    App.runCodeGenerator(ImmutableList.<Class<?>>of(UserRoleSpecification.class), mosp);
+    System.out.println(String.format("Generated: %d files", mosp.getContentMap().size()));
+  }
+
+  @Test
+  public void shouldGenerateCodeForP2UserSpecification() {
     final MemOutputStreamProvider mosp = new MemOutputStreamProvider();
     App.runCodeGenerator(ImmutableList.<Class<?>>of(UserSpecification.class), mosp);
     System.out.println(String.format("Generated: %d files", mosp.getContentMap().size()));

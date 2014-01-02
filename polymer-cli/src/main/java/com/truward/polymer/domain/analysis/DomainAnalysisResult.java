@@ -1,5 +1,7 @@
 package com.truward.polymer.domain.analysis;
 
+import com.truward.polymer.core.trait.TraitContainer;
+
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
@@ -9,7 +11,7 @@ import java.util.List;
  *
  * @author Alexander Shabanov
  */
-public interface DomainAnalysisResult {
+public interface DomainAnalysisResult extends TraitContainer {
   @Nonnull
   Class<?> getOriginClass();
 

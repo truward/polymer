@@ -30,6 +30,10 @@ public abstract class CodeObjectVisitor {
     visitObject(obj);
   }
 
+  public void visitPrintable(Printable obj) {
+    visitObject(obj);
+  }
+
   public static void apply(CodeObjectVisitor visitor, Object obj) {
     if (obj instanceof Character) {
       visitor.visitChar((Character) obj);
@@ -43,6 +47,8 @@ public abstract class CodeObjectVisitor {
       visitor.visitCommentBlock((CommentBlock) obj);
     } else if (obj instanceof SingleLineComment) {
       visitor.visitSingleLineComment((SingleLineComment) obj);
+    } else if (obj instanceof Printable) {
+      visitor.visitPrintable((Printable) obj);
     } else {
       visitor.visitObject(obj);
     }
