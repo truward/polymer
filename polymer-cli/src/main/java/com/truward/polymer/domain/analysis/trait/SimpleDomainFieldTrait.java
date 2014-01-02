@@ -76,7 +76,7 @@ public enum SimpleDomainFieldTrait implements Trait<SimpleDomainFieldTrait>, Tra
           break;
         }
 
-        return; // ok
+        return; // ok, non-negative check can be done for this type
       } while (false);
 
       throw new RuntimeException("Only numeric fields can be associated with NON_NEGATIVE trait");
@@ -84,7 +84,7 @@ public enum SimpleDomainFieldTrait implements Trait<SimpleDomainFieldTrait>, Tra
   },
 
   /**
-   * Designates a given string to be
+   * Designates a given string to both non-nullable and non-empty (i.e. to have length greater than zero)
    */
   HAS_LENGTH {
     @Override
@@ -92,6 +92,8 @@ public enum SimpleDomainFieldTrait implements Trait<SimpleDomainFieldTrait>, Tra
       if (!String.class.equals(field.getFieldType())) {
         throw new RuntimeException("Only string fields can be associated with HAS_LENGTH trait");
       }
+
+      TraitUtil.incompatibleWith(this, field, NULLABLE);
     }
   };
 

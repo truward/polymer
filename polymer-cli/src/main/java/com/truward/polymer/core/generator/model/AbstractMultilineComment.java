@@ -1,5 +1,7 @@
 package com.truward.polymer.core.generator.model;
 
+import com.google.common.collect.ImmutableList;
+
 import java.util.List;
 
 /**
@@ -9,7 +11,7 @@ abstract class AbstractMultilineComment implements CodeObject {
   private final List<Object> lines;
 
   public AbstractMultilineComment(List<Object> lines) {
-    this.lines = lines;
+    this.lines = ImmutableList.copyOf(lines);
   }
 
   public final List<Object> getLines() {

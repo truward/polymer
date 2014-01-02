@@ -10,7 +10,7 @@ import javax.annotation.Resource;
 /**
  * @author Alexander Shabanov
  */
-public class UserSpecification {
+public class UserRoleSpecification {
   @Resource
   private DomainObjectSpecifier specifier;
 

@@ -29,4 +29,7 @@ public interface DomainObjectSpecifier {
 
   @Nonnull
   DomainObjectSpecifier isNonNegative(int field);
+
+  @Nonnull
+  DomainObjectSettings getSettingsFor(@Nonnull Class<?> clazz);
 }

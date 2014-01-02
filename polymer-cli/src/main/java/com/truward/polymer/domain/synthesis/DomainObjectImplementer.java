@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.ParameterizedType;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -152,11 +153,7 @@ public final class DomainObjectImplementer {
       }
 
       // type
-      if (field.getFieldType() instanceof Class) {
-        generator.type(field.getFieldType());
-      } else {
-        throw new UnsupportedOperationException("Implement parameterized types support"); // TODO: impl
-      }
+      generator.type(field.getFieldType());
 
       // space and name
       generator.ch(' ').text(field.getFieldName());
@@ -171,6 +168,10 @@ public final class DomainObjectImplementer {
 
     // body
     for (final DomainField field : analysisResult.getDeclaredFields()) {
+      // Complex assignment for parameterized types
+      if (field.getFieldType() instanceof ParameterizedType) {
+        generator.singleLineComment("TODO: implement parameterized type");
+      }
       generator.thisMember(field.getFieldName()).spText("=").text(field.getFieldName()).ch(';');
     }
     generator.ch('}');

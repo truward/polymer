@@ -1,9 +1,8 @@
 package com.truward.polymer.core.generator.support;
 
-import com.truward.polymer.core.generator.model.CodeObjectVisitor;
-import com.truward.polymer.core.generator.model.CommentBlock;
-import com.truward.polymer.core.generator.model.SingleLineComment;
+import com.truward.polymer.core.generator.model.*;
 
+import javax.annotation.Nonnull;
 import java.io.PrintStream;
 import java.util.List;
 
@@ -15,7 +14,7 @@ import java.util.List;
  *
  * @author Alexander Shabanov
  */
-public class IndentationAwarePrinter extends CodeObjectVisitor {
+public class IndentationAwarePrinter extends CodeObjectVisitor implements CodeObjectPrinter {
   public static final String DEFAULT_INDENT_UNIT = "  ";
 
   private final PrintStream out;
@@ -23,12 +22,14 @@ public class IndentationAwarePrinter extends CodeObjectVisitor {
   private boolean doIndent = true;
   private final String indentUnit;
 
-  public IndentationAwarePrinter(PrintStream out) {
-    if (out == null) {
-      throw new IllegalArgumentException("out stream is null");
-    }
+  public IndentationAwarePrinter(@Nonnull PrintStream out) {
     this.out = out;
     indentUnit = DEFAULT_INDENT_UNIT; // TODO: parameterizable indentation level
+  }
+
+  @Override
+  public void print(@Nonnull Object obj) {
+    CodeObjectVisitor.apply(this, obj);
   }
 
   @Override
@@ -68,6 +69,10 @@ public class IndentationAwarePrinter extends CodeObjectVisitor {
     printText(" */").printChar('\n');
   }
 
+  @Override
+  public void visitPrintable(Printable obj) {
+    obj.print(this);
+  }
 
   //
   // Private
