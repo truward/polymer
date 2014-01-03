@@ -1,4 +1,4 @@
-package com.truward.polymer.core.util;
+package com.truward.polymer.code;
 
 /**
  * Utility class that is aware of the default values that correspond to the given classes.

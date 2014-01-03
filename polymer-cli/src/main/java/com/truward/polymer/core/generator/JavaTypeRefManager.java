@@ -5,9 +5,9 @@ import com.truward.polymer.core.generator.model.CodeObject;
 import com.truward.polymer.core.generator.model.CodeObjectPrinter;
 import com.truward.polymer.core.generator.model.Printable;
 import com.truward.polymer.core.generator.model.Text;
+import com.truward.polymer.code.TypeVisitor;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -25,34 +25,35 @@ public class JavaTypeRefManager {
 
   @Nonnull
   public CodeObject adaptType(@Nonnull Type type) {
-    if (type instanceof Class) {
-      final Class<?> clazz = (Class<?>) type;
-      if (clazz.isArray()) {
-        // special handling
-        return new ArrayRef(adaptType(clazz.getComponentType()));
+    return TypeVisitor.apply(new TypeVisitor<CodeObject>() {
+      @Override
+      public CodeObject visitArray(@Nonnull Type sourceType, @Nonnull Class<?> elementType) {
+        return new ArrayRef(adaptType(elementType));
       }
 
-      // non-array type
-      ClassRef classRef = classRefs.get(clazz);
-      if (classRef == null) {
-        classRef = new ClassRef(clazz);
-        classRefs.put(clazz, classRef);
-      }
-      return classRef;
-    } else if (type instanceof ParameterizedType) {
-      final ParameterizedType parameterizedType = (ParameterizedType) type;
-      final CodeObject rawType = adaptType(parameterizedType.getRawType());
-
-      final Type[] typeArgs = parameterizedType.getActualTypeArguments();
-      final CodeObject[] codeObjArgs = new CodeObject[typeArgs.length];
-      for (int i = 0; i < typeArgs.length; ++i) {
-        codeObjArgs[i] = adaptType(typeArgs[i]);
+      @Override
+      public CodeObject visitClass(@Nonnull Type sourceType, @Nonnull Class<?> klass) {
+        // non-array type
+        ClassRef classRef = classRefs.get(klass);
+        if (classRef == null) {
+          classRef = new ClassRef(klass);
+          classRefs.put(klass, classRef);
+        }
+        return classRef;
       }
 
-      return new ParameterizedTypeRef(rawType, ImmutableList.copyOf(codeObjArgs));
-    } else {
-      throw new UnsupportedOperationException("Unsupported type: " + type);
-    }
+      @Override
+      public CodeObject visitGenericType(@Nonnull Type sourceType, @Nonnull Class<?> rawType, @Nonnull List<Type> args) {
+        final CodeObject rawTypeCodeObject = adaptType(rawType);
+
+        final CodeObject[] codeObjArgs = new CodeObject[args.size()];
+        for (int i = 0; i < codeObjArgs.length; ++i) {
+          codeObjArgs[i] = adaptType(args.get(i));
+        }
+
+        return new ParameterizedTypeRef(rawTypeCodeObject, ImmutableList.copyOf(codeObjArgs));
+      }
+    }, type);
   }
 
   @Nonnull

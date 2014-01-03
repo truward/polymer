@@ -1,9 +1,11 @@
 package com.truward.polymer.domain.synthesis;
 
-import com.truward.polymer.core.generator.JavaCodeGenerator;
-import com.truward.polymer.core.output.OutputStreamProvider;
+import com.google.common.collect.ImmutableList;
+import com.truward.polymer.code.TypeVisitor;
 import com.truward.polymer.code.naming.FqName;
+import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.core.output.DefaultFileTypes;
+import com.truward.polymer.core.output.OutputStreamProvider;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.DomainImplTarget;
@@ -15,7 +17,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -168,12 +170,50 @@ public final class DomainObjectImplementer {
 
     // body
     for (final DomainField field : analysisResult.getDeclaredFields()) {
-      // Complex assignment for parameterized types
-      if (field.getFieldType() instanceof ParameterizedType) {
-        generator.singleLineComment("TODO: implement parameterized type");
-      }
-      generator.thisMember(field.getFieldName()).spText("=").text(field.getFieldName()).ch(';');
+      generateAssignment(field, generator);
     }
     generator.ch('}');
+  }
+
+  private static void generateAssignment(DomainField field, final JavaCodeGenerator generator) {
+    final String fieldName = field.getFieldName();
+    final boolean isMutable = field.hasTrait(SimpleDomainFieldTrait.MUTABLE);
+    generator.thisMember(fieldName).spText("=");
+
+    TypeVisitor.apply(new TypeVisitor<Void>() {
+      @Override
+      public Void visitType(@Nonnull Type sourceType) {
+        generator.text(fieldName);
+        return null;
+      }
+
+      @Override
+      public Void visitArray(@Nonnull Type sourceType, @Nonnull Class<?> elementType) {
+        // TODO: warning - exposed arrays breaks immutability
+        // TODO: Array.copy(fieldName);
+        //generator.text("new").ch(' ').type(elementType).ch('[', ']');
+        return visitType(sourceType);
+      }
+
+      @Override
+      public Void visitGenericType(@Nonnull Type sourceType, @Nonnull Class<?> rawType, @Nonnull List<Type> args) {
+        if (List.class.equals(rawType) && !isMutable) {
+          // special handling for lists
+          // [1] Guava is present - make it optional - otherwise use
+          // Collections.unmodifiableList(Arrays.asList({fieldName}.toArray(new {fieldType}[{fieldName}.length])))
+          generator.type(ImmutableList.class).ch('.').text("copyOf").ch('(').text(fieldName).ch(')');
+          return null;
+        }
+
+        return visitType(sourceType);
+      }
+
+      @Override
+      public Void visitClass(@Nonnull Type sourceType, @Nonnull Class<?> klass) {
+        return visitType(sourceType);
+      }
+    }, field.getFieldType());
+
+    generator.ch(';');
   }
 }

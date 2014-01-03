@@ -6,7 +6,7 @@ import com.truward.polymer.core.driver.SpecificationParameterProvider;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.code.naming.FqName;
-import com.truward.polymer.core.util.DefaultValues;
+import com.truward.polymer.code.DefaultValues;
 import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSettings;
 import com.truward.polymer.domain.DomainObjectSpecifier;
