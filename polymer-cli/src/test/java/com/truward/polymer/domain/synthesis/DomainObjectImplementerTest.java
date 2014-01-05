@@ -67,7 +67,7 @@ public class DomainObjectImplementerTest {
   @Test
   public void shouldImplement() {
     final DomainAnalysisResult result = analysisContext.analyze(User.class);
-    DomainObjectImplementer.generateCode(implTarget(result), mosp);
+    generateCode(implTarget(result));
     final String code = mosp.getOneContent();
     assertTrue(code.contains("package")); // TODO: more complex verification
   }
@@ -75,7 +75,7 @@ public class DomainObjectImplementerTest {
   @Test
   public void shouldImplementEqualsAndHashCodeForPrimitiveType() {
     final DomainAnalysisResult result = analysisContext.analyze(Primitive.class);
-    DomainObjectImplementer.generateCode(implTarget(result), mosp);
+    generateCode(implTarget(result));
     final String code = mosp.getOneContent();
     assertTrue(code.contains("package")); // TODO: more complex verification
   }
@@ -86,5 +86,10 @@ public class DomainObjectImplementerTest {
 
   private List<DomainImplTarget> implTarget(DomainAnalysisResult result) {
     return ImmutableList.of(new DomainImplTarget(result, implClassName));
+  }
+
+  private void generateCode(List<DomainImplTarget> targets) {
+    final DomainObjectImplementer implementer = new DomainObjectImplementer(mosp);
+    implementer.generateCode(targets);
   }
 }

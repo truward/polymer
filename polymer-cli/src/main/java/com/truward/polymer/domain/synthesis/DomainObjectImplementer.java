@@ -27,14 +27,19 @@ import java.util.List;
  */
 public final class DomainObjectImplementer {
 
-  private DomainObjectImplementer() {
+  // current generator
+  private OutputStreamProvider outputStreamProvider;
+
+  private JavaCodeGenerator generator;
+
+  public DomainObjectImplementer(@Nonnull OutputStreamProvider outputStreamProvider) {
+    this.outputStreamProvider = outputStreamProvider;
   }
 
-  public static void generateCode(@Nonnull List<DomainImplTarget> implTargets,
-                                  @Nonnull OutputStreamProvider outputStreamProvider) {
+  public void generateCode(@Nonnull List<DomainImplTarget> implTargets) {
     for (final DomainImplTarget target : implTargets) {
-      final JavaCodeGenerator generator = new JavaCodeGenerator();
-      generateCompilationUnit(target, generator);
+      this.generator = new JavaCodeGenerator();
+      generateCompilationUnit(target);
       try {
         try (final OutputStream stream = outputStreamProvider.createStreamForFile(
             target.getClassName(), DefaultFileTypes.JAVA)) {
@@ -48,7 +53,7 @@ public final class DomainObjectImplementer {
     }
   }
 
-  private static void generateCompilationUnit(DomainImplTarget target, JavaCodeGenerator generator) {
+  private void generateCompilationUnit(DomainImplTarget target) {
     final FqName classFqName = target.getClassName();
     final DomainAnalysisResult analysisResult = target.getSource();
     final String implClassName = classFqName.getName();
@@ -65,20 +70,20 @@ public final class DomainObjectImplementer {
 
     // fields
     for (final DomainField field : analysisResult.getDeclaredFields()) {
-      generateField(field, generator);
+      generateField(field);
     }
 
     // ctor
-    generateConstructor(analysisResult, implClassName, generator);
+    generateConstructor(analysisResult, implClassName);
 
     // getters
     for (final DomainField field : analysisResult.getDeclaredFields()) {
-      generateFinalGetter(field, generator);
+      generateFinalGetter(field);
     }
 
     // setters
     for (final DomainField field : analysisResult.getDeclaredFields()) {
-      generateFinalSetter(field, generator);
+      generateFinalSetter(field);
     }
 
     // toString
@@ -96,7 +101,7 @@ public final class DomainObjectImplementer {
     generator.ch('}'); // end of class body
   }
 
-  private static void generateFinalSetter(DomainField field, JavaCodeGenerator generator) {
+  private void generateFinalSetter(DomainField field) {
     final SetterTrait setterTrait = field.findTrait(SetterTrait.KEY);
     if (setterTrait == null) {
       // no setter
@@ -121,7 +126,7 @@ public final class DomainObjectImplementer {
   // Private
   //
 
-  private static void generateField(DomainField field, JavaCodeGenerator generator) {
+  private void generateField(DomainField field) {
     generator.text("private").ch(' ');
     if (!field.hasTrait(SimpleDomainFieldTrait.MUTABLE)) {
       generator.text("final").ch(' ');
@@ -129,7 +134,7 @@ public final class DomainObjectImplementer {
     generator.typedVar(field.getFieldType(), field.getFieldName()).ch(';');
   }
 
-  private static void generateFinalGetter(DomainField field, JavaCodeGenerator generator) {
+  private void generateFinalGetter(DomainField field) {
     final GetterTrait getterTrait = field.findTrait(GetterTrait.KEY);
     if (getterTrait == null) {
       return; // no getter trait
@@ -142,7 +147,7 @@ public final class DomainObjectImplementer {
     generator.ch('}');
   }
 
-  private static void generateConstructor(DomainAnalysisResult analysisResult, String implClassName, JavaCodeGenerator generator) {
+  private void generateConstructor(DomainAnalysisResult analysisResult, String implClassName) {
     generator.ch('\n');
     generator.text("public").ch(' ').text(implClassName).ch('(');
     boolean next = false;
@@ -170,12 +175,13 @@ public final class DomainObjectImplementer {
 
     // body
     for (final DomainField field : analysisResult.getDeclaredFields()) {
-      generateAssignment(field, generator);
+      generateAssignment(field);
     }
     generator.ch('}');
   }
 
-  private static void generateAssignment(DomainField field, final JavaCodeGenerator generator) {
+  private void generateAssignment(DomainField field) {
+    final JavaCodeGenerator generator = this.generator;
     final String fieldName = field.getFieldName();
     final boolean isMutable = field.hasTrait(SimpleDomainFieldTrait.MUTABLE);
     generator.thisMember(fieldName).spText("=");

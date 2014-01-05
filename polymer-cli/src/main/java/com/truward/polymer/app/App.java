@@ -79,9 +79,7 @@ public final class App {
       handler.parseClass(specificationClass);
     }
 
-    // TODO: wire implementer
-    DomainObjectImplementer.generateCode(
-        injectionContext.getBean(DomainImplTargetProvider.class).getImplementationTargets(),
-        outputStreamProvider);
+    final DomainObjectImplementer implementer = new DomainObjectImplementer(outputStreamProvider);
+    implementer.generateCode(injectionContext.getBean(DomainImplTargetProvider.class).getImplementationTargets());
   }
 }
