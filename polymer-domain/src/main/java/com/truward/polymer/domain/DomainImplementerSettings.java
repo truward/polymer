@@ -7,6 +7,9 @@ import javax.annotation.Nonnull;
  *
  * @author Alexander Shabanov
  */
-public interface DomainGeneratorSettings {
+public interface DomainImplementerSettings {
   void setDefensiveCopyStyle(@Nonnull DefensiveCopyStyle defensiveCopyStyle);
+
+  @Nonnull
+  DefensiveCopyStyle getDefensiveCopyStyle();
 }

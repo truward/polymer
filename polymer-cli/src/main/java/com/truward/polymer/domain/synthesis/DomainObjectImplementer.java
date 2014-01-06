@@ -6,14 +6,16 @@ import com.truward.polymer.code.naming.FqName;
 import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.core.output.DefaultFileTypes;
 import com.truward.polymer.core.output.OutputStreamProvider;
+import com.truward.polymer.domain.DomainImplementerSettings;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.analysis.DomainImplTarget;
+import com.truward.polymer.domain.analysis.DomainImplementationTarget;
 import com.truward.polymer.domain.analysis.trait.GetterTrait;
 import com.truward.polymer.domain.analysis.trait.SetterTrait;
 import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -22,22 +24,25 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
- * TODO: break down to helper classes
+ * Generates a code that corresponds to the particular implementation targets
+ *
  * @author Alexander Shabanov
  */
 public final class DomainObjectImplementer {
 
   // current generator
-  private OutputStreamProvider outputStreamProvider;
-
   private JavaCodeGenerator generator;
 
-  public DomainObjectImplementer(@Nonnull OutputStreamProvider outputStreamProvider) {
-    this.outputStreamProvider = outputStreamProvider;
+  @Resource
+  private DomainImplementerSettings implementerSettings;
+
+  public void setImplementerSettings(DomainImplementerSettings implementerSettings) {
+    this.implementerSettings = implementerSettings;
   }
 
-  public void generateCode(@Nonnull List<DomainImplTarget> implTargets) {
-    for (final DomainImplTarget target : implTargets) {
+  public void generateCode(@Nonnull OutputStreamProvider outputStreamProvider,
+                           @Nonnull List<DomainImplementationTarget> implTargets) {
+    for (final DomainImplementationTarget target : implTargets) {
       this.generator = new JavaCodeGenerator();
       generateCompilationUnit(target);
       try {
@@ -53,7 +58,7 @@ public final class DomainObjectImplementer {
     }
   }
 
-  private void generateCompilationUnit(DomainImplTarget target) {
+  private void generateCompilationUnit(DomainImplementationTarget target) {
     final FqName classFqName = target.getClassName();
     final DomainAnalysisResult analysisResult = target.getSource();
     final String implClassName = classFqName.getName();

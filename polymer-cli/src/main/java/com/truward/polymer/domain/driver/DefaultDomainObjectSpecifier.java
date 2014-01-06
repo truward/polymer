@@ -1,4 +1,4 @@
-package com.truward.polymer.domain.driver.support;
+package com.truward.polymer.domain.driver;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -7,7 +7,7 @@ import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.code.naming.FqName;
 import com.truward.polymer.code.DefaultValues;
-import com.truward.polymer.domain.DomainGeneratorSettings;
+import com.truward.polymer.domain.DomainImplementerSettings;
 import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSettings;
 import com.truward.polymer.domain.DomainObjectSpecifier;
@@ -40,11 +40,11 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   private DomainAnalysisContext analysisContext;
 
   @Resource
-  private DomainGeneratorSettings generatorSettings;
+  private DomainImplementerSettings implementerSettings;
 
   private DomainAnalysisResult currentAnalysisResult;
   private DomainField currentField;
-  private List<DomainImplTarget> implementationTargets = new ArrayList<>();
+  private List<DomainImplementationTarget> implementationTargets = new ArrayList<>();
 
   @Override
   @Nonnull
@@ -62,7 +62,7 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
     currentAnalysisResult = analysisContext.analyze(clazz);
 
     // automatically introduce implementation target
-    implementationTargets.add(new DomainImplTarget(currentAnalysisResult,
+    implementationTargets.add(new DomainImplementationTarget(currentAnalysisResult,
         FqName.parse("com.mysite." + currentAnalysisResult.getOriginClass().getName() + "Impl")));
 
     return instance;
@@ -114,7 +114,7 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
 
   @Nonnull
   @Override
-  public List<DomainImplTarget> getImplementationTargets() {
+  public List<DomainImplementationTarget> getImplementationTargets() {
     return ImmutableList.copyOf(implementationTargets);
   }
 
@@ -126,8 +126,8 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
 
   @Nonnull
   @Override
-  public DomainGeneratorSettings getGeneratorSettings() {
-    return generatorSettings;
+  public DomainImplementerSettings getImplementerSettings() {
+    return implementerSettings;
   }
 
   //

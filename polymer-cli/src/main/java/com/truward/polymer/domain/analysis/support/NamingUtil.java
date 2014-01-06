@@ -34,22 +34,6 @@ public final class NamingUtil {
     throw new RuntimeException("Unsupported non-is/get method " + methodName); // TODO: exception
   }
 
-//  /**
-//   * Creates new getter name based on the field provided.
-//   *
-//   * @param fieldType Field type
-//   * @param fieldName Field name
-//   * @return New getter name
-//   */
-//  public static String createGetterName(Type fieldType, String fieldName) {
-//    final String prefix = fieldType.equals(Boolean.TYPE) ? IS_PREFIX : GET_PREFIX;
-//    final StringBuilder nameBuilder = new StringBuilder(prefix.length() + fieldName.length());
-//    nameBuilder.append(prefix);
-//    nameBuilder.append(Character.toUpperCase(fieldName.charAt(0)));
-//    nameBuilder.append(fieldName.subSequence(1, fieldName.length()));
-//    return nameBuilder.toString();
-//  }
-
   //
   // Private
   //

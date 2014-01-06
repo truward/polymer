@@ -34,5 +34,5 @@ public interface DomainObjectSpecifier {
   DomainObjectSettings getObjectSettings(@Nonnull Class<?> clazz);
 
   @Nonnull
-  DomainGeneratorSettings getGeneratorSettings();
+  DomainImplementerSettings getImplementerSettings();
 }

@@ -9,11 +9,11 @@ import javax.annotation.Nonnull;
  *
  * @author Alexander Shabanov
  */
-public final class DomainImplTarget {
+public final class DomainImplementationTarget {
   private DomainAnalysisResult source;
   private FqName fqName;
 
-  public DomainImplTarget(@Nonnull DomainAnalysisResult source, @Nonnull FqName fqName) {
+  public DomainImplementationTarget(@Nonnull DomainAnalysisResult source, @Nonnull FqName fqName) {
     this.source = source;
     this.fqName = fqName;
   }

@@ -74,12 +74,13 @@ public final class App {
     final PolymerModule module = new PolymerModule();
     final InjectionContext injectionContext = module.addDefaults().getInjectionContext();
     final SpecificationHandler handler = injectionContext.getBean(SpecificationHandler.class);
+    final DomainObjectImplementer implementer = injectionContext.getBean(DomainObjectImplementer.class);
 
     for (final Class<?> specificationClass : specificationClasses) {
       handler.parseClass(specificationClass);
     }
 
-    final DomainObjectImplementer implementer = new DomainObjectImplementer(outputStreamProvider);
-    implementer.generateCode(injectionContext.getBean(DomainImplTargetProvider.class).getImplementationTargets());
+
+    implementer.generateCode(outputStreamProvider, injectionContext.getBean(DomainImplTargetProvider.class).getImplementationTargets());
   }
 }

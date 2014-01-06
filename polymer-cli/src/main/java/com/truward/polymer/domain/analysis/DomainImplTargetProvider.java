@@ -9,5 +9,5 @@ import java.util.List;
 public interface DomainImplTargetProvider {
 
   @Nonnull
-  List<DomainImplTarget> getImplementationTargets();
+  List<DomainImplementationTarget> getImplementationTargets();
 }

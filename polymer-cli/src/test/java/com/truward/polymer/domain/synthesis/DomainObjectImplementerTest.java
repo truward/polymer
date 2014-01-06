@@ -2,11 +2,12 @@ package com.truward.polymer.domain.synthesis;
 
 import com.google.common.collect.ImmutableList;
 import com.truward.polymer.code.naming.FqName;
+import com.truward.polymer.domain.analysis.DomainImplementationTarget;
+import com.truward.polymer.domain.driver.DomainImplementerSettingsProvider;
 import com.truward.polymer.testutil.MemOutputStreamProvider;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.analysis.DomainImplTarget;
 import com.truward.polymer.domain.analysis.support.DefaultDomainAnalysisContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -84,12 +85,13 @@ public class DomainObjectImplementerTest {
   // Private
   //
 
-  private List<DomainImplTarget> implTarget(DomainAnalysisResult result) {
-    return ImmutableList.of(new DomainImplTarget(result, implClassName));
+  private List<DomainImplementationTarget> implTarget(DomainAnalysisResult result) {
+    return ImmutableList.of(new DomainImplementationTarget(result, implClassName));
   }
 
-  private void generateCode(List<DomainImplTarget> targets) {
-    final DomainObjectImplementer implementer = new DomainObjectImplementer(mosp);
-    implementer.generateCode(targets);
+  private void generateCode(List<DomainImplementationTarget> targets) {
+    final DomainObjectImplementer implementer = new DomainObjectImplementer();
+    implementer.setImplementerSettings(new DomainImplementerSettingsProvider());
+    implementer.generateCode(mosp, targets);
   }
 }
