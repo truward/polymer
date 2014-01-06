@@ -32,12 +32,12 @@ public class JavaTypeRefManager {
       }
 
       @Override
-      public CodeObject visitClass(@Nonnull Type sourceType, @Nonnull Class<?> klass) {
+      public CodeObject visitClass(@Nonnull Type sourceType, @Nonnull Class<?> clazz) {
         // non-array type
-        ClassRef classRef = classRefs.get(klass);
+        ClassRef classRef = classRefs.get(clazz);
         if (classRef == null) {
-          classRef = new ClassRef(klass);
-          classRefs.put(klass, classRef);
+          classRef = new ClassRef(clazz);
+          classRefs.put(clazz, classRef);
         }
         return classRef;
       }

@@ -215,7 +215,7 @@ public final class DomainObjectImplementer {
       }
 
       @Override
-      public Void visitClass(@Nonnull Type sourceType, @Nonnull Class<?> klass) {
+      public Void visitClass(@Nonnull Type sourceType, @Nonnull Class<?> clazz) {
         return visitType(sourceType);
       }
     }, field.getFieldType());

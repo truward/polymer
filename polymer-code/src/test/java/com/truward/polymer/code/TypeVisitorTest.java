@@ -18,27 +18,27 @@ public final class TypeVisitorTest {
 
   @Test
   public void shouldDetectClass() {
-    final Class<?> klass = String.class;
-    assertEquals(klass, TypeVisitor.apply(new TypeVisitor<Class<?>>() {
+    final Class<?> clazz = String.class;
+    assertEquals(clazz, TypeVisitor.apply(new TypeVisitor<Class<?>>() {
       @Override
-      public Class<?> visitClass(@Nonnull Type sourceType, @Nonnull Class<?> klass) {
-        assertEquals(klass, sourceType);
-        return klass;
+      public Class<?> visitClass(@Nonnull Type sourceType, @Nonnull Class<?> clazz) {
+        assertEquals(clazz, sourceType);
+        return clazz;
       }
-    }, klass));
+    }, clazz));
   }
 
   @Test
   public void shouldDetectArray() {
-    final Class<?> klass = int[].class;
+    final Class<?> clazz = int[].class;
     assertEquals(int.class, TypeVisitor.apply(new TypeVisitor<Class<?>>() {
 
       @Override
       public Class<?> visitArray(@Nonnull Type sourceType, @Nonnull Class<?> elementType) {
-        assertEquals(klass, sourceType);
+        assertEquals(clazz, sourceType);
         return elementType;
       }
-    }, klass));
+    }, clazz));
   }
 
   @Test

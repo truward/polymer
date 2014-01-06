@@ -31,5 +31,8 @@ public interface DomainObjectSpecifier {
   DomainObjectSpecifier isNonNegative(int field);
 
   @Nonnull
-  DomainObjectSettings getSettingsFor(@Nonnull Class<?> clazz);
+  DomainObjectSettings getObjectSettings(@Nonnull Class<?> clazz);
+
+  @Nonnull
+  DomainGeneratorSettings getGeneratorSettings();
 }

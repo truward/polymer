@@ -23,17 +23,17 @@ public abstract class TypeVisitor<R> {
     return visitType(sourceType);
   }
 
-  public R visitClass(@Nonnull Type sourceType, @Nonnull Class<?> klass) {
+  public R visitClass(@Nonnull Type sourceType, @Nonnull Class<?> clazz) {
     return visitType(sourceType);
   }
 
   public static <R> R apply(@Nonnull TypeVisitor<R> visitor, @Nonnull Type sourceType) {
     if (sourceType instanceof Class) {
-      final Class<?> klass = (Class<?>) sourceType;
-      if (klass.isArray()) {
-        return visitor.visitArray(sourceType, klass.getComponentType());
+      final Class<?> clazz = (Class<?>) sourceType;
+      if (clazz.isArray()) {
+        return visitor.visitArray(sourceType, clazz.getComponentType());
       } else {
-        return visitor.visitClass(sourceType, klass);
+        return visitor.visitClass(sourceType, clazz);
       }
     } else if (sourceType instanceof ParameterizedType) {
       final ParameterizedType parameterizedType = (ParameterizedType) sourceType;

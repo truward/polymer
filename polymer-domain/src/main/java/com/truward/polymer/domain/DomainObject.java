@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
  * Designates domain object parameter, identical for
  * <code>
  *   // ...
- *   Foo instance = specification.domainObject(Class&lt;Foo&gt; klass)
+ *   Foo instance = specification.domainObject(Class&lt;Foo&gt; clazz)
  * </code>
  *
  * @author Alexander Shabanov

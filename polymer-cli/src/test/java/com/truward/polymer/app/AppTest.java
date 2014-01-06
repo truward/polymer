@@ -8,6 +8,9 @@ import com.truward.polymer.testutil.MemOutputStreamProvider;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Alexander Shabanov
@@ -38,6 +41,8 @@ public class AppTest {
 
   @Test
   public void shouldGenerateCodeForP2UserSpecification() {
+    final List<String> k = Arrays.asList("ads");
+    final List<String> l = Collections.unmodifiableList(Arrays.asList(k.toArray(new String[k.size()])));
     final MemOutputStreamProvider mosp = new MemOutputStreamProvider();
     App.runCodeGenerator(ImmutableList.<Class<?>>of(UserSpecification.class), mosp);
     System.out.println(String.format("Generated: %d files", mosp.getContentMap().size()));

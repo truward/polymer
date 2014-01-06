@@ -26,6 +26,6 @@ public final class UserSpecification {
     specifier
         .isNonNull(user.getName());
 
-    specifier.getSettingsFor(User.class).setImplementationName("User");
+    specifier.getObjectSettings(User.class).setImplementationName("User");
   }
 }

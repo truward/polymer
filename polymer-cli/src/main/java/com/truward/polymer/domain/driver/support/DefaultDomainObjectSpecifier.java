@@ -7,6 +7,7 @@ import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.code.naming.FqName;
 import com.truward.polymer.code.DefaultValues;
+import com.truward.polymer.domain.DomainGeneratorSettings;
 import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSettings;
 import com.truward.polymer.domain.DomainObjectSpecifier;
@@ -37,6 +38,9 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
 
   @Resource
   private DomainAnalysisContext analysisContext;
+
+  @Resource
+  private DomainGeneratorSettings generatorSettings;
 
   private DomainAnalysisResult currentAnalysisResult;
   private DomainField currentField;
@@ -116,8 +120,14 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
 
   @Nonnull
   @Override
-  public DomainObjectSettings getSettingsFor(@Nonnull Class<?> clazz) {
+  public DomainObjectSettings getObjectSettings(@Nonnull Class<?> clazz) {
     return new DefaultDomainObjectSettings(analysisContext.analyze(clazz));
+  }
+
+  @Nonnull
+  @Override
+  public DomainGeneratorSettings getGeneratorSettings() {
+    return generatorSettings;
   }
 
   //
