@@ -4,7 +4,10 @@ TODOs
 * Implement builder support
 * Implement optional Guava support
 * Make it possible to opt-out from the ImmutableList support
-
+* Implement target name specifier:
+   implementationTargets.add(new DomainImplementationTarget(currentAnalysisResult,
+        FqName.parse("com.mysite." + currentAnalysisResult.getOriginClass().getName() + "Impl")));
+* Freeze analysis settings after specification phase
 
 ## Minor
 

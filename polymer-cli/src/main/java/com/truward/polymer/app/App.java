@@ -3,6 +3,7 @@ package com.truward.polymer.app;
 import com.google.common.annotations.VisibleForTesting;
 import com.truward.di.InjectionContext;
 import com.truward.polymer.app.util.ClassScanner;
+import com.truward.polymer.code.freezable.Freezable;
 import com.truward.polymer.core.driver.SpecificationHandler;
 import com.truward.polymer.core.output.OutputStreamProvider;
 import com.truward.polymer.core.output.FSOutputStreamProvider;
@@ -79,7 +80,6 @@ public final class App {
     for (final Class<?> specificationClass : specificationClasses) {
       handler.parseClass(specificationClass);
     }
-
 
     implementer.generateCode(outputStreamProvider, injectionContext.getBean(DomainImplTargetProvider.class).getImplementationTargets());
   }

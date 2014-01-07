@@ -21,6 +21,8 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -188,13 +190,16 @@ public final class DomainObjectImplementer {
   private void generateAssignment(DomainField field) {
     final JavaCodeGenerator generator = this.generator;
     final String fieldName = field.getFieldName();
-    final boolean isMutable = field.hasTrait(SimpleDomainFieldTrait.MUTABLE);
     generator.thisMember(fieldName).spText("=");
+    generateCopy(fieldName, field.getFieldType());
+    generator.ch(';');
+  }
 
+  private void generateCopy(final String var, Type type) {
     TypeVisitor.apply(new TypeVisitor<Void>() {
       @Override
       public Void visitType(@Nonnull Type sourceType) {
-        generator.text(fieldName);
+        generator.text(var);
         return null;
       }
 
@@ -208,12 +213,24 @@ public final class DomainObjectImplementer {
 
       @Override
       public Void visitGenericType(@Nonnull Type sourceType, @Nonnull Class<?> rawType, @Nonnull List<Type> args) {
-        if (List.class.equals(rawType) && !isMutable) {
-          // special handling for lists
-          // [1] Guava is present - make it optional - otherwise use
-          // Collections.unmodifiableList(Arrays.asList({fieldName}.toArray(new {fieldType}[{fieldName}.length])))
-          generator.type(ImmutableList.class).ch('.').text("copyOf").ch('(').text(fieldName).ch(')');
-          return null;
+        switch (implementerSettings.getDefensiveCopyStyle()) {
+          case JDK:
+            if (List.class.equals(rawType)) {
+              generateListCopyJdk(var, args.get(0)); // TODO: check args size
+            }
+            return null;
+
+          case GUAVA:
+            if (List.class.equals(rawType)) {
+              generateListCopyGuava(var);
+            }
+            return null;
+
+          case NONE:
+            break;
+
+          default:
+            throw new UnsupportedOperationException("Unsupported defensive copy style");
         }
 
         return visitType(sourceType);
@@ -223,8 +240,19 @@ public final class DomainObjectImplementer {
       public Void visitClass(@Nonnull Type sourceType, @Nonnull Class<?> clazz) {
         return visitType(sourceType);
       }
-    }, field.getFieldType());
-
-    generator.ch(';');
+    }, type);
   }
+
+  private void generateListCopyJdk(String var, Type elementType) {
+    // Collections.unmodifiableList(Arrays.asList($listVar.toArray(new String[$listVar.size()])))
+    generator.type(Collections.class).dot("unmodifiableList").ch('(')
+        .type(Arrays.class).dot("asList").ch('(').text(var).dot("toArray").ch('(')
+        .text("new").ch(' ').type(elementType).ch('[').text(var).dot("size").ch('(', ')', ']')
+        .ch(')').ch(')').ch(')');
+  }
+
+  private void generateListCopyGuava(String var) {
+    generator.type(ImmutableList.class).dot("copyOf").ch('(').text(var).ch(')');
+  }
+
 }
