@@ -1,4 +1,4 @@
-package com.truward.polymer.code;
+package com.truward.polymer.core.generator.model;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.Ignore;
@@ -53,6 +53,17 @@ public final class TypeVisitorTest {
         return args;
       }
     }, type));
+  }
+
+  @Test
+  public void shouldDetectLocalRef() {
+    final String refName = "Local";
+    assertEquals(refName, TypeVisitor.apply(new TypeVisitor<String>() {
+      @Override
+      public String visitLocalRef(@Nonnull Type sourceType, @Nonnull LocalRefType ref) {
+        return ref.getText();
+      }
+    }, new LocalRefType(refName)));
   }
 
 

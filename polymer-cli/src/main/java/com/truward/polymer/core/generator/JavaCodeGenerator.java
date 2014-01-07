@@ -108,6 +108,12 @@ public final class JavaCodeGenerator {
     return this;
   }
 
+  // new {type}
+  public JavaCodeGenerator newType(Type type) {
+    text("new").ch(' ').type(type);
+    return this;
+  }
+
   public JavaCodeGenerator typedVar(Type type, String name) {
     return type(type).ch(' ').text(name);
   }

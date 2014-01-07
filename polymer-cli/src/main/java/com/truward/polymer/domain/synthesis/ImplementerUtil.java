@@ -4,6 +4,7 @@ import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.TypeUtil;
 
+import java.lang.reflect.Type;
 import java.util.Collection;
 
 /**
@@ -14,15 +15,15 @@ import java.util.Collection;
  */
 public final class ImplementerUtil {
 
-  public static void generateToString(JavaCodeGenerator g, String className, Collection<? extends DomainField> fields) {
+  public static void generateToString(JavaCodeGenerator g, Type implClass, Collection<? extends DomainField> fields) {
     g.annotate(Override.class).text("public").ch(' ').type(String.class).ch(' ').text("toString").ch('(', ')', ' ', '{');
 
     // ==> final StringBuilder result = new StringBuilder();
     g.text("final").ch(' ').type(StringBuilder.class).ch(' ').text("result").ch(' ', '=', ' ')
-        .text("new").ch(' ').type(StringBuilder.class).ch('(', ')', ';');
+        .newType(StringBuilder.class).ch('(', ')', ';');
 
     // ==> result.append("ClassName#{");
-    g.text("result").dot("append").ch('(', '\"').text(className + "#{").ch('\"', ')', ';');
+    g.text("result").dot("append").ch('(', '\"').type(implClass).text("#{").ch('\"', ')', ';');
 
     // fields
     boolean next = false;
@@ -48,7 +49,7 @@ public final class ImplementerUtil {
     g.ch('}'); // end of function
   }
 
-  public static void generateEquals(JavaCodeGenerator g, String className, Collection<? extends DomainField> fields) {
+  public static void generateEquals(JavaCodeGenerator g, Type implClass, Collection<? extends DomainField> fields) {
     final String objectParam = "o";
     final String other = "other";
 
@@ -66,8 +67,8 @@ public final class ImplementerUtil {
         .ch(')', ' ', '{').text("return", "false").ch(';').ch('}').ch('\n');
 
     // final ClassName other = (ClassName) o;
-    g.text("final").ch(' ').text(className).ch(' ').text(other).ch(' ', '=', ' ', '(')
-        .text(className).ch(')', ' ').text(other).ch(';');
+    g.text("final").ch(' ').type(implClass).ch(' ').text(other).ch(' ', '=', ' ', '(')
+        .type(implClass).ch(')', ' ').text(other).ch(';');
 
     // iterate over the given fields
     for (final DomainField field : fields) {
@@ -128,7 +129,7 @@ public final class ImplementerUtil {
     // assuming param name equals to the field name
     final String paramName = field.getFieldName();
     g.text("if").ch(' ').ch('(').text(paramName).spText("==").text("null").ch(')', ' ', '{');
-    g.text("throw").spText("new").type(IllegalArgumentException.class).ch('(', '\"')
+    g.text("throw").ch(' ').newType(IllegalArgumentException.class).ch('(', '\"')
         .text("Parameter " + paramName + " is null")
         .ch('\"', ')', ';');
     g.ch('}');

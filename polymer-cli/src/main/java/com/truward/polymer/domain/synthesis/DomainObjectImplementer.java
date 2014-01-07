@@ -1,7 +1,10 @@
 package com.truward.polymer.domain.synthesis;
 
 import com.google.common.collect.ImmutableList;
-import com.truward.polymer.code.TypeVisitor;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.truward.polymer.core.generator.model.LocalRefType;
+import com.truward.polymer.core.generator.model.TypeVisitor;
 import com.truward.polymer.code.naming.FqName;
 import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.core.output.DefaultFileTypes;
@@ -10,6 +13,8 @@ import com.truward.polymer.domain.DomainImplementerSettings;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.DomainImplementationTarget;
+import com.truward.polymer.domain.analysis.support.NamingUtil;
+import com.truward.polymer.domain.analysis.trait.BuilderTrait;
 import com.truward.polymer.domain.analysis.trait.GetterTrait;
 import com.truward.polymer.domain.analysis.trait.SetterTrait;
 import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;
@@ -21,9 +26,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Generates a code that corresponds to the particular implementation targets
@@ -63,25 +66,25 @@ public final class DomainObjectImplementer {
   private void generateCompilationUnit(DomainImplementationTarget target) {
     final FqName classFqName = target.getClassName();
     final DomainAnalysisResult analysisResult = target.getSource();
-    final String implClassName = classFqName.getName();
+    final LocalRefType implClass = new LocalRefType(classFqName.getName());
 
     if (!classFqName.isRoot()) {
       generator.packageDirective(classFqName.getParent());
     }
 
 
-    generator.textWithSpaces("public", "class", implClassName);
+    generator.textWithSpaces("public", "class").ch(' ').type(implClass);
     // implements
     generator.ch(' ').text("implements").ch(' ').type(analysisResult.getOriginClass());
     generator.ch(' ', '{');
 
     // fields
     for (final DomainField field : analysisResult.getDeclaredFields()) {
-      generateField(field);
+      generateField(field, field.hasTrait(SimpleDomainFieldTrait.MUTABLE));
     }
 
     // ctor
-    generateConstructor(analysisResult, implClassName);
+    generateConstructor(analysisResult, implClass);
 
     // getters
     for (final DomainField field : analysisResult.getDeclaredFields()) {
@@ -95,7 +98,7 @@ public final class DomainObjectImplementer {
 
     // toString
     generator.ch('\n');
-    ImplementerUtil.generateToString(generator, implClassName, analysisResult.getDeclaredFields());
+    ImplementerUtil.generateToString(generator, implClass, analysisResult.getDeclaredFields());
 
     // hashCode
     generator.ch('\n');
@@ -103,9 +106,61 @@ public final class DomainObjectImplementer {
 
     // equals
     generator.ch('\n');
-    ImplementerUtil.generateEquals(generator, implClassName, analysisResult.getDeclaredFields());
+    ImplementerUtil.generateEquals(generator, implClass, analysisResult.getDeclaredFields());
+
+    // inner builder class and corresponding methods
+    generateInnerBuilder(implClass, analysisResult);
 
     generator.ch('}'); // end of class body
+  }
+
+  private void generateInnerBuilder(Type implClass, DomainAnalysisResult analysisResult) {
+    final BuilderTrait builderTrait = analysisResult.findTrait(BuilderTrait.KEY);
+    if (builderTrait == null) {
+      return; // no builder expected
+    }
+
+    final LocalRefType builderClass = new LocalRefType("Builder");
+
+    // newBuilder() method
+    generator.ch('\n').text("public").ch(' ').text("static").ch(' ').type(implClass).ch(' ').text("newBuilder")
+        .ch('(', ')', ' ', '{')
+        .text("return").ch(' ').newType(builderClass).ch('(', ')', ';')
+        .ch('}');
+
+    generator.ch('\n');
+
+    // class Builder
+    generator.ch('\n').textWithSpaces("public", "static", "final", "class").ch(' ').type(builderClass).ch('{');
+
+    // TODO: all fields?
+    final List<DomainField> fields = ImmutableList.copyOf(analysisResult.getDeclaredFields());
+
+    // builder fields
+    for (final DomainField field : fields) {
+      generateField(field, false);
+    }
+
+    // private constructor
+    generator.ch('\n').text("private").ch(' ').type(builderClass).ch('(').ch(')', ' ', '{');
+    generator.ch('}');
+
+    // setters
+    for (final DomainField field : fields) {
+      final String fieldName = field.getFieldName();
+      generator.ch('\n')
+          .text("public").ch(' ').type(void.class).ch(' ')
+          .text(NamingUtil.createSetterName(field)).ch('(');
+      // arg - ({FieldType} {FieldName})
+      generator.typedVar(field.getFieldType(), fieldName);
+      generator.ch(')', ' ', '{');
+      // impl { this.{FieldName} = {FieldName}; }
+      generator.thisMember(fieldName).ch(' ').text("=").ch(' ').text(fieldName).ch(';');
+      generator.ch('}');
+    }
+
+
+    generator.ch('}'); // end of 'class Builder'
   }
 
   private void generateFinalSetter(DomainField field) {
@@ -133,9 +188,9 @@ public final class DomainObjectImplementer {
   // Private
   //
 
-  private void generateField(DomainField field) {
+  private void generateField(DomainField field, boolean isFinal) {
     generator.text("private").ch(' ');
-    if (!field.hasTrait(SimpleDomainFieldTrait.MUTABLE)) {
+    if (!isFinal) {
       generator.text("final").ch(' ');
     }
     generator.typedVar(field.getFieldType(), field.getFieldName()).ch(';');
@@ -154,9 +209,9 @@ public final class DomainObjectImplementer {
     generator.ch('}');
   }
 
-  private void generateConstructor(DomainAnalysisResult analysisResult, String implClassName) {
+  private void generateConstructor(DomainAnalysisResult analysisResult, Type implClass) {
     generator.ch('\n');
-    generator.text("public").ch(' ').text(implClassName).ch('(');
+    generator.text("public").ch(' ').type(implClass).ch('(');
     boolean next = false;
     // TODO: all fields
     for (final DomainField field : analysisResult.getDeclaredFields()) {
@@ -207,7 +262,6 @@ public final class DomainObjectImplementer {
       public Void visitArray(@Nonnull Type sourceType, @Nonnull Class<?> elementType) {
         // TODO: warning - exposed arrays breaks immutability
         // TODO: Array.copy(fieldName);
-        //generator.text("new").ch(' ').type(elementType).ch('[', ']');
         return visitType(sourceType);
       }
 
@@ -217,12 +271,24 @@ public final class DomainObjectImplementer {
           case JDK:
             if (List.class.equals(rawType)) {
               generateListCopyJdk(var, args.get(0)); // TODO: check args size
+            } else if (Map.class.equals(rawType)) {
+              generateMapCopyJdk(var, args.get(0), args.get(1));
+            } else if (Set.class.equals(rawType)) {
+              generateSetCopyJdk(var, args.get(0));
+            } else {
+              break;
             }
             return null;
 
           case GUAVA:
             if (List.class.equals(rawType)) {
               generateListCopyGuava(var);
+            } else if (Map.class.equals(rawType)) {
+              generateMapCopyGuava(var);
+            } else if (Set.class.equals(rawType)) {
+              generateSetCopyGuava(var);
+            } else {
+              break;
             }
             return null;
 
@@ -243,16 +309,45 @@ public final class DomainObjectImplementer {
     }, type);
   }
 
+  //
+  // JDK-style defensive copies
+  //
+
   private void generateListCopyJdk(String var, Type elementType) {
     // Collections.unmodifiableList(Arrays.asList($listVar.toArray(new String[$listVar.size()])))
     generator.type(Collections.class).dot("unmodifiableList").ch('(')
         .type(Arrays.class).dot("asList").ch('(').text(var).dot("toArray").ch('(')
-        .text("new").ch(' ').type(elementType).ch('[').text(var).dot("size").ch('(', ')', ']')
+        .newType(elementType).ch('[').text(var).dot("size").ch('(', ')', ']')
         .ch(')').ch(')').ch(')');
   }
+
+  private void generateMapCopyJdk(String var, Type keyType, Type valueType) {
+    // Collections.unmodifiableMap(new HashMap<{KeyType}, {ValueType}>(var))
+    generator.type(Collections.class).dot("unmodifiableMap").ch('(')
+        .newType(HashMap.class).ch('<').type(keyType).ch(',', ' ').type(valueType).ch('>').ch('(').text(var).ch(')')
+        .ch(')');
+  }
+
+  private void generateSetCopyJdk(String var, Type elementType) {
+    // Collections.unmodifiableSet(new HashSet<{ElementType}>(var))
+    generator.type(Collections.class).dot("unmodifiableSet").ch('(')
+        .newType(HashSet.class).ch('<').type(elementType).ch('>').ch('(').text(var).ch(')')
+        .ch(')');
+  }
+
+  //
+  // Guava-style defensive copies
+  //
 
   private void generateListCopyGuava(String var) {
     generator.type(ImmutableList.class).dot("copyOf").ch('(').text(var).ch(')');
   }
 
+  private void generateMapCopyGuava(String var) {
+    generator.type(ImmutableMap.class).dot("copyOf").ch('(').text(var).ch(')');
+  }
+
+  private void generateSetCopyGuava(String var) {
+    generator.type(ImmutableSet.class).dot("copyOf").ch('(').text(var).ch(')');
+  }
 }

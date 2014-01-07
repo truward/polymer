@@ -1,11 +1,7 @@
 package com.truward.polymer.core.generator;
 
 import com.google.common.collect.ImmutableList;
-import com.truward.polymer.core.generator.model.CodeObject;
-import com.truward.polymer.core.generator.model.CodeObjectPrinter;
-import com.truward.polymer.core.generator.model.Printable;
-import com.truward.polymer.core.generator.model.Text;
-import com.truward.polymer.code.TypeVisitor;
+import com.truward.polymer.core.generator.model.*;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Type;
@@ -52,6 +48,11 @@ public class JavaTypeRefManager {
         }
 
         return new ParameterizedTypeRef(rawTypeCodeObject, ImmutableList.copyOf(codeObjArgs));
+      }
+
+      @Override
+      public CodeObject visitLocalRef(@Nonnull Type sourceType, @Nonnull LocalRefType ref) {
+        return ref;
       }
     }, type);
   }

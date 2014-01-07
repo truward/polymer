@@ -1,4 +1,4 @@
-package com.truward.polymer.code;
+package com.truward.polymer.core.generator.model;
 
 import com.google.common.collect.ImmutableList;
 
@@ -27,6 +27,10 @@ public abstract class TypeVisitor<R> {
     return visitType(sourceType);
   }
 
+  public R visitLocalRef(@Nonnull Type sourceType, @Nonnull LocalRefType ref) {
+    return visitType(sourceType);
+  }
+
   public static <R> R apply(@Nonnull TypeVisitor<R> visitor, @Nonnull Type sourceType) {
     if (sourceType instanceof Class) {
       final Class<?> clazz = (Class<?>) sourceType;
@@ -44,6 +48,8 @@ public abstract class TypeVisitor<R> {
       } else {
         return visitor.visitType(sourceType);
       }
+    } else if (sourceType instanceof LocalRefType) {
+      return visitor.visitLocalRef(sourceType, (LocalRefType) sourceType);
     } else {
       return visitor.visitType(sourceType);
     }
