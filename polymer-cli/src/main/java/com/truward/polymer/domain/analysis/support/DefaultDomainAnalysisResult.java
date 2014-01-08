@@ -6,7 +6,6 @@ import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -16,13 +15,16 @@ public final class DefaultDomainAnalysisResult extends TraitContainerSupport imp
   private final Class<?> originClass;
   private final List<DomainAnalysisResult> parents;
   private final List<DomainField> declaredFields;
+  private final List<DomainField> fields;
 
   public DefaultDomainAnalysisResult(@Nonnull Class<?> clazz,
                                      @Nonnull List<DomainAnalysisResult> parents,
-                                     @Nonnull List<DomainField> declaredFields) {
+                                     @Nonnull List<DomainField> declaredFields,
+                                     @Nonnull List<DomainField> fields) {
     this.originClass = clazz;
     this.parents = ImmutableList.copyOf(parents);
     this.declaredFields = ImmutableList.copyOf(declaredFields);
+    this.fields = ImmutableList.copyOf(fields);
   }
 
   @Nonnull
@@ -33,14 +35,20 @@ public final class DefaultDomainAnalysisResult extends TraitContainerSupport imp
 
   @Nonnull
   @Override
-  public Collection<? extends DomainField> getDeclaredFields() {
+  public List<DomainField> getDeclaredFields() {
     return declaredFields;
   }
 
   @Nonnull
   @Override
-  public Collection<DomainAnalysisResult> getParents() {
+  public List<DomainAnalysisResult> getParents() {
     return parents;
+  }
+
+  @Nonnull
+  @Override
+  public List<DomainField> getFields() {
+    return fields;
   }
 
   @Override

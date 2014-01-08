@@ -1,5 +1,6 @@
 package com.truward.polymer.domain.analysis.support;
 
+import com.google.common.collect.ImmutableList;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
@@ -8,15 +9,14 @@ import com.truward.polymer.domain.analysis.trait.GetterTrait;
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Alexander Shabanov
  */
 public final class DefaultDomainAnalysisContext implements DomainAnalysisContext {
+
+  private static final int FIELD_MAP_INITIAL_SIZE = 100;
 
   private final Map<Class<?>, DomainAnalysisResult> analysisResults = new HashMap<>();
 
@@ -65,7 +65,37 @@ public final class DefaultDomainAnalysisContext implements DomainAnalysisContext
       declaredFields.add(inferField(method));
     }
 
-    return new DefaultDomainAnalysisResult(clazz, parents, declaredFields);
+    return new DefaultDomainAnalysisResult(clazz, parents, declaredFields, getAllFields(declaredFields, parents));
+  }
+
+  @Nonnull
+  private static List<DomainField> getAllFields(@Nonnull List<DomainField> declaredFields,
+                                                @Nonnull List<DomainAnalysisResult> parents) {
+    final Map<String, DomainField> fieldMap = new LinkedHashMap<>(FIELD_MAP_INITIAL_SIZE);
+
+    addDomainFields(fieldMap, declaredFields);
+    for (final DomainAnalysisResult analysisResult : parents) {
+      addDomainFields(fieldMap, analysisResult.getFields());
+    }
+
+    return ImmutableList.copyOf(fieldMap.values());
+  }
+
+  private static void addDomainFields(@Nonnull Map<String, DomainField> fieldMap, List<DomainField> fields) {
+    for (final DomainField field : fields) {
+      final String name = field.getFieldName();
+      final DomainField prev = fieldMap.get(name);
+      if (prev != null) {
+        if (prev == field) {
+          continue;
+        }
+
+        // different fields with the same name - error
+        throw new RuntimeException("Different fields with the same name: " + field);
+      }
+
+      fieldMap.put(name, field);
+    }
   }
 
   @Nonnull

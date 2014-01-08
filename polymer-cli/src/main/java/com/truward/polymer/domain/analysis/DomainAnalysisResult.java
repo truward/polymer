@@ -3,7 +3,6 @@ package com.truward.polymer.domain.analysis;
 import com.truward.polymer.core.trait.TraitContainer;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -16,10 +15,18 @@ public interface DomainAnalysisResult extends TraitContainer {
   Class<?> getOriginClass();
 
   @Nonnull
-  Collection<? extends DomainField> getDeclaredFields();
+  List<DomainField> getDeclaredFields();
+
+  /**
+   * Returns all the fields including the ones defined in parent fields
+   *
+   * @return List of fields
+   */
+  @Nonnull
+  List<DomainField> getFields();
 
   @Nonnull
-  Collection<DomainAnalysisResult> getParents();
+  List<DomainAnalysisResult> getParents();
 
   boolean isStub();
 }

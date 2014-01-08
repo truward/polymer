@@ -7,7 +7,7 @@ import com.truward.polymer.domain.analysis.DomainField;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Alexander Shabanov
@@ -29,13 +29,19 @@ public final class StubDomainAnalysisResult implements DomainAnalysisResult {
 
   @Nonnull
   @Override
-  public Collection<? extends DomainField> getDeclaredFields() {
+  public List<DomainField> getFields() {
     throw new UnsupportedOperationException();
   }
 
   @Nonnull
   @Override
-  public Collection<DomainAnalysisResult> getParents() {
+  public List<DomainField> getDeclaredFields() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public List<DomainAnalysisResult> getParents() {
     throw new UnsupportedOperationException();
   }
 

@@ -79,7 +79,7 @@ public final class DomainObjectImplementer {
     generator.ch(' ', '{');
 
     // fields
-    for (final DomainField field : analysisResult.getDeclaredFields()) {
+    for (final DomainField field : analysisResult.getFields()) {
       generateField(field, field.hasTrait(SimpleDomainFieldTrait.MUTABLE));
     }
 
@@ -87,26 +87,26 @@ public final class DomainObjectImplementer {
     generateConstructor(analysisResult, implClass);
 
     // getters
-    for (final DomainField field : analysisResult.getDeclaredFields()) {
+    for (final DomainField field : analysisResult.getFields()) {
       generateFinalGetter(field);
     }
 
     // setters
-    for (final DomainField field : analysisResult.getDeclaredFields()) {
+    for (final DomainField field : analysisResult.getFields()) {
       generateFinalSetter(field);
     }
 
     // toString
     generator.ch('\n');
-    ImplementerUtil.generateToString(generator, implClass, analysisResult.getDeclaredFields());
+    ImplementerUtil.generateToString(generator, implClass, analysisResult.getFields());
 
     // hashCode
     generator.ch('\n');
-    ImplementerUtil.generateHashCode(generator, analysisResult.getDeclaredFields());
+    ImplementerUtil.generateHashCode(generator, analysisResult.getFields());
 
     // equals
     generator.ch('\n');
-    ImplementerUtil.generateEquals(generator, implClass, analysisResult.getDeclaredFields());
+    ImplementerUtil.generateEquals(generator, implClass, analysisResult.getFields());
 
     // inner builder class and corresponding methods
     generateInnerBuilder(implClass, analysisResult);
@@ -133,8 +133,7 @@ public final class DomainObjectImplementer {
     // class Builder
     generator.ch('\n').textWithSpaces("public", "static", "final", "class").ch(' ').type(builderClass).ch('{');
 
-    // TODO: all fields?
-    final List<DomainField> fields = ImmutableList.copyOf(analysisResult.getDeclaredFields());
+    final List<DomainField> fields = analysisResult.getFields();
 
     // builder fields
     for (final DomainField field : fields) {
@@ -213,8 +212,7 @@ public final class DomainObjectImplementer {
     generator.ch('\n');
     generator.text("public").ch(' ').type(implClass).ch('(');
     boolean next = false;
-    // TODO: all fields
-    for (final DomainField field : analysisResult.getDeclaredFields()) {
+    for (final DomainField field : analysisResult.getFields()) {
       if (next) {
         generator.ch(',', ' ');
       } else {
@@ -230,13 +228,12 @@ public final class DomainObjectImplementer {
     generator.ch(')', ' ', '{');
 
     // verification of the input arguments
-    // TODO: optional?
-    for (final DomainField field : analysisResult.getDeclaredFields()) {
+    for (final DomainField field : analysisResult.getFields()) {
       ImplementerUtil.generateNullCheckIfNeeded(generator, field);
     }
 
     // body
-    for (final DomainField field : analysisResult.getDeclaredFields()) {
+    for (final DomainField field : analysisResult.getFields()) {
       generateAssignment(field);
     }
     generator.ch('}');
@@ -270,10 +267,13 @@ public final class DomainObjectImplementer {
         switch (implementerSettings.getDefensiveCopyStyle()) {
           case JDK:
             if (List.class.equals(rawType)) {
-              generateListCopyJdk(var, args.get(0)); // TODO: check args size
+              assert args.size() == 1;
+              generateListCopyJdk(var, args.get(0));
             } else if (Map.class.equals(rawType)) {
+              assert args.size() == 2;
               generateMapCopyJdk(var, args.get(0), args.get(1));
             } else if (Set.class.equals(rawType)) {
+              assert args.size() == 1;
               generateSetCopyJdk(var, args.get(0));
             } else {
               break;
