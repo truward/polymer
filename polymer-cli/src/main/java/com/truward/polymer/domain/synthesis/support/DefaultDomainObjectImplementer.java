@@ -12,6 +12,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -49,9 +50,21 @@ public final class DefaultDomainObjectImplementer implements DomainObjectImpleme
                                               @Nonnull DomainAnalysisResult target,
                                               @Nonnull FqName classFqName) {
     final ClassImplementer classImplementer = new ClassImplementer(generator, implementerSettings, target, classFqName);
-    final BuilderImplementer builderImplementer = new BuilderImplementer(generator);
+    final Type implClass = classImplementer.getImplClass();
+    final BuilderImplementer builderImplementer = new BuilderImplementer(generator, implClass, target);
+    final JacksonSupportImplementer jacksonSupportImplementer = new JacksonSupportImplementer(generator, implClass, target);
+
+    // compilation unit generation
     classImplementer.generateHeaderAndPrologue();
-    builderImplementer.generateInnerBuilder(classImplementer.getImplClass(), target);
+    // TODO: non-inner builder support
+    if (builderImplementer.isInnerBuilderSupported()) {
+      builderImplementer.generateInnerBuilder();
+    }
+
+    // TODO: non-inner jackson support
+    if (jacksonSupportImplementer.isInnerCreatorSupported()) {
+      jacksonSupportImplementer.generateInnerCreator();
+    }
     classImplementer.generateEpilogue();
   }
 

@@ -14,22 +14,29 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 /**
+ * Encapsulates builder generation.
+ * TODO: non-inner builder support
+ *
  * @author Alexander Shabanov
  */
 public final class BuilderImplementer {
-  // current generator
   private final JavaCodeGenerator generator;
+  private final Type implClass;
+  private final DomainAnalysisResult analysisResult;
 
-  public BuilderImplementer(@Nonnull JavaCodeGenerator generator) {
+  public BuilderImplementer(@Nonnull JavaCodeGenerator generator,
+                            @Nonnull Type implClass,
+                            @Nonnull DomainAnalysisResult analysisResult) {
     this.generator = generator;
+    this.implClass = implClass;
+    this.analysisResult = analysisResult;
   }
 
-  public void generateInnerBuilder(@Nonnull Type implClass, @Nonnull DomainAnalysisResult analysisResult) {
-    final BuilderTrait builderTrait = analysisResult.findTrait(BuilderTrait.KEY);
-    if (builderTrait == null) {
-      return; // no builder expected
-    }
+  public boolean isInnerBuilderSupported() {
+    return analysisResult.hasTrait(BuilderTrait.KEY);
+  }
 
+  public void generateInnerBuilder() {
     final LocalRefType builderClass = new LocalRefType("Builder");
 
     // newBuilder() method

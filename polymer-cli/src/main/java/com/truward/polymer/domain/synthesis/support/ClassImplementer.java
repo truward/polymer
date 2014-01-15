@@ -20,6 +20,8 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 /**
+ * Encapsulates generation of the domain class' compilation unit
+ *
  * @author Alexander Shabanov
  */
 public final class ClassImplementer {
@@ -116,7 +118,6 @@ public final class ClassImplementer {
     generator.thisMember(fieldName).ch(' ').text("=").ch(' ').text(fieldName).ch(';');
     generator.ch('}');
   }
-
 
 
   private void generateFinalGetter(DomainField field) {
