@@ -10,10 +10,9 @@ import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.core.generator.support.DefaultParameterizedType;
 import com.truward.polymer.core.output.DefaultFileTypes;
 import com.truward.polymer.core.output.OutputStreamProvider;
-import com.truward.polymer.domain.DomainImplementerSettings;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.analysis.DomainImplementationTarget;
+import com.truward.polymer.domain.analysis.DomainImplementerSettingsReader;
 import com.truward.polymer.domain.analysis.support.Names;
 import com.truward.polymer.domain.analysis.trait.BuilderTrait;
 import com.truward.polymer.domain.analysis.trait.GetterTrait;
@@ -40,20 +39,21 @@ public final class DomainObjectImplementer {
   private JavaCodeGenerator generator;
 
   @Resource
-  private DomainImplementerSettings implementerSettings;
+  private DomainImplementerSettingsReader implementerSettings;
 
-  public void setImplementerSettings(DomainImplementerSettings implementerSettings) {
-    this.implementerSettings = implementerSettings;
+  public void setImplementerSettings(DomainImplementerSettingsReader implementerSettingsReader) {
+    this.implementerSettings = implementerSettingsReader;
   }
 
   public void generateCode(@Nonnull OutputStreamProvider outputStreamProvider,
-                           @Nonnull List<DomainImplementationTarget> implTargets) {
-    for (final DomainImplementationTarget target : implTargets) {
+                           @Nonnull List<DomainAnalysisResult> implTargets) {
+    for (final DomainAnalysisResult target : implTargets) {
       this.generator = new JavaCodeGenerator();
-      generateCompilationUnit(target);
+      final FqName classFqName = getImplClassName(target);
+
+      generateCompilationUnit(target, classFqName);
       try {
-        try (final OutputStream stream = outputStreamProvider.createStreamForFile(
-            target.getClassName(), DefaultFileTypes.JAVA)) {
+        try (final OutputStream stream = outputStreamProvider.createStreamForFile(classFqName, DefaultFileTypes.JAVA)) {
           try (final PrintStream printStream = new PrintStream(stream, true, StandardCharsets.UTF_8.name())) {
             generator.printContents(printStream);
           }
@@ -64,9 +64,17 @@ public final class DomainObjectImplementer {
     }
   }
 
-  private void generateCompilationUnit(DomainImplementationTarget target) {
-    final FqName classFqName = target.getClassName();
-    final DomainAnalysisResult analysisResult = target.getSource();
+  private FqName getImplClassName(@Nonnull DomainAnalysisResult result) {
+    final StringBuilder nameBuilder = new StringBuilder(200);
+    nameBuilder.append(implementerSettings.getDefaultTargetPackageName()).append('.');
+    nameBuilder.append(implementerSettings.getDefaultImplClassPrefix())
+        .append(result.getOriginClass().getSimpleName())
+        .append(implementerSettings.getDefaultImplClassSuffix());
+
+    return FqName.parse(nameBuilder.toString());
+  }
+
+  private void generateCompilationUnit(DomainAnalysisResult analysisResult, FqName classFqName) {
     final LocalRefType implClass = new LocalRefType(classFqName.getName());
 
     if (!classFqName.isRoot()) {

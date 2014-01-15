@@ -2,16 +2,18 @@ package com.truward.polymer.domain.driver;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.truward.polymer.code.DefaultValues;
 import com.truward.polymer.core.driver.SpecificationParameterProvider;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
-import com.truward.polymer.code.naming.FqName;
-import com.truward.polymer.code.DefaultValues;
 import com.truward.polymer.domain.DomainImplementerSettings;
 import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSettings;
 import com.truward.polymer.domain.DomainObjectSpecifier;
-import com.truward.polymer.domain.analysis.*;
+import com.truward.polymer.domain.analysis.DomainAnalysisContext;
+import com.truward.polymer.domain.analysis.DomainAnalysisResult;
+import com.truward.polymer.domain.analysis.DomainField;
+import com.truward.polymer.domain.analysis.DomainImplTargetProvider;
 import com.truward.polymer.domain.analysis.trait.GetterTrait;
 import com.truward.polymer.domain.analysis.trait.ImplementationNameTrait;
 import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;
@@ -44,7 +46,7 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
 
   private DomainAnalysisResult currentAnalysisResult;
   private DomainField currentField;
-  private List<DomainImplementationTarget> implementationTargets = new ArrayList<>();
+  private List<DomainAnalysisResult> implementationTargets = new ArrayList<>();
 
   @Override
   @Nonnull
@@ -62,8 +64,7 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
     currentAnalysisResult = analysisContext.analyze(clazz);
 
     // automatically introduce implementation target
-    implementationTargets.add(new DomainImplementationTarget(currentAnalysisResult,
-        FqName.parse("com.mysite." + currentAnalysisResult.getOriginClass().getName() + "Impl")));
+    implementationTargets.add(currentAnalysisResult);
 
     return instance;
   }
@@ -114,7 +115,7 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
 
   @Nonnull
   @Override
-  public List<DomainImplementationTarget> getImplementationTargets() {
+  public List<DomainAnalysisResult> getImplementationTargets() {
     return ImmutableList.copyOf(implementationTargets);
   }
 

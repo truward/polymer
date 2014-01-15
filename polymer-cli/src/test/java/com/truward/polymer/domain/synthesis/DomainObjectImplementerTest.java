@@ -1,8 +1,6 @@
 package com.truward.polymer.domain.synthesis;
 
 import com.google.common.collect.ImmutableList;
-import com.truward.polymer.code.naming.FqName;
-import com.truward.polymer.domain.analysis.DomainImplementationTarget;
 import com.truward.polymer.domain.driver.DomainImplementerSettingsProvider;
 import com.truward.polymer.testutil.MemOutputStreamProvider;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
@@ -50,7 +48,6 @@ public class DomainObjectImplementerTest {
 
   private DomainAnalysisContext analysisContext;
   private MemOutputStreamProvider mosp;
-  private final FqName implClassName = FqName.parse("com.mysite.SampleImpl");
 
   @Before
   public void setup() {
@@ -68,7 +65,7 @@ public class DomainObjectImplementerTest {
   @Test
   public void shouldImplement() {
     final DomainAnalysisResult result = analysisContext.analyze(User.class);
-    generateCode(implTarget(result));
+    generateCode(result);
     final String code = mosp.getOneContent();
     assertTrue(code.contains("package")); // TODO: more complex verification
   }
@@ -76,7 +73,7 @@ public class DomainObjectImplementerTest {
   @Test
   public void shouldImplementEqualsAndHashCodeForPrimitiveType() {
     final DomainAnalysisResult result = analysisContext.analyze(Primitive.class);
-    generateCode(implTarget(result));
+    generateCode(result);
     final String code = mosp.getOneContent();
     assertTrue(code.contains("package")); // TODO: more complex verification
   }
@@ -85,13 +82,9 @@ public class DomainObjectImplementerTest {
   // Private
   //
 
-  private List<DomainImplementationTarget> implTarget(DomainAnalysisResult result) {
-    return ImmutableList.of(new DomainImplementationTarget(result, implClassName));
-  }
-
-  private void generateCode(List<DomainImplementationTarget> targets) {
+  private void generateCode(DomainAnalysisResult... results) {
     final DomainObjectImplementer implementer = new DomainObjectImplementer();
     implementer.setImplementerSettings(new DomainImplementerSettingsProvider());
-    implementer.generateCode(mosp, targets);
+    implementer.generateCode(mosp, ImmutableList.copyOf(results));
   }
 }
