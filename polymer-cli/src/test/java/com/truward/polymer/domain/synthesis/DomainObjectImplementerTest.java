@@ -2,6 +2,7 @@ package com.truward.polymer.domain.synthesis;
 
 import com.google.common.collect.ImmutableList;
 import com.truward.polymer.domain.driver.DomainImplementerSettingsProvider;
+import com.truward.polymer.domain.synthesis.support.DefaultDomainObjectImplementer;
 import com.truward.polymer.testutil.MemOutputStreamProvider;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
@@ -83,8 +84,8 @@ public class DomainObjectImplementerTest {
   //
 
   private void generateCode(DomainAnalysisResult... results) {
-    final DomainObjectImplementer implementer = new DomainObjectImplementer();
-    implementer.setImplementerSettings(new DomainImplementerSettingsProvider());
-    implementer.generateCode(mosp, ImmutableList.copyOf(results));
+    final DomainObjectImplementer implementer = new DefaultDomainObjectImplementer();
+    final DomainImplementerSettingsProvider provider = new DomainImplementerSettingsProvider();
+    implementer.generateCode(mosp, provider, ImmutableList.copyOf(results));
   }
 }

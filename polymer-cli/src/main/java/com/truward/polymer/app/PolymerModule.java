@@ -7,6 +7,7 @@ import com.truward.polymer.domain.analysis.support.DefaultDomainAnalysisContext;
 import com.truward.polymer.domain.driver.DefaultDomainObjectSpecifier;
 import com.truward.polymer.domain.driver.DomainImplementerSettingsProvider;
 import com.truward.polymer.domain.synthesis.DomainObjectImplementer;
+import com.truward.polymer.domain.synthesis.support.DefaultDomainObjectImplementer;
 
 /**
  * Represents dependency injection module that registers default configuration for the polymer application.
@@ -25,7 +26,7 @@ public class PolymerModule {
     injectionContext.registerBean(DefaultDomainAnalysisContext.class);
     injectionContext.registerBean(DefaultDomainObjectSpecifier.class);
     injectionContext.registerBean(DomainImplementerSettingsProvider.class);
-    injectionContext.registerBean(DomainObjectImplementer.class);
+    injectionContext.registerBean(DefaultDomainObjectImplementer.class);
 
     // general-purpose ones
     injectionContext.registerBean(DefaultSpecificationHandler.class);
