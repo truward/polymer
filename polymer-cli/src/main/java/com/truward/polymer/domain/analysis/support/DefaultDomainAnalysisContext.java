@@ -101,12 +101,12 @@ public final class DefaultDomainAnalysisContext implements DomainAnalysisContext
   @Nonnull
   private static DomainField inferField(@Nonnull Method method) {
     final String methodName = method.getName();
-    if (NamingUtil.isJavaBeanGetter(methodName)) {
+    if (Names.isJavaBeanGetter(methodName)) {
       if (method.getParameterTypes().length > 0) {
         throw new RuntimeException("Unsupported getter " + method + "with parameters in the domain object");
       }
 
-      final DomainField result = new DefaultDomainField(NamingUtil.asFieldName(method.getName()), method);
+      final DomainField result = new DefaultDomainField(Names.asFieldName(method.getName()), method);
       result.putTrait(new GetterTrait(methodName));
       return result;
     }

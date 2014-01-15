@@ -20,7 +20,7 @@ public final class DefaultDomainField extends TraitContainerSupport implements D
   DefaultDomainField(@Nonnull String name, @Nonnull Method originMethod) {
     this.name = name;
     this.originMethod = originMethod;
-    //this.getterName = NamingUtil.createGetterName(getFieldType(), getFieldName());
+    //this.getterName = Names.createGetterName(getFieldType(), getFieldName());
 
     // all primitive types are not nullable
     if (getFieldType() instanceof Class && ((Class) getFieldType()).isPrimitive()) {

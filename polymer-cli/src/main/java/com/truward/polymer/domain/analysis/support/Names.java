@@ -9,8 +9,13 @@ import javax.annotation.Nonnull;
  *
  * @author Alexander Shabanov
  */
-public final class NamingUtil {
-  private NamingUtil() {} // Hidden ctor
+public final class Names {
+  private Names() {} // Hidden ctor
+
+  public static final String ELEMENT = "element";
+  public static final String ELEMENTS = "elements";
+  public static final String KEY = "key";
+  public static final String VALUE = "value";
 
   public static final String GET_PREFIX = "get";
   public static final String IS_PREFIX = "is";
@@ -39,13 +44,12 @@ public final class NamingUtil {
   }
 
   @Nonnull
-  public static String createSetterName(@Nonnull DomainField field) {
-    final String fieldName = field.getFieldName();
-    if (fieldName.isEmpty()) {
-      throw new IllegalArgumentException("Field with null name");
+  public static String createPrefixedName(@Nonnull String prefix, @Nonnull String originName) {
+    if (originName.isEmpty()) {
+      throw new IllegalArgumentException("Prefixed name can not be null");
     }
-    return SET_PREFIX + Character.toUpperCase(fieldName.charAt(0)) +
-        (fieldName.length() > 1 ? fieldName.substring(1) : "");
+    return prefix + Character.toUpperCase(originName.charAt(0)) +
+        (originName.length() > 1 ? originName.substring(1) : "");
   }
 
   //
