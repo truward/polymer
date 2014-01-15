@@ -8,9 +8,9 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>polymer-code</artifactId>
+  <artifactId>polymer-core</artifactId>
   <packaging>jar</packaging>
-  <name>Polymer Code Model</name>
+  <name>Polymer Core</name>
 
 
   <dependencies>

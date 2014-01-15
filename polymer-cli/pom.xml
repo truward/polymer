@@ -31,7 +31,7 @@
 
     <dependency>
       <groupId>com.truward.polymer</groupId>
-      <artifactId>polymer-code</artifactId>
+      <artifactId>polymer-core</artifactId>
     </dependency>
 
     <!-- Logging -->
