@@ -2,6 +2,7 @@ package com.truward.polymer.domain.analysis.trait;
 
 import com.truward.polymer.core.trait.Trait;
 import com.truward.polymer.core.trait.TraitKey;
+import com.truward.polymer.domain.DomainObjectBuilderSettings;
 
 import javax.annotation.Nonnull;
 
@@ -13,12 +14,17 @@ import javax.annotation.Nonnull;
 public final class BuilderTrait implements Trait<BuilderTrait> {
   public static final TraitKey<BuilderTrait> KEY = new Key();
 
-  // TODO: builder settings
+  private final Settings settings = new Settings();
 
   @Nonnull
   @Override
   public TraitKey<BuilderTrait> getKey() {
     return KEY;
+  }
+
+  @Nonnull
+  public DomainObjectBuilderSettings getSettings() {
+    return settings;
   }
 
   private static final class Key implements TraitKey<BuilderTrait> {
@@ -29,5 +35,8 @@ public final class BuilderTrait implements Trait<BuilderTrait> {
     public Class<BuilderTrait> getTraitClass() {
       return BuilderTrait.class;
     }
+  }
+
+  private static final class Settings implements DomainObjectBuilderSettings {
   }
 }

@@ -27,6 +27,7 @@ public class SpecificationHandlerTest {
   @Test
   public void shouldGenerateCode() {
     specificationHandler.parseClass(TestSpec.class);
+    specificationHandler.done();
   }
 
   //

@@ -8,4 +8,6 @@ package com.truward.polymer.core.driver;
 public interface SpecificationHandler {
 
   void parseClass(Class<?> clazz);
+
+  void done();
 }

@@ -1,6 +1,11 @@
 package com.truward.polymer.domain.synthesis;
 
 import com.google.common.collect.ImmutableList;
+import com.truward.di.InjectionContext;
+import com.truward.di.support.DefaultInjectionContext;
+import com.truward.polymer.code.naming.FqName;
+import com.truward.polymer.domain.analysis.DomainImplementationTarget;
+import com.truward.polymer.domain.analysis.support.DefaultDomainImplementationTarget;
 import com.truward.polymer.domain.driver.DomainImplementerSettingsProvider;
 import com.truward.polymer.domain.synthesis.support.DefaultDomainObjectImplementer;
 import com.truward.polymer.testutil.MemOutputStreamProvider;
@@ -49,11 +54,19 @@ public class DomainObjectImplementerTest {
 
   private DomainAnalysisContext analysisContext;
   private MemOutputStreamProvider mosp;
+  private InjectionContext injectionContext = new DefaultInjectionContext();
+  private DomainObjectImplementer implementer;
 
   @Before
   public void setup() {
-    analysisContext = new DefaultDomainAnalysisContext();
     mosp = new MemOutputStreamProvider();
+    injectionContext.registerBean(DefaultDomainAnalysisContext.class);
+    injectionContext.registerBean(mosp);
+    injectionContext.registerBean(new DomainImplementerSettingsProvider());
+    injectionContext.registerBean(DefaultDomainObjectImplementer.class);
+
+    analysisContext = injectionContext.getBean(DomainAnalysisContext.class);
+    implementer = injectionContext.getBean(DomainObjectImplementer.class);
   }
 
   @Test
@@ -83,9 +96,10 @@ public class DomainObjectImplementerTest {
   // Private
   //
 
-  private void generateCode(DomainAnalysisResult... results) {
-    final DomainObjectImplementer implementer = new DefaultDomainObjectImplementer();
-    final DomainImplementerSettingsProvider provider = new DomainImplementerSettingsProvider();
-    implementer.generateCode(mosp, provider, ImmutableList.copyOf(results));
+  private void generateCode(DomainAnalysisResult result) {
+    final DomainImplementationTarget target = new DefaultDomainImplementationTarget(result);
+    target.setTargetName(FqName.parse("generated.Sample"));
+
+    implementer.generateCode(ImmutableList.of(target));
   }
 }

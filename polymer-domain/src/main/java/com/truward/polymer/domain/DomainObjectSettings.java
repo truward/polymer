@@ -8,6 +8,7 @@ import javax.annotation.Nonnull;
  * @author Alexander Shabanov
  */
 public interface DomainObjectSettings {
-  void assignBuilder(@Nonnull Class<?> builder);
+  DomainObjectBuilderSettings assignBuilder();
+
   void setImplementationName(@Nonnull String implementationName);
 }

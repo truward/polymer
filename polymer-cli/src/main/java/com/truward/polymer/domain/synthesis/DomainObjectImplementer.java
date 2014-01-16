@@ -1,7 +1,7 @@
 package com.truward.polymer.domain.synthesis;
 
 import com.truward.polymer.core.output.OutputStreamProvider;
-import com.truward.polymer.domain.analysis.DomainAnalysisResult;
+import com.truward.polymer.domain.analysis.DomainImplementationTarget;
 import com.truward.polymer.domain.analysis.DomainImplementerSettingsReader;
 
 import javax.annotation.Nonnull;
@@ -14,7 +14,5 @@ import java.util.List;
  */
 public interface DomainObjectImplementer {
 
-  void generateCode(@Nonnull OutputStreamProvider outputStreamProvider,
-                    @Nonnull DomainImplementerSettingsReader implementerSettings,
-                    @Nonnull List<DomainAnalysisResult> implTargets);
+  void generateCode(@Nonnull List<DomainImplementationTarget> implTargets);
 }

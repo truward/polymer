@@ -14,7 +14,7 @@ import java.util.Set;
 public final class TypeUtil {
   private TypeUtil() {} // Hidden
 
-  public static Set<Class<?>> NUMERIC_PRIMITIVES = ImmutableSet.<Class<?>>of(int.class, char.class, byte.class,
+  public static final Set<Class<?>> NUMERIC_PRIMITIVES = ImmutableSet.<Class<?>>of(int.class, char.class, byte.class,
       long.class, double.class, float.class);
 
   @Nullable

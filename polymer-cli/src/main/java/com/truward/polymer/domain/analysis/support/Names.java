@@ -1,7 +1,5 @@
 package com.truward.polymer.domain.analysis.support;
 
-import com.truward.polymer.domain.analysis.DomainField;
-
 import javax.annotation.Nonnull;
 
 /**
@@ -12,14 +10,23 @@ import javax.annotation.Nonnull;
 public final class Names {
   private Names() {} // Hidden ctor
 
+  //
+  // Common variable names
+  //
+
   public static final String ELEMENT = "element";
   public static final String ELEMENTS = "elements";
   public static final String KEY = "key";
   public static final String VALUE = "value";
+  public static final String RESULT = "result";
+
+
+  //
+  // Prefixes
+  //
 
   public static final String GET_PREFIX = "get";
   public static final String IS_PREFIX = "is";
-
   public static final String SET_PREFIX = "set";
 
   public static boolean isJavaBeanGetter(@Nonnull String methodName) {

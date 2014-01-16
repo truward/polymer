@@ -1,14 +1,14 @@
 package com.truward.polymer.domain.synthesis.support;
 
-import com.truward.polymer.code.naming.FqName;
 import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.core.output.DefaultFileTypes;
 import com.truward.polymer.core.output.OutputStreamProvider;
-import com.truward.polymer.domain.analysis.DomainAnalysisResult;
+import com.truward.polymer.domain.analysis.DomainImplementationTarget;
 import com.truward.polymer.domain.analysis.DomainImplementerSettingsReader;
 import com.truward.polymer.domain.synthesis.DomainObjectImplementer;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -20,17 +20,20 @@ import java.util.List;
  * @author Alexander Shabanov
  */
 public final class DefaultDomainObjectImplementer implements DomainObjectImplementer {
+  @Resource
+  private DomainImplementerSettingsReader implementerSettings;
+
+  @Resource
+  private OutputStreamProvider outputStreamProvider;
+
 
   @Override
-  public void generateCode(@Nonnull OutputStreamProvider outputStreamProvider,
-                           @Nonnull DomainImplementerSettingsReader implementerSettings,
-                           @Nonnull List<DomainAnalysisResult> implTargets) {
-    for (final DomainAnalysisResult target : implTargets) {
+  public void generateCode(@Nonnull List<DomainImplementationTarget> targets) {
+    for (final DomainImplementationTarget target : targets) {
       final JavaCodeGenerator generator = new JavaCodeGenerator();
-      final FqName classFqName = getImplClassName(implementerSettings, target);
-      generateCompilationUnit(implementerSettings, generator, target, classFqName);
+      generateCompilationUnit(generator, target);
       try {
-        try (final OutputStream stream = outputStreamProvider.createStreamForFile(classFqName, DefaultFileTypes.JAVA)) {
+        try (final OutputStream stream = outputStreamProvider.createStreamForFile(target.getTargetName(), DefaultFileTypes.JAVA)) {
           try (final PrintStream printStream = new PrintStream(stream, true, StandardCharsets.UTF_8.name())) {
             generator.printContents(printStream);
           }
@@ -45,14 +48,13 @@ public final class DefaultDomainObjectImplementer implements DomainObjectImpleme
   // Private
   //
 
-  private static void generateCompilationUnit(@Nonnull DomainImplementerSettingsReader implementerSettings,
-                                              @Nonnull JavaCodeGenerator generator,
-                                              @Nonnull DomainAnalysisResult target,
-                                              @Nonnull FqName classFqName) {
-    final ClassImplementer classImplementer = new ClassImplementer(generator, implementerSettings, target, classFqName);
-    final Type implClass = classImplementer.getImplClass();
-    final BuilderImplementer builderImplementer = new BuilderImplementer(generator, implClass, target);
-    final JacksonSupportImplementer jacksonSupportImplementer = new JacksonSupportImplementer(generator, implClass, target);
+  private void generateCompilationUnit(@Nonnull JavaCodeGenerator generator, @Nonnull DomainImplementationTarget target) {
+    final ClassImplementer classImplementer = new ClassImplementer(generator, implementerSettings, target);
+    final Type implClass = classImplementer.getTargetClass();
+    final BuilderImplementer builderImplementer = new BuilderImplementer(generator, implClass,
+        target.getAnalysisResult());
+    final JacksonSupportImplementer jacksonSupportImplementer = new JacksonSupportImplementer(generator, implClass,
+        target.getAnalysisResult());
 
     // compilation unit generation
     classImplementer.generateHeaderAndPrologue();
@@ -66,16 +68,5 @@ public final class DefaultDomainObjectImplementer implements DomainObjectImpleme
       jacksonSupportImplementer.generateInnerCreator();
     }
     classImplementer.generateEpilogue();
-  }
-
-  private static FqName getImplClassName(@Nonnull DomainImplementerSettingsReader implementerSettings,
-                                         @Nonnull DomainAnalysisResult result) {
-    final StringBuilder nameBuilder = new StringBuilder(200);
-    nameBuilder.append(implementerSettings.getDefaultTargetPackageName()).append('.');
-    nameBuilder.append(implementerSettings.getDefaultImplClassPrefix())
-        .append(result.getOriginClass().getSimpleName())
-        .append(implementerSettings.getDefaultImplClassSuffix());
-
-    return FqName.parse(nameBuilder.toString());
   }
 }

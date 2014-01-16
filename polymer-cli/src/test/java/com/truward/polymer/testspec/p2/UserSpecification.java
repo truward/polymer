@@ -24,7 +24,8 @@ public final class UserSpecification {
   @Specification
   public void spec(@DomainObject User user) {
     specifier
-        .isNonNull(user.getName());
+        .isNullable(user.getId())
+        .getObjectSettings(User.class).assignBuilder();
 
     specifier.getObjectSettings(User.class).setImplementationName("User");
   }

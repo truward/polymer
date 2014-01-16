@@ -6,5 +6,6 @@ package com.truward.polymer.core.driver;
 public enum SpecificationState {
   HOLD,
   RECORDING,
-  SUBMITTED
+  SUBMITTED,
+  COMPLETED
 }

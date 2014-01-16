@@ -7,10 +7,7 @@ import com.truward.polymer.code.naming.FqName;
 import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.core.generator.model.LocalRefType;
 import com.truward.polymer.core.generator.model.TypeVisitor;
-import com.truward.polymer.domain.analysis.DomainAnalysisResult;
-import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.analysis.DomainImplementerSettingsReader;
-import com.truward.polymer.domain.analysis.TypeUtil;
+import com.truward.polymer.domain.analysis.*;
 import com.truward.polymer.domain.analysis.trait.GetterTrait;
 import com.truward.polymer.domain.analysis.trait.SetterTrait;
 import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;
@@ -29,28 +26,27 @@ public final class ClassImplementer {
   private final JavaCodeGenerator generator;
   private final DomainAnalysisResult analysisResult;
   private final LocalRefType implClass;
-  private final FqName classFqName;
+  private final FqName targetName;
   private final DomainImplementerSettingsReader implementerSettings;
 
   public ClassImplementer(@Nonnull JavaCodeGenerator generator,
                           @Nonnull DomainImplementerSettingsReader implementerSettings,
-                          @Nonnull DomainAnalysisResult analysisResult,
-                          @Nonnull FqName classFqName) {
+                          @Nonnull DomainImplementationTarget target) {
     this.generator = generator;
     this.implementerSettings = implementerSettings;
-    this.classFqName = classFqName;
-    this.analysisResult = analysisResult;
-    this.implClass = new LocalRefType(classFqName.getName());
+    this.targetName = target.getTargetName();
+    this.analysisResult = target.getAnalysisResult();
+    this.implClass = new LocalRefType(targetName.getName());
   }
 
   @Nonnull
-  public LocalRefType getImplClass() {
+  public LocalRefType getTargetClass() {
     return implClass;
   }
 
   public void generateHeaderAndPrologue() {
-    if (!classFqName.isRoot()) {
-      generator.packageDirective(classFqName.getParent());
+    if (!targetName.isRoot()) {
+      generator.packageDirective(targetName.getParent());
     }
 
 

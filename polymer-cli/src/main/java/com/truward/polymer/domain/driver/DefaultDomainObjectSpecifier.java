@@ -1,19 +1,16 @@
 package com.truward.polymer.domain.driver;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
 import com.truward.polymer.code.DefaultValues;
 import com.truward.polymer.core.driver.SpecificationParameterProvider;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
-import com.truward.polymer.domain.DomainImplementerSettings;
-import com.truward.polymer.domain.DomainObject;
-import com.truward.polymer.domain.DomainObjectSettings;
-import com.truward.polymer.domain.DomainObjectSpecifier;
+import com.truward.polymer.domain.*;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.analysis.DomainImplTargetProvider;
+import com.truward.polymer.domain.analysis.DomainImplementationTargetProvider;
+import com.truward.polymer.domain.analysis.trait.BuilderTrait;
 import com.truward.polymer.domain.analysis.trait.GetterTrait;
 import com.truward.polymer.domain.analysis.trait.ImplementationNameTrait;
 import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;
@@ -26,14 +23,13 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Alexander Shabanov
  */
 public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier, SpecificationStateAware,
-    SpecificationParameterProvider, DomainImplTargetProvider {
+    SpecificationParameterProvider {
   private final Logger log = LoggerFactory.getLogger(DefaultDomainObjectSpecifier.class);
 
   private SpecificationState state = SpecificationState.HOLD;
@@ -44,9 +40,11 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   @Resource
   private DomainImplementerSettings implementerSettings;
 
+  @Resource
+  private DomainImplementationTargetProvider implementationTargetProvider;
+
   private DomainAnalysisResult currentAnalysisResult;
   private DomainField currentField;
-  private List<DomainAnalysisResult> implementationTargets = new ArrayList<>();
 
   @Override
   @Nonnull
@@ -64,7 +62,7 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
     currentAnalysisResult = analysisContext.analyze(clazz);
 
     // automatically introduce implementation target
-    implementationTargets.add(currentAnalysisResult);
+    implementationTargetProvider.submit(currentAnalysisResult);
 
     return instance;
   }
@@ -115,12 +113,6 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
 
   @Nonnull
   @Override
-  public List<DomainAnalysisResult> getImplementationTargets() {
-    return ImmutableList.copyOf(implementationTargets);
-  }
-
-  @Nonnull
-  @Override
   public DomainObjectSettings getObjectSettings(@Nonnull Class<?> clazz) {
     return new DefaultDomainObjectSettings(analysisContext.analyze(clazz));
   }
@@ -136,7 +128,7 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   //
 
   private DomainObjectSpecifier setupTrait(@Nonnull SimpleDomainFieldTrait fieldTrait) {
-    checkSpecStateAndField();
+    checkRecordingStateAndField();
     try {
       fieldTrait.verifyCompatibility(currentField);
       currentField.putTrait(fieldTrait);
@@ -147,14 +139,14 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
     return this;
   }
 
-  private void checkSpecStateAndField() {
-    checkSpecState();
+  private void checkRecordingStateAndField() {
+    checkRecordingState();
     if (currentField == null) {
       throw new UnsupportedOperationException("Unknown current field");
     }
   }
 
-  private void checkSpecState() {
+  private void checkRecordingState() {
     if (currentAnalysisResult == null) {
       throw new IllegalStateException("No current object");
     }
@@ -173,8 +165,14 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
     }
 
     @Override
-    public void assignBuilder(@Nonnull Class<?> builder) {
-      throw new UnsupportedOperationException();
+    public DomainObjectBuilderSettings assignBuilder() {
+      BuilderTrait builderTrait = analysisResult.findTrait(BuilderTrait.KEY);
+      if (builderTrait == null) {
+        builderTrait = new BuilderTrait();
+        analysisResult.putTrait(builderTrait);
+      }
+
+      return builderTrait.getSettings();
     }
 
     @Override
@@ -187,7 +185,7 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-      checkSpecState();
+      checkRecordingState();
       log.debug("Invocation of {}", method);
       final String methodName = method.getName();
       currentField = getField(currentAnalysisResult, new Predicate<DomainField>() {

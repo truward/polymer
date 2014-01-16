@@ -10,15 +10,15 @@ import com.truward.polymer.core.driver.SpecificationStateAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Default implementation of {@link SpecificationHandler}
@@ -29,15 +29,8 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
 
   private final Logger log = LoggerFactory.getLogger(DefaultSpecificationHandler.class);
 
-  private List<SpecificationStateAware> stateAwareBeans;
-
   @Resource
   private InjectionContext injectionContext;
-
-  @PostConstruct
-  public void init() {
-    stateAwareBeans = injectionContext.getBeans(SpecificationStateAware.class);
-  }
 
   @Override
   public void parseClass(Class<?> clazz) {
@@ -60,32 +53,43 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
 
     try {
       final Object instance = clazz.newInstance();
-      provideResources(clazz, instance);
-      invokeSpecificationMethods(specificationMethods, instance);
+      final List<Object> resources = provideResources(clazz, instance);
+      final List<SpecificationStateAware> stateAwareBeans = new ArrayList<>();
+      for (final Object resource : resources) {
+        if (resource instanceof SpecificationStateAware) {
+          stateAwareBeans.add((SpecificationStateAware) resource);
+        }
+      }
+
+      invokeSpecificationMethods(specificationMethods, instance, stateAwareBeans);
     } catch (InstantiationException | IllegalAccessException e) {
       throw new RuntimeException("Uninstantiable class: no public default constructor", e);
     }
+  }
+
+  @Override
+  public void done() {
+    notifyState(injectionContext.getBeans(SpecificationStateAware.class), SpecificationState.COMPLETED);
   }
 
   //
   // Private
   //
 
-  private void invokeSpecificationMethods(List<Method> specificationMethods, Object instance) {
+  private void notifyState(@Nonnull Collection<? extends SpecificationStateAware> stateAwareBeans, @Nonnull SpecificationState state) {
+    for (final SpecificationStateAware bean : stateAwareBeans) {
+      bean.setState(state);
+    }
+  }
+
+  private void invokeSpecificationMethods(@Nonnull List<Method> specificationMethods,
+                                          @Nonnull Object instance,
+                                          @Nonnull List<SpecificationStateAware> stateAwareBeans) {
     try {
       for (final Method method : specificationMethods) {
-        // all the drivers put to recording state
-        // TODO: only the specific drivers should know about it
-        for (final SpecificationStateAware bean : stateAwareBeans) {
-          bean.setState(SpecificationState.RECORDING);
-        }
-
+        notifyState(stateAwareBeans, SpecificationState.RECORDING);
         invokeMethod(instance, method);
-
-        // all the drivers put to submitted state
-        for (final SpecificationStateAware bean : stateAwareBeans) {
-          bean.setState(SpecificationState.SUBMITTED);
-        }
+        notifyState(stateAwareBeans, SpecificationState.SUBMITTED);
       }
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException("Unable to invoke method", e);
@@ -146,20 +150,27 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
     method.invoke(instance, parameters);
   }
 
-  private void provideResources(Class<?> clazz, Object instance) {
+  @Nonnull
+  private List<Object> provideResources(@Nonnull Class<?> clazz, @Nonnull Object instance) {
+    final List<Object> providedResources = new ArrayList<>();
     try {
       for (final Field field : clazz.getDeclaredFields()) {
-        provideFieldValue(clazz, instance, field);
+        final Object providedResource = provideFieldValue(clazz, instance, field);
+        if (providedResource != null) {
+          providedResources.add(providedResource);
+        }
       }
     } catch (IllegalAccessException e) {
       throw new RuntimeException("Unable to set field value", e);
     }
+    return ImmutableList.copyOf(providedResources);
   }
 
-  private void provideFieldValue(Class<?> clazz, Object instance, Field field) throws IllegalAccessException {
+  @Nullable
+  private Object provideFieldValue(Class<?> clazz, Object instance, Field field) throws IllegalAccessException {
     final Resource resource = field.getAnnotation(Resource.class);
     if (resource == null) {
-      return;
+      return null;
     }
 
     if (resource.mappedName().length() > 0) {
@@ -172,10 +183,13 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
     assert field.get(instance) == null : "Unexpected assigned value";
 
     // TODO: handle injection exception
-    field.set(instance, injectionContext.getBean(field.getType()));
+    final Object injectedBean = injectionContext.getBean(field.getType());
+    field.set(instance, injectedBean);
 
     if (!wasAccessible) {
       field.setAccessible(wasAccessible);
     }
+
+    return injectedBean;
   }
 }

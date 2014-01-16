@@ -6,8 +6,7 @@ import com.truward.polymer.app.util.ClassScanner;
 import com.truward.polymer.core.driver.SpecificationHandler;
 import com.truward.polymer.core.output.FSOutputStreamProvider;
 import com.truward.polymer.core.output.OutputStreamProvider;
-import com.truward.polymer.domain.analysis.DomainImplTargetProvider;
-import com.truward.polymer.domain.analysis.DomainImplementerSettingsReader;
+import com.truward.polymer.domain.analysis.DomainImplementationTargetProvider;
 import com.truward.polymer.domain.synthesis.DomainObjectImplementer;
 
 import javax.annotation.Nonnull;
@@ -63,27 +62,27 @@ public final class App {
     }
 
     try {
-      runCodeGenerator(specificationClasses, new FSOutputStreamProvider(new File(result.getTargetDir())));
+      runCodeGenerator(new FSOutputStreamProvider(new File(result.getTargetDir())), specificationClasses);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   @VisibleForTesting
-  public static void runCodeGenerator(@Nonnull List<Class<?>> specificationClasses,
-                                      @Nonnull OutputStreamProvider outputStreamProvider) {
+  public static void runCodeGenerator(@Nonnull OutputStreamProvider outputStreamProvider,
+                                      @Nonnull List<Class<?>> specificationClasses) {
     final PolymerModule module = new PolymerModule();
     final InjectionContext injectionContext = module.addDefaults().getInjectionContext();
+    injectionContext.registerBean(outputStreamProvider);
+
     final SpecificationHandler handler = injectionContext.getBean(SpecificationHandler.class);
     final DomainObjectImplementer implementer = injectionContext.getBean(DomainObjectImplementer.class);
 
     for (final Class<?> specificationClass : specificationClasses) {
       handler.parseClass(specificationClass);
     }
+    handler.done();
 
-    implementer.generateCode(
-        outputStreamProvider,
-        injectionContext.getBean(DomainImplementerSettingsReader.class),
-        injectionContext.getBean(DomainImplTargetProvider.class).getImplementationTargets());
+    implementer.generateCode(injectionContext.getBean(DomainImplementationTargetProvider.class).getImplementationTargets());
   }
 }

@@ -22,6 +22,7 @@ import java.util.*;
 public final class BuilderImplementer {
   private final JavaCodeGenerator generator;
   private final Type implClass;
+  private final Type builderClass;
   private final DomainAnalysisResult analysisResult;
 
   public BuilderImplementer(@Nonnull JavaCodeGenerator generator,
@@ -30,6 +31,9 @@ public final class BuilderImplementer {
     this.generator = generator;
     this.implClass = implClass;
     this.analysisResult = analysisResult;
+
+    // TODO: support non-inner builder types
+    this.builderClass = new LocalRefType("Builder");
   }
 
   public boolean isInnerBuilderSupported() {
@@ -37,20 +41,15 @@ public final class BuilderImplementer {
   }
 
   public void generateInnerBuilder() {
-    final LocalRefType builderClass = new LocalRefType("Builder");
+    final List<DomainField> fields = analysisResult.getFields();
 
-    // newBuilder() method
-    generator.ch('\n').text("public").ch(' ').text("static").ch(' ').type(implClass).ch(' ').text("newBuilder")
-        .ch('(', ')', ' ', '{')
-        .text("return").ch(' ').newType(builderClass).ch('(', ')', ';')
-        .ch('}');
+    generateEmptyNewBuilderMethod();
+    generateNewBuilderMethod(fields);
 
     generator.ch('\n');
 
     // class Builder
-    generator.ch('\n').textWithSpaces("public", "static", "final", "class").ch(' ').type(builderClass).ch('{');
-
-    final List<DomainField> fields = analysisResult.getFields();
+    generator.ch('\n').textWithSpaces("public", "static", "final", "class").ch(' ').type(builderClass).ch(' ', '{');
 
     // builder fields
     for (final DomainField field : fields) {
@@ -70,8 +69,72 @@ public final class BuilderImplementer {
       generateSettersForBuilder(field, builderClass);
     }
 
+    generateBuildMethod(fields);
 
     generator.ch('}'); // end of 'class Builder'
+  }
+
+  private void generateEmptyNewBuilderMethod() {
+    // newBuilder() method
+    generator.ch('\n').text("public").ch(' ').text("static").ch(' ').type(builderClass).ch(' ').text("newBuilder")
+        .ch('(', ')', ' ', '{')
+        .text("return").ch(' ').newType(builderClass).ch('(', ')', ';')
+        .ch('}');
+  }
+
+  private void generateNewBuilderMethod(List<DomainField> fields) {
+    // newBuilder({TargetClass} value) method
+    final String valueParam = Names.VALUE;
+    final String resultVar = Names.RESULT;
+    generator.ch('\n').text("public").ch(' ').text("static").ch(' ').type(builderClass).ch(' ').text("newBuilder")
+        .ch('(').type(analysisResult.getOriginClass()).ch(' ').text(valueParam).ch(')', ' ', '{')
+        .text("final").ch(' ').type(builderClass).ch(' ').text(resultVar).ch(' ', '=', ' ')
+        .text("newBuilder").ch('(', ')', ';');
+
+    for (final DomainField field : fields) {
+      final String fieldName = field.getFieldName();
+      generator.text(resultVar);
+      TypeVisitor.apply(new TypeVisitor<Void>() {
+        @Override
+        public Void visitType(@Nonnull Type sourceType) {
+          generator.dot(Names.createPrefixedName(Names.SET_PREFIX, fieldName));
+          return null;
+        }
+
+        @Override
+        public Void visitGenericType(@Nonnull Type sourceType, @Nonnull Class<?> rawType, @Nonnull List<Type> args) {
+          if (List.class.equals(rawType) || Set.class.equals(rawType)) {
+            generator.dot(Names.createPrefixedName("addAllTo", fieldName));
+            return null;
+          } else if (Map.class.equals(rawType)) {
+            generator.dot(Names.createPrefixedName("putAllTo", fieldName));
+            return null;
+          }
+
+          return visitType(sourceType);
+        }
+      }, field.getFieldType());
+
+      generator.ch('(').text(fieldName).ch(')', ';');
+    }
+
+    generator.text("return").ch(' ').text(resultVar).ch(';')
+        .ch('}');
+  }
+
+  private void generateBuildMethod(List<DomainField> fields) {
+    generator.ch('\n').text("public").ch(' ').type(analysisResult.getOriginClass()).ch(' ').text("build")
+        .ch('(', ')', ' ', '{').text("return").ch(' ').newType(implClass).ch('(');
+    boolean next = false;
+    for (final DomainField field : fields) {
+      if (next) {
+        generator.ch(',', ' ');
+      } else {
+        next = true;
+      }
+      generator.text(field.getFieldName());
+    }
+    generator.ch(')', ';', '}');
   }
 
   private void generateInitializerForBuilderField(DomainField field) {

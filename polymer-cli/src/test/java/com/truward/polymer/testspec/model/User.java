@@ -11,14 +11,4 @@ public interface User {
   List<UserRole> getRoles();
   List<Integer> getRatings();
   String[] getNicknames();
-
-  public interface Builder {
-    Builder setId(Long id);
-    Builder setName(String name);
-    Builder addRoles(List<UserRole> roles);
-    Builder setRatings(List<Integer> ratings);
-    Builder setNicknames(String[] nicknames);
-
-    User build();
-  }
 }
