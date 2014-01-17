@@ -3,6 +3,7 @@ package com.truward.polymer.app;
 import com.google.common.annotations.VisibleForTesting;
 import com.truward.di.InjectionContext;
 import com.truward.polymer.app.util.ClassScanner;
+import com.truward.polymer.core.driver.SpecificationDriver;
 import com.truward.polymer.core.driver.SpecificationHandler;
 import com.truward.polymer.core.output.FSOutputStreamProvider;
 import com.truward.polymer.core.output.OutputStreamProvider;
@@ -13,6 +14,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.ServiceLoader;
 
 /**
  * Main entry point.
@@ -74,6 +76,12 @@ public final class App {
     final PolymerModule module = new PolymerModule();
     final InjectionContext injectionContext = module.addDefaults().getInjectionContext();
     injectionContext.registerBean(outputStreamProvider);
+
+    final ServiceLoader<SpecificationDriver> driverServiceLoader = ServiceLoader.load(SpecificationDriver.class);
+    for (final SpecificationDriver driver : driverServiceLoader) {
+      System.out.println("Using Driver: " + driver);
+      driver.join(injectionContext);
+    }
 
     final SpecificationHandler handler = injectionContext.getBean(SpecificationHandler.class);
     final DomainObjectImplementer implementer = injectionContext.getBean(DomainObjectImplementer.class);
