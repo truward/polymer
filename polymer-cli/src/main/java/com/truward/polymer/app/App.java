@@ -37,7 +37,7 @@ public final class App {
       @Override
       public void visitShowVersion(CliOptionsParser.ShowVersionResult result) {
         // TODO: fetch version from resources
-        System.out.println("Version: 0.0.1-SNAPSHOT");
+        System.out.println("Version: 0.0.2-SNAPSHOT");
       }
 
       @Override

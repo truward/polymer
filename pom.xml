@@ -4,13 +4,14 @@
 
   <groupId>com.truward.polymer</groupId>
   <artifactId>polymer</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Polymer Parent</name>
 
   <modules>
-    <module>polymer-domain</module>
+    <module>polymer-specifications</module>
     <module>polymer-core</module>
+    <module>polymer-mods</module>
     <module>polymer-cli</module>
   </modules>
 
@@ -40,7 +41,7 @@
       <!-- Project dependencies -->
       <dependency>
         <groupId>com.truward.polymer</groupId>
-        <artifactId>polymer-domain</artifactId>
+        <artifactId>polymer-specifications</artifactId>
         <version>${project.version}</version>
       </dependency>
 

@@ -5,58 +5,29 @@
   <parent>
     <groupId>com.truward.polymer</groupId>
     <artifactId>polymer</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>polymer-cli</artifactId>
   <packaging>jar</packaging>
   <name>Polymer Command Line Application</name>
 
-  <repositories>
-    <repository>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>custom-central</id>
-      <name>libs-release</name>
-      <url>https://raw.github.com/avshabanov/maven-repo/master/libs-release</url>
-    </repository>
-  </repositories>
-
   <dependencies>
     <dependency>
       <groupId>com.truward.polymer</groupId>
-      <artifactId>polymer-domain</artifactId>
+      <artifactId>polymer-core</artifactId>
     </dependency>
 
     <dependency>
       <groupId>com.truward.polymer</groupId>
-      <artifactId>polymer-core</artifactId>
+      <artifactId>polymer-domain-driver</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
-    </dependency>
-
-    <!-- JSR Non-Null annotation -->
-    <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>jsr305</artifactId>
-    </dependency>
-
-    <!-- Guava -->
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>
-
-    <!-- Micro dependency injection -->
-    <dependency>
-      <groupId>com.truward.di</groupId>
-      <artifactId>micro-di</artifactId>
-      <version>1.0.3</version>
     </dependency>
   </dependencies>
 
@@ -74,6 +45,22 @@
         <configuration>
           <executable>java</executable>
           <mainClass>com.truward.polymer.app.App</mainClass>
+        </configuration>
+      </plugin>
+
+      <!-- Packaging configuration, build like mvn clean package assembly:assembly -->
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>com.truward.polymer.app.App</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
         </configuration>
       </plugin>
     </plugins>

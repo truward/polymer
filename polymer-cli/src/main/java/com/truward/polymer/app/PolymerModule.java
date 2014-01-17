@@ -4,11 +4,9 @@ import com.truward.di.InjectionContext;
 import com.truward.di.support.DefaultInjectionContext;
 import com.truward.polymer.core.driver.support.DefaultSpecificationHandler;
 import com.truward.polymer.domain.analysis.support.DefaultDomainAnalysisContext;
-import com.truward.polymer.domain.analysis.support.DefaultDomainImplementationTarget;
 import com.truward.polymer.domain.analysis.support.DefaultDomainImplementationTargetProvider;
 import com.truward.polymer.domain.driver.DefaultDomainObjectSpecifier;
 import com.truward.polymer.domain.driver.DomainImplementerSettingsProvider;
-import com.truward.polymer.domain.synthesis.DomainObjectImplementer;
 import com.truward.polymer.domain.synthesis.support.DefaultDomainObjectImplementer;
 
 /**

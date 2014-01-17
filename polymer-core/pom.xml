@@ -5,15 +5,31 @@
   <parent>
     <groupId>com.truward.polymer</groupId>
     <artifactId>polymer</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>polymer-core</artifactId>
   <packaging>jar</packaging>
   <name>Polymer Core</name>
 
+  <repositories>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>custom-central</id>
+      <name>libs-release</name>
+      <url>https://raw.github.com/avshabanov/maven-repo/master/libs-release</url>
+    </repository>
+  </repositories>
+
 
   <dependencies>
+    <!-- Public facing interface to domain model -->
+    <dependency>
+      <groupId>com.truward.polymer</groupId>
+      <artifactId>polymer-specifications</artifactId>
+    </dependency>
 
     <!-- JSR Non-Null annotation -->
     <dependency>
@@ -25,6 +41,13 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+    </dependency>
+
+    <!-- Micro dependency injection -->
+    <dependency>
+      <groupId>com.truward.di</groupId>
+      <artifactId>micro-di</artifactId>
+      <version>1.0.3</version>
     </dependency>
   </dependencies>
 </project>
