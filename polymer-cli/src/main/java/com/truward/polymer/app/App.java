@@ -3,24 +3,30 @@ package com.truward.polymer.app;
 import com.google.common.annotations.VisibleForTesting;
 import com.truward.di.InjectionContext;
 import com.truward.polymer.app.util.ClassScanner;
-import com.truward.polymer.core.driver.SpecificationDriver;
+import com.truward.polymer.core.PolymerModule;
+import com.truward.polymer.core.driver.Implementer;
 import com.truward.polymer.core.driver.SpecificationHandler;
 import com.truward.polymer.core.output.FSOutputStreamProvider;
 import com.truward.polymer.core.output.OutputStreamProvider;
-import com.truward.polymer.domain.analysis.DomainImplementationTargetProvider;
-import com.truward.polymer.domain.synthesis.DomainObjectImplementer;
 
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
-import java.util.ServiceLoader;
+import java.util.Properties;
 
 /**
  * Main entry point.
  */
 public final class App {
   public static void main(String[] args) {
+//    if (new File("/tmp/dbg").exists()) {
+//      args = new String[] {
+//          "--version"
+//      };
+//    }
+
     final CliOptionsParser parser = new CliOptionsParser(args);
     final CliOptionsParser.Result result = parser.parse();
     result.apply(new CliOptionsParser.ResultVisitor() {
@@ -38,8 +44,19 @@ public final class App {
 
       @Override
       public void visitShowVersion(CliOptionsParser.ShowVersionResult result) {
-        // TODO: fetch version from resources
-        System.out.println("Version: 0.0.2-SNAPSHOT");
+        final Properties properties = new Properties();
+        try {
+          final InputStream inputStream = getClass().getResourceAsStream("/app.properties");
+          if (inputStream == null) {
+            throw new IOException("No app.properties");
+          }
+          properties.load(inputStream);
+          final String version = properties.getProperty("polymer.cli.app.version");
+          // TODO: fetch version from resources
+          System.out.println("Version: " + version);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
       }
 
       @Override
@@ -77,20 +94,15 @@ public final class App {
     final InjectionContext injectionContext = module.addDefaults().getInjectionContext();
     injectionContext.registerBean(outputStreamProvider);
 
-    final ServiceLoader<SpecificationDriver> driverServiceLoader = ServiceLoader.load(SpecificationDriver.class);
-    for (final SpecificationDriver driver : driverServiceLoader) {
-      System.out.println("Using Driver: " + driver);
-      driver.join(injectionContext);
-    }
-
     final SpecificationHandler handler = injectionContext.getBean(SpecificationHandler.class);
-    final DomainObjectImplementer implementer = injectionContext.getBean(DomainObjectImplementer.class);
-
     for (final Class<?> specificationClass : specificationClasses) {
       handler.parseClass(specificationClass);
     }
     handler.done();
 
-    implementer.generateCode(injectionContext.getBean(DomainImplementationTargetProvider.class).getImplementationTargets());
+    final List<Implementer> implementers = injectionContext.getBeans(Implementer.class);
+    for (final Implementer implementer : implementers) {
+      implementer.generateImplementations();
+    }
   }
 }

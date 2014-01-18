@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.truward.polymer</groupId>
     <artifactId>polymer-domain-mod</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.5-SNAPSHOT</version>
   </parent>
 
   <artifactId>polymer-domain-driver</artifactId>
@@ -20,7 +20,7 @@
 
     <dependency>
       <groupId>com.truward.polymer</groupId>
-      <artifactId>polymer-domain</artifactId>
+      <artifactId>polymer-domain-specifications</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

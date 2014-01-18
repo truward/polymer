@@ -1,15 +1,15 @@
 package com.truward.polymer.domain.driver;
 
 import com.google.common.base.Predicate;
-import com.truward.polymer.code.DefaultValues;
 import com.truward.polymer.core.driver.SpecificationParameterProvider;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
+import com.truward.polymer.core.types.DefaultValues;
 import com.truward.polymer.domain.*;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.analysis.DomainImplementationTargetProvider;
+import com.truward.polymer.domain.analysis.DomainImplementationTargetSink;
 import com.truward.polymer.domain.analysis.trait.BuilderTrait;
 import com.truward.polymer.domain.analysis.trait.GetterTrait;
 import com.truward.polymer.domain.analysis.trait.ImplementationNameTrait;
@@ -41,7 +41,7 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   private DomainImplementerSettings implementerSettings;
 
   @Resource
-  private DomainImplementationTargetProvider implementationTargetProvider;
+  private DomainImplementationTargetSink targetSink;
 
   private DomainAnalysisResult currentAnalysisResult;
   private DomainField currentField;
@@ -62,7 +62,7 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
     currentAnalysisResult = analysisContext.analyze(clazz);
 
     // automatically introduce implementation target
-    implementationTargetProvider.submit(currentAnalysisResult);
+    targetSink.submit(currentAnalysisResult);
 
     return instance;
   }

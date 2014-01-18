@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.truward.polymer</groupId>
     <artifactId>polymer</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.5-SNAPSHOT</version>
   </parent>
 
   <artifactId>polymer-core</artifactId>
@@ -48,6 +48,14 @@
       <groupId>com.truward.di</groupId>
       <artifactId>micro-di</artifactId>
       <version>1.0.3</version>
+    </dependency>
+
+    <!-- Logging for test -->
+    <!-- Logging -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

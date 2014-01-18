@@ -4,15 +4,19 @@
 
   <parent>
     <groupId>com.truward.polymer</groupId>
-    <artifactId>polymer</artifactId>
+    <artifactId>polymer-domain-mod</artifactId>
     <version>0.0.5-SNAPSHOT</version>
   </parent>
 
-  <artifactId>polymer-specifications</artifactId>
+  <artifactId>polymer-domain-specifications</artifactId>
   <packaging>jar</packaging>
-  <name>Polymer Specifications</name>
+  <name>Polymer Domain Model Specifications</name>
 
   <dependencies>
+    <dependency>
+      <groupId>com.truward.polymer</groupId>
+      <artifactId>polymer-specifications</artifactId>
+    </dependency>
 
     <!-- JSR Non-Null annotation -->
     <dependency>
