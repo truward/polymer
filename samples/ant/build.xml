@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<project name="hello-polymer-app" basedir="." default="jar">
+  <!-- M2 home -->
+  <property name="m2.repo" value="${user.home}/.m2/repository" />
+  <property name="java.source.version" value="1.7" />
+  <property name="java.target.version" value="1.7" />
+  <property name="sources.encoding" value="UTF-8" />
+
+  <property name="src.classes" value="target/classes" />
+
+  <property name="test.classes" value="target/test/classes" />
+  <property name="test.report" value="target/test/report" />
+
+  <property name="polymer.version" value="0.0.5-SNAPSHOT" />
+
+  <target name="prepare"/>
+
+  <target name="clean" description="Cleans this project">
+    <delete dir="target" failonerror="false" />
+  </target>
+
+  <path id="project.classpath">
+    <pathelement location="${src.classes}" />
+    <pathelement location="${m2.repo}/com/truward/polymer/polymer-specifications/${polymer.version}/polymer-specifications-${polymer.version}.jar" />
+    <pathelement location="${m2.repo}/com/truward/polymer/polymer-domain-specifications/${polymer.version}/polymer-domain-specifications-${polymer.version}.jar" />
+  </path>
+
+  <path id="project.test.classpath">
+    <pathelement location="${m2.repo}/junit/junit/4.8.2/junit-4.8.2.jar"/>
+    <pathelement location="${test.classes}"/>
+    <path refid="project.classpath"/>
+  </path>
+
+  <!-- Special libraries step -->
+  <target name="libs" />
+
+  <!-- Compilation step -->
+  <target name="javac" depends="libs" description="Compile java source to bytecode">
+    <mkdir dir="${src.classes}"/>
+    <javac srcdir="src/main/java" includes="**" encoding="${sources.encoding}"
+           destdir="${src.classes}"
+           source="${java.source.version}" target="${java.target.version}" nowarn="true"
+           debug="true" debuglevel="lines,vars,source" includeantruntime="false">
+      <classpath refid="project.classpath"/>
+    </javac>
+    <copy todir="${src.classes}">
+      <fileset dir="src/main/resources" excludes="**/*.java"/>
+    </copy>
+  </target>
+
+  <!-- Base jar - to contain all the definitions and specifications -->
+  <target name="lean-jar" depends="javac" description="Lean application's jar">
+    <jar destfile="target/${ant.project.name}-lean.jar" basedir="${src.classes}"/>
+  </target>
+
+  <!--
+  Generating sources
+
+  java -cp "./target/hello-polymer-app.jar:~/proj/free/polymer/polymer-cli/target/polymer-cli-0.0.5-SNAPSHOT-jar-with-dependencies.jar" com.truward.polymer.app.App -t  ./target/generated/java -sc com.alexshabanov.sample.specification.ModelSpecification
+   -->
+  <property name="generated.src" value="target/generated/java" />
+  <property name="generated.classes" value="target/generated/classes" />
+
+  <property name="specification.classes" value="com.alexshabanov.sample.specification.ModelSpecification" />
+
+  <path id="polymer.classpath">
+    <pathelement location="target/${ant.project.name}-lean.jar" />
+    <path refid="project.classpath"/>
+    <!--<pathelement location="${m2.repo}/com/truward/polymer/polymer-specifications/${polymer.version}/polymer-specifications-${polymer.version}.jar" />-->
+    <!--<pathelement location="${m2.repo}/com/truward/polymer/polymer-domain-specifications/${polymer.version}/polymer-domain-specifications-${polymer.version}.jar" />-->
+
+    <pathelement location="${m2.repo}/com/truward/di/micro-di/1.0.3/micro-di-1.0.3.jar" />
+    <pathelement location="${m2.repo}/com/google/guava/guava/13.0.1/guava-13.0.1.jar" />
+    <pathelement location="${m2.repo}/com/google/code/findbugs/jsr305/1.3.9/jsr305-1.3.9.jar" />
+
+    <pathelement location="${m2.repo}/org/slf4j/slf4j-api/1.6.1/slf4j-api-1.6.1.jar" />
+    <pathelement location="${m2.repo}/org/slf4j/slf4j-jdk14/1.6.1/slf4j-jdk14-1.6.1.jar" />
+    <pathelement location="${m2.repo}/org/slf4j/jcl-over-slf4j/1.6.1/jcl-over-slf4j-1.6.1.jar" />
+
+    <pathelement location="${m2.repo}/com/truward/polymer/polymer-domain-driver/${polymer.version}/polymer-domain-driver-${polymer.version}.jar" />
+    <pathelement location="${m2.repo}/com/truward/polymer/polymer-core/${polymer.version}/polymer-core-${polymer.version}.jar" />
+    <pathelement location="${m2.repo}/com/truward/polymer/polymer-cli/${polymer.version}/polymer-cli-${polymer.version}.jar" />
+  </path>
+
+  <target name="generate-sources" depends="lean-jar" description="Generate code based on the user specifications">
+    <java classname="com.truward.polymer.app.App" classpathref="polymer.classpath" fork="true"
+          args="-t ${generated.src} -sc ${specification.classes}" />
+  </target>
+
+  <!-- Build 'full' jar -->
+  <target name="jar" depends="javac" description="Builds application's jar">
+    <jar destfile="target/${ant.project.name}.jar" basedir="${src.classes}">
+      <!--            <manifest>
+                      <attribute name="Main-Class" value="${main-class}"/>
+                  </manifest> -->
+    </jar>
+  </target>
+
+  <target name="build" depends="jar" description="Builds all" />
+
+
+  <!-- JUNIT tests -->
+  <target name="testCompile" depends="javac">
+    <mkdir dir="${test.classes}" />
+    <mkdir dir="${test.report}" />
+    <javac srcdir="src/test/java" includes="**" encoding="${sources.encoding}"
+           destdir="${src.classes}"
+           source="${java.source.version}" target="${java.target.version}" nowarn="true"
+           debug="true" debuglevel="lines,vars,source" includeantruntime="false">
+      <classpath refid="project.test.classpath"/>
+    </javac>
+  </target>
+
+  <target name="test" depends="javac, testCompile">
+    <junit printsummary="yes" haltonfailure="yes" showoutput="yes">
+      <formatter type="xml"/>
+      <formatter type="plain" usefile="false" />
+      <classpath refid="project.test.classpath"/>
+      <batchtest fork="yes" todir="${test.report}">
+        <fileset dir="test">
+          <include name="**/*Test*.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+
+</project>

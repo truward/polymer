@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -73,9 +74,24 @@ public final class App {
 
   @VisibleForTesting
   public static void generateCode(CliOptionsParser.ProcessSpecResult result) {
-    System.out.println("Run App: target=" + result.getTargetDir() + ", specificationPackage=" + result.getSpecificationPackage());
+    System.out.println("Run App: target=" + result.getTargetDir() +
+        ", specificationPackage=" + result.getSpecificationPackage() +
+        ", specificationClasses=" + result.getSpecificationClasses());
 
-    final List<Class<?>> specificationClasses = ClassScanner.scan(result.getSpecificationPackage());
+    final List<Class<?>> specificationClasses;
+    if (result.getSpecificationPackage() != null) {
+      specificationClasses = ClassScanner.scan(result.getSpecificationPackage());
+    } else {
+      specificationClasses = new ArrayList<>(result.getSpecificationClasses().size());
+      for (final String className : result.getSpecificationClasses()) {
+        try {
+          specificationClasses.add(Class.forName(className));
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException("Unable to load class " + className, e);
+        }
+      }
+    }
+
     if (specificationClasses.isEmpty()) {
       throw new RuntimeException("No classes to analyze");
     }

@@ -13,6 +13,8 @@ import com.truward.polymer.domain.analysis.DomainImplementationTarget;
 import com.truward.polymer.domain.analysis.DomainImplementationTargetSink;
 import com.truward.polymer.domain.analysis.DomainImplementerSettingsReader;
 import com.truward.polymer.domain.analysis.support.DefaultDomainImplementationTarget;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
@@ -29,6 +31,8 @@ import java.util.List;
  */
 public final class DomainObjectImplementer extends FreezableSupport implements Implementer,
     DomainImplementationTargetSink, SpecificationStateAware {
+  private final Logger log = LoggerFactory.getLogger(DomainObjectImplementer.class);
+
   @Resource
   private DomainImplementerSettingsReader implementerSettings;
 
@@ -82,7 +86,10 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
       final JavaCodeGenerator generator = new JavaCodeGenerator();
       generateCompilationUnit(generator, target);
       try {
-        try (final OutputStream stream = outputStreamProvider.createStreamForFile(target.getTargetName(), DefaultFileTypes.JAVA)) {
+        final FqName targetName = target.getTargetName();
+        log.info("Generating file for {}", targetName);
+
+        try (final OutputStream stream = outputStreamProvider.createStreamForFile(targetName, DefaultFileTypes.JAVA)) {
           try (final PrintStream printStream = new PrintStream(stream, true, StandardCharsets.UTF_8.name())) {
             generator.printContents(printStream);
           }
@@ -91,6 +98,8 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
         throw new RuntimeException(e);
       }
     }
+
+    log.info("Done with code generation");
   }
 
   private void generateCompilationUnit(@Nonnull JavaCodeGenerator generator, @Nonnull DomainImplementationTarget target) {

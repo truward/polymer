@@ -1,5 +1,11 @@
 package com.truward.polymer.app;
 
+import com.google.common.collect.ImmutableList;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Command line options parser for polymer application.
  * Thread unsafe, designed for single-threaded use only.
@@ -28,11 +34,15 @@ public final class CliOptionsParser {
 
   public static void showUsage() {
     System.out.println("Usage:\n" +
-        " -h, --help              Shows help\n" +
+        " -h,--help               Shows help\n" +
         " --version               Shows version\n" +
         " -t,--target {Path}      Specifies path to the target directory\n" +
-        " -sp,--specification-package {Package}   Qualified name to the\n" +
-        "                         specification package\n" +
+        " -sp,--specification-package {Package Name}\n" +
+        "                         Qualified name of the specification package\n" +
+        "                         Should be omitted if --specification-classes option is used\n" +
+        " -sc,--specification-classes {Comma-separated List of Strings}\n" +
+        "                         Comma-separated list of specification classes\n" +
+        "                         Should be omitted if --specification-package option is used\n" +
         "\n");
   }
 
@@ -43,6 +53,7 @@ public final class CliOptionsParser {
   private Result doParse() {
     String specificationPackage = null;
     String targetDir = null;
+    List<String> specificationClasses = new ArrayList<>();
 
     for (pos = 0; pos < args.length; ++pos) {
       if (argEquals("-h", "--help")) {
@@ -53,20 +64,22 @@ public final class CliOptionsParser {
         targetDir = fetchNextArg();
       } else if (argEquals("--specification-package", "-sp")) {
         specificationPackage = fetchNextArg();
+      } else if (argEquals("--specification-classes", "-sc")) {
+        specificationClasses.addAll(Arrays.asList(fetchNextArg().split(",")));
       } else {
         throw new IllegalStateException("Unknown argument: " + args[pos]);
       }
     }
 
-    if (specificationPackage == null) {
-      throw new IllegalStateException("Specification package is not specified");
+    if (specificationPackage == null && specificationClasses.isEmpty()) {
+      throw new IllegalStateException("Specification package is not specified and no specification classes were given");
     }
 
     if (targetDir == null) {
       throw new IllegalStateException("Target directory is not specified");
     }
 
-    return new ProcessSpecResult(specificationPackage, targetDir);
+    return new ProcessSpecResult(specificationClasses, specificationPackage, targetDir);
   }
 
   private boolean argEquals(String... values) {
@@ -127,12 +140,18 @@ public final class CliOptionsParser {
   }
 
   public static final class ProcessSpecResult implements Result {
+    private final List<String> specificationClasses;
     private final String specificationPackage;
     private final String targetDir;
 
-    public ProcessSpecResult(String specificationPackage, String targetDir) {
+    public ProcessSpecResult(List<String> specificationClasses, String specificationPackage, String targetDir) {
+      this.specificationClasses = ImmutableList.copyOf(specificationClasses);
       this.specificationPackage = specificationPackage;
       this.targetDir = targetDir;
+    }
+
+    public List<String> getSpecificationClasses() {
+      return specificationClasses;
     }
 
     public String getSpecificationPackage() {

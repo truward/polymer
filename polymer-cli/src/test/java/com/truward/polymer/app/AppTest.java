@@ -26,7 +26,8 @@ public class AppTest {
       outputPath = "/tmp/polymer_target_" + Long.toHexString(System.currentTimeMillis());
     }
 
-    App.generateCode(new CliOptionsParser.ProcessSpecResult("com.truward.polymer.testspec.p1", outputPath));
+    App.generateCode(new CliOptionsParser.ProcessSpecResult(ImmutableList.<String>of(),
+        "com.truward.polymer.testspec.p1", outputPath));
   }
 
   @Test
