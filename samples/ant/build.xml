@@ -58,7 +58,6 @@
 
   java -cp "./target/hello-polymer-app.jar:~/proj/free/polymer/polymer-cli/target/polymer-cli-0.0.5-SNAPSHOT-jar-with-dependencies.jar" com.truward.polymer.app.App -t  ./target/generated/java -sc com.alexshabanov.sample.specification.ModelSpecification
    -->
-  <property name="generated.src" value="target/generated/java" />
   <property name="generated.classes" value="target/generated/classes" />
 
   <property name="specification.classes" value="com.alexshabanov.sample.specification.ModelSpecification" />
@@ -84,11 +83,11 @@
 
   <target name="generate-sources" depends="lean-jar" description="Generate code based on the user specifications">
     <java classname="com.truward.polymer.app.App" classpathref="polymer.classpath" fork="true"
-          args="-t ${generated.src} -sc ${specification.classes}" />
+          args="-t ${src.classes} -sc ${specification.classes}" />
   </target>
 
   <!-- Build 'full' jar -->
-  <target name="jar" depends="javac" description="Builds application's jar">
+  <target name="jar" depends="generate-sources" description="Builds application's jar">
     <jar destfile="target/${ant.project.name}.jar" basedir="${src.classes}">
       <!--            <manifest>
                       <attribute name="Main-Class" value="${main-class}"/>
