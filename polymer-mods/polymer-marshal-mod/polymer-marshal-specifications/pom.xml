@@ -8,20 +8,20 @@
     <version>0.0.5-SNAPSHOT</version>
   </parent>
 
-  <artifactId>polymer-marshal-driver</artifactId>
+  <artifactId>polymer-marshal-specifications</artifactId>
   <packaging>jar</packaging>
-  <name>Polymer Generator Driver for Marshallers</name>
+  <name>Polymer Marshal Specifications</name>
 
   <dependencies>
     <dependency>
       <groupId>com.truward.polymer</groupId>
-      <artifactId>polymer-core</artifactId>
+      <artifactId>polymer-specifications</artifactId>
     </dependency>
 
+    <!-- JSR Non-Null annotation -->
     <dependency>
-      <groupId>com.truward.polymer</groupId>
-      <artifactId>polymer-marshal-specifications</artifactId>
-      <version>${project.version}</version>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
     </dependency>
   </dependencies>
 </project>

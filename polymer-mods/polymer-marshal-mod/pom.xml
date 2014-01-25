@@ -13,6 +13,8 @@
   <name>Polymer Marshal Module</name>
 
   <modules>
+    <module>polymer-marshal-specifications</module>
+    <module>polymer-marshal-driver</module>
   </modules>
 </project>
 
