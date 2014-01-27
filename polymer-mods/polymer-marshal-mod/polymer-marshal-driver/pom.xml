@@ -23,5 +23,20 @@
       <artifactId>polymer-marshal-specifications</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.truward.polymer</groupId>
+      <artifactId>polymer-domain-driver</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- Test -->
+    <!-- Google's gson -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.2.4</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

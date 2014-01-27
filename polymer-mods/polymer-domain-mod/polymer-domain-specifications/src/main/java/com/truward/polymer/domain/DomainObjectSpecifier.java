@@ -1,5 +1,7 @@
 package com.truward.polymer.domain;
 
+import com.truward.polymer.annotation.SpecificatorInvocation;
+
 import javax.annotation.Nonnull;
 
 /**
@@ -15,20 +17,20 @@ public interface DomainObjectSpecifier {
    * Specifies, that the given field is nullable.
    * By default all the fields are non-nullable.
    *
-   * @param field Field, which is specified to be nullable
+   * @param invocationResult Getter invocation that triggers information about the corresponding field
    * @return Current specifier, provided for convenience such that the user is able to chain calls.
    */
   @Nonnull
-  DomainObjectSpecifier isNullable(Object field);
+  DomainObjectSpecifier isNullable(@SpecificatorInvocation Object invocationResult);
 
   @Nonnull
-  DomainObjectSpecifier isNonNull(Object field);
+  DomainObjectSpecifier isNonNull(@SpecificatorInvocation Object invocationResult);
 
   @Nonnull
-  DomainObjectSpecifier hasLength(String field);
+  DomainObjectSpecifier hasLength(@SpecificatorInvocation String invocationResult);
 
   @Nonnull
-  DomainObjectSpecifier isNonNegative(int field);
+  DomainObjectSpecifier isNonNegative(@SpecificatorInvocation int invocationResult);
 
   @Nonnull
   DomainObjectSettings getObjectSettings(@Nonnull Class<?> clazz);
