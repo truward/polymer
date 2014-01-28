@@ -331,7 +331,7 @@ public final class ClassImplementer {
 
     // final ClassName other = (ClassName) o;
     generator.text("final").ch(' ').type(implClass).ch(' ').text(other).ch(' ', '=', ' ', '(')
-        .type(implClass).ch(')', ' ').text(other).ch(';');
+        .type(implClass).ch(')', ' ').text(objectParam).ch(';');
 
     // iterate over the given fields
     for (final DomainField field : fields) {
@@ -354,7 +354,8 @@ public final class ClassImplementer {
     final String result = "result";
     final String temp = "temp";
 
-    generator.annotate(Override.class).text("public").ch(' ').type(int.class).dot("hashCode").ch('(', ')', ' ', '{');
+    generator.annotate(Override.class).text("public").ch(' ').type(int.class).ch(' ').text("hashCode")
+        .ch('(', ')', ' ', '{');
 
     // int result = 0
     generator.type(int.class).ch(' ').text(result).spText("=").ch('0', ';');

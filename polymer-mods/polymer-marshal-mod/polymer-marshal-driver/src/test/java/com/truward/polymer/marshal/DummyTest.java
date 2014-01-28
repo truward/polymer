@@ -1,7 +1,6 @@
 package com.truward.polymer.marshal;
 
 import com.truward.polymer.annotation.Specification;
-import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.marshal.rest.HttpMethod;
 import com.truward.polymer.marshal.rest.RestSpecificationService;
 import org.junit.Test;
@@ -21,15 +20,17 @@ public class DummyTest {
   }
 
   @Specification
-  public void restApiAssigner(RestSpecificationService ss, @DomainObject ExposedService service) {
-    ss.on("/animal/{id}", HttpMethod.GET).trigger(service.getAnimal(ss.param(Long.class)));
+  public void restApiAssigner(RestSpecificationService ss, @Exposed AnimalService service) {
+    ss.getSettings().setBasePath("/zoo");
+
+    ss.on(HttpMethod.GET, "/animal/{id}").trigger(service.getAnimal(ss.param(Long.class)));
 
     // for void return types
-    ss.on("/animal", HttpMethod.POST).triggerVoid();
+    ss.on(HttpMethod.POST, "/animal").triggerNextCall();
     service.createAnimal(ss.body(Animal.class));
   }
 
-  public interface ExposedService {
+  public interface AnimalService {
     Animal getAnimal(long id);
 
     void createAnimal(Animal animal);

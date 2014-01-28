@@ -8,6 +8,7 @@ import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.support.Names;
 import com.truward.polymer.domain.analysis.trait.BuilderTrait;
+import com.truward.polymer.domain.analysis.trait.GetterTrait;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Type;
@@ -91,6 +92,7 @@ public final class BuilderImplementer {
         .text("final").ch(' ').type(builderClass).ch(' ').text(resultVar).ch(' ', '=', ' ')
         .text("newBuilder").ch('(', ')', ';');
 
+    // explodes into invocation of multiple setters in the current builder
     for (final DomainField field : fields) {
       final String fieldName = field.getFieldName();
       generator.text(resultVar);
@@ -115,7 +117,13 @@ public final class BuilderImplementer {
         }
       }, field.getFieldType());
 
-      generator.ch('(').text(fieldName).ch(')', ';');
+      // TODO: make generation of this method entirely optional
+      final GetterTrait getterTrait = field.findTrait(GetterTrait.KEY);
+      if (getterTrait == null) {
+        throw new UnsupportedOperationException("Can't generate newBuilder for field that has no getters in the " +
+            "origin interface: " + field.getClass() + ": " + field.getFieldName());
+      }
+      generator.ch('(').text(valueParam).dot(getterTrait.getGetterName()).ch('(', ')', ')', ';');
     }
 
     generator.text("return").ch(' ').text(resultVar).ch(';')

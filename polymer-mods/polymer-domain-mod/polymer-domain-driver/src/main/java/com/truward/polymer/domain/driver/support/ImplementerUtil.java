@@ -16,7 +16,7 @@ public final class ImplementerUtil {
 
   public static void generateField(@Nonnull JavaCodeGenerator generator, @Nonnull DomainField field, boolean isFinal) {
     generator.text("private").ch(' ');
-    if (!isFinal) {
+    if (isFinal) {
       generator.text("final").ch(' ');
     }
     generator.typedVar(field.getFieldType(), field.getFieldName()).ch(';');

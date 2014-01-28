@@ -6,10 +6,11 @@ package com.truward.polymer.marshal.rest;
  * @author Alexander Shabanov
  */
 public interface RestSpecificationService {
+  RestSettings getSettings();
 
   <T> T param(Class<T> paramClass);
 
-  RestBinderSpecification on(String path, HttpMethod method);
+  RestBinderSpecification on(HttpMethod method, String path);
 
   <T> T body(Class<T> bodyClass);
 }

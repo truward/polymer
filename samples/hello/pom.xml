@@ -34,9 +34,94 @@
       <artifactId>junit</artifactId>
       <version>4.8.2</version>
     </dependency>
+
+    <!-- Workaround for cli -->
+    <dependency>
+      <groupId>com.truward.polymer</groupId>
+      <artifactId>polymer-cli</artifactId>
+      <version>${polymer.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
+    <plugins>
 
+      <!-- Code generation, executed after the first compiler pass -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.2.1</version>
+        <executions>
+          <execution>
+            <id>generateSpecificationBasedCode</id>
+            <!--<phase>compile</phase>-->
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <classpathScope>test</classpathScope>
+              <mainClass>com.truward.polymer.app.App</mainClass>
+              <arguments>
+                <argument>-t</argument>
+                <argument>${project.build.directory}/generated-sources/java</argument>
+                <argument>-sc</argument>
+                <argument>com.alexshabanov.sample.specification.ModelSpecification</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/java</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+
+      <!--&lt;!&ndash; Custom compilation mode &ndash;&gt;-->
+      <!--<plugin>-->
+        <!--<artifactId>maven-compiler-plugin</artifactId>-->
+        <!--<executions>-->
+          <!--<execution>-->
+            <!--<id>default-compile</id>-->
+            <!--<configuration>-->
+              <!--<excludes>-->
+                <!--<exclude>**/generated/*</exclude>-->
+              <!--</excludes>-->
+            <!--</configuration>-->
+          <!--</execution>-->
+          <!--<execution>-->
+            <!--<id>build-generated-code</id>-->
+            <!--<phase>generate-test-sources</phase>-->
+            <!--<goals>-->
+              <!--<goal>compile</goal>-->
+            <!--</goals>-->
+            <!--<configuration>-->
+
+              <!--<generatedSourcesDirectory>${project.build.directory}/generated-sources/java</generatedSourcesDirectory>-->
+              <!--&lt;!&ndash;<includes>&ndash;&gt;-->
+                <!--&lt;!&ndash;<include>**/generated/*</include>&ndash;&gt;-->
+              <!--&lt;!&ndash;</includes>&ndash;&gt;-->
+            <!--</configuration>-->
+          <!--</execution>-->
+        <!--</executions>-->
+      <!--</plugin>-->
+    </plugins>
   </build>
 </project>
