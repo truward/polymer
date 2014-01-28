@@ -4,18 +4,16 @@
 
   <parent>
     <groupId>com.truward.polymer</groupId>
-    <artifactId>polymer</artifactId>
+    <artifactId>polymer-mods</artifactId>
     <version>0.0.5-SNAPSHOT</version>
   </parent>
 
-  <artifactId>polymer-mods</artifactId>
+  <artifactId>polymer-di-mod</artifactId>
   <packaging>pom</packaging>
-  <name>Polymer Modules Parent</name>
+  <name>Polymer Marshal Module</name>
 
   <modules>
-    <module>polymer-domain-mod</module>
-    <module>polymer-di-mod</module>
-    <module>polymer-marshal-mod</module>
+    <module>polymer-di-driver</module>
   </modules>
 </project>
 
