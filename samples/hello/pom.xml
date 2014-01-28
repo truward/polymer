@@ -52,10 +52,13 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.2.1</version>
         <executions>
+          <!--
+          We must run our code generation on the process-source phase, since compiler is executed on
+          generate-sources phase as well as on the standard compile phase
+          -->
           <execution>
             <id>generateSpecificationBasedCode</id>
-            <!--<phase>compile</phase>-->
-            <phase>generate-sources</phase>
+            <phase>process-sources</phase>
             <goals>
               <goal>java</goal>
             </goals>
@@ -80,7 +83,7 @@
         <executions>
           <execution>
             <id>add-source</id>
-            <phase>generate-sources</phase>
+            <phase>process-sources</phase>
             <goals>
               <goal>add-source</goal>
             </goals>
@@ -94,34 +97,27 @@
       </plugin>
 
 
-      <!--&lt;!&ndash; Custom compilation mode &ndash;&gt;-->
-      <!--<plugin>-->
-        <!--<artifactId>maven-compiler-plugin</artifactId>-->
-        <!--<executions>-->
-          <!--<execution>-->
-            <!--<id>default-compile</id>-->
-            <!--<configuration>-->
-              <!--<excludes>-->
-                <!--<exclude>**/generated/*</exclude>-->
-              <!--</excludes>-->
-            <!--</configuration>-->
-          <!--</execution>-->
-          <!--<execution>-->
-            <!--<id>build-generated-code</id>-->
-            <!--<phase>generate-test-sources</phase>-->
-            <!--<goals>-->
-              <!--<goal>compile</goal>-->
-            <!--</goals>-->
-            <!--<configuration>-->
-
-              <!--<generatedSourcesDirectory>${project.build.directory}/generated-sources/java</generatedSourcesDirectory>-->
-              <!--&lt;!&ndash;<includes>&ndash;&gt;-->
-                <!--&lt;!&ndash;<include>**/generated/*</include>&ndash;&gt;-->
-              <!--&lt;!&ndash;</includes>&ndash;&gt;-->
-            <!--</configuration>-->
-          <!--</execution>-->
-        <!--</executions>-->
-      <!--</plugin>-->
+      <!-- Custom compilation mode -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <executions>
+          <!-- We should have our 'base' sources compiled on generate-sources phase, before process-sources -->
+          <execution>
+            <id>default-compile</id>
+            <phase>generate-sources</phase>
+          </execution>
+          <execution>
+            <id>build-generated-code</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <generatedSourcesDirectory>${project.build.directory}/generated-sources/java</generatedSourcesDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>
