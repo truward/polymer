@@ -1,9 +1,9 @@
 package com.alexshabanov.sample.specification;
 
-import com.truward.polymer.annotation.Specification;
-import com.truward.polymer.domain.DomainObjectSpecifier;
-import com.truward.polymer.domain.DomainObject;
 import com.alexshabanov.sample.model.UserAccount;
+import com.truward.polymer.annotation.Specification;
+import com.truward.polymer.domain.DomainObject;
+import com.truward.polymer.domain.DomainObjectSpecifier;
 
 import javax.annotation.Resource;
 

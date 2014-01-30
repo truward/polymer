@@ -23,5 +23,12 @@
       <artifactId>polymer-domain-specifications</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <!-- Logging for test -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

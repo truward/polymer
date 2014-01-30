@@ -1,8 +1,9 @@
-package com.truward.polymer.core.naming;
+package com.truward.polymer.naming;
 
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -65,6 +66,18 @@ public final class FqNameTest {
   }
 
   @Test
+  public void shouldJoinNames() {
+    assertEquals("com.mysite.domain", FqName.parse("com.mysite").join(FqName.parse("domain")).toString());
+    assertEquals("com.mysite.domain", FqName.parse("com").join(FqName.parse("mysite.domain")).toString());
+  }
+
+  @Test
+  public void shouldConvertToList() {
+    assertEquals(Arrays.asList("com"), FqName.parse("com").toList());
+    assertEquals(Arrays.asList("com", "mysite"), FqName.parse("com.mysite").toList());
+  }
+
+  @Test
   public void shouldNotBeEqual() {
     final FqName[] names = {
         FqName.parse("com.mysite.Foo"),
@@ -75,7 +88,7 @@ public final class FqNameTest {
         FqName.parse("org.mysite"),
         FqName.parse("com.mysite.Bar")
     };
-    
+
     for (int i = 0; i < names.length; ++i) {
       for (int j = 0; j < names.length; ++j) {
         if (i != j) {

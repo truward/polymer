@@ -1,7 +1,7 @@
 package com.truward.polymer.core.output;
 
 import com.google.common.collect.ImmutableMap;
-import com.truward.polymer.core.naming.FqName;
+import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;

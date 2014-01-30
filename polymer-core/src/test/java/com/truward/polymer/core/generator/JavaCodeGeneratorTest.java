@@ -1,7 +1,7 @@
 package com.truward.polymer.core.generator;
 
 import com.google.common.base.Charsets;
-import com.truward.polymer.core.naming.FqName;
+import com.truward.polymer.naming.FqName;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;

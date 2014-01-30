@@ -5,7 +5,6 @@ import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.core.freezable.FreezableSupport;
 import com.truward.polymer.core.generator.JavaCodeGenerator;
-import com.truward.polymer.core.naming.FqName;
 import com.truward.polymer.core.output.DefaultFileTypes;
 import com.truward.polymer.core.output.OutputStreamProvider;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
@@ -13,6 +12,7 @@ import com.truward.polymer.domain.analysis.DomainImplementationTarget;
 import com.truward.polymer.domain.analysis.DomainImplementationTargetSink;
 import com.truward.polymer.domain.analysis.DomainImplementerSettingsReader;
 import com.truward.polymer.domain.analysis.support.DefaultDomainImplementationTarget;
+import com.truward.polymer.naming.FqName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,13 +72,9 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
   //
 
   private FqName getTargetClassName(@Nonnull DomainAnalysisResult result) {
-    final StringBuilder nameBuilder = new StringBuilder(200);
-    nameBuilder.append(implementerSettings.getDefaultTargetPackageName()).append('.');
-    nameBuilder.append(implementerSettings.getDefaultImplClassPrefix())
-        .append(result.getOriginClass().getSimpleName())
-        .append(implementerSettings.getDefaultImplClassSuffix());
-
-    return FqName.parse(nameBuilder.toString());
+    final String className = implementerSettings.getDefaultImplClassPrefix() +
+        result.getOriginClass().getSimpleName() + implementerSettings.getDefaultImplClassSuffix();
+    return new FqName(className, implementerSettings.getDefaultTargetPackageName());
   }
 
   private void generateCode(@Nonnull List<DomainImplementationTarget> targets) {

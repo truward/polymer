@@ -6,11 +6,11 @@ import com.google.common.collect.ImmutableSet;
 import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.core.generator.model.LocalRefType;
 import com.truward.polymer.core.generator.model.TypeVisitor;
-import com.truward.polymer.core.naming.FqName;
 import com.truward.polymer.domain.analysis.*;
 import com.truward.polymer.domain.analysis.trait.GetterTrait;
 import com.truward.polymer.domain.analysis.trait.SetterTrait;
 import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;
+import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Type;

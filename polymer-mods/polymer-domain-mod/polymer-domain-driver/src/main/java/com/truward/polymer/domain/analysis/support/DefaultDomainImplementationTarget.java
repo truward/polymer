@@ -1,8 +1,8 @@
 package com.truward.polymer.domain.analysis.support;
 
-import com.truward.polymer.core.naming.FqName;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainImplementationTarget;
+import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
 

@@ -1,5 +1,7 @@
 package com.truward.polymer.domain;
 
+import com.truward.polymer.naming.FqName;
+
 import javax.annotation.Nonnull;
 
 /**
@@ -10,7 +12,7 @@ import javax.annotation.Nonnull;
 public interface DomainImplementerSettings {
   void setDefensiveCopyStyle(@Nonnull DefensiveCopyStyle defensiveCopyStyle);
 
-  void setDefaultTargetPackageName(@Nonnull String defaultTargetPackageName);
+  void setDefaultTargetPackageName(@Nonnull FqName defaultTargetPackageName);
 
   void setDefaultImplClassPrefix(@Nonnull String prefix);
 

@@ -1,6 +1,7 @@
 package com.truward.polymer.domain.analysis;
 
 import com.truward.polymer.domain.DefensiveCopyStyle;
+import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
 
@@ -12,7 +13,7 @@ public interface DomainImplementerSettingsReader {
   DefensiveCopyStyle getDefensiveCopyStyle();
 
   @Nonnull
-  String getDefaultTargetPackageName();
+  FqName getDefaultTargetPackageName();
 
   @Nonnull
   String getDefaultImplClassPrefix();

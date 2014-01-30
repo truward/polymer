@@ -21,13 +21,6 @@
   </properties>
 
   <dependencies>
-    <!-- Polymer specifications -->
-    <dependency>
-      <groupId>com.truward.polymer</groupId>
-      <artifactId>polymer-domain-specifications</artifactId>
-      <version>${polymer.version}</version>
-    </dependency>
-
     <!-- Test -->
     <dependency>
       <groupId>junit</groupId>
@@ -36,7 +29,14 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Workaround for cli -->
+    <!-- Polymer specifications -->
+    <dependency>
+      <groupId>com.truward.polymer</groupId>
+      <artifactId>polymer-domain-specifications</artifactId>
+      <version>${polymer.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- cli executor -->
     <dependency>
       <groupId>com.truward.polymer</groupId>
       <artifactId>polymer-cli</artifactId>
@@ -109,6 +109,10 @@
           <execution>
             <id>default-compile</id>
             <phase>generate-sources</phase>
+            <goals>
+              <goal>compile</goal>
+              <goal>testCompile</goal>
+            </goals>
           </execution>
           <execution>
             <id>build-generated-code</id>

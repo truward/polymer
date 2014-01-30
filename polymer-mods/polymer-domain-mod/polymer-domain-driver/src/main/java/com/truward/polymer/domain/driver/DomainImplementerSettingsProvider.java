@@ -4,6 +4,7 @@ import com.truward.polymer.core.freezable.FreezableSupport;
 import com.truward.polymer.domain.DefensiveCopyStyle;
 import com.truward.polymer.domain.DomainImplementerSettings;
 import com.truward.polymer.domain.analysis.DomainImplementerSettingsReader;
+import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
 
@@ -12,7 +13,7 @@ import javax.annotation.Nonnull;
  */
 public final class DomainImplementerSettingsProvider extends FreezableSupport implements DomainImplementerSettings, DomainImplementerSettingsReader {
   private DefensiveCopyStyle defensiveCopyStyle = DefensiveCopyStyle.JDK;
-  private String defaultTargetPackageName = "generated";
+  private FqName defaultTargetPackageName = FqName.parse("generated");
   private String defaultImplClassPrefix = "";
   private String defaultImplClassSuffix = "Impl";
 
@@ -29,7 +30,7 @@ public final class DomainImplementerSettingsProvider extends FreezableSupport im
   }
 
   @Override
-  public void setDefaultTargetPackageName(@Nonnull String defaultTargetPackageName) {
+  public void setDefaultTargetPackageName(@Nonnull FqName defaultTargetPackageName) {
     checkNonFrozen();
     this.defaultTargetPackageName = defaultTargetPackageName;
   }
@@ -48,7 +49,7 @@ public final class DomainImplementerSettingsProvider extends FreezableSupport im
 
   @Nonnull
   @Override
-  public String getDefaultTargetPackageName() {
+  public FqName getDefaultTargetPackageName() {
     return defaultTargetPackageName;
   }
 

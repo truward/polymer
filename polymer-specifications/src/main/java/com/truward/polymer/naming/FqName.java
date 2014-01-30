@@ -1,8 +1,10 @@
-package com.truward.polymer.core.naming;
+package com.truward.polymer.naming;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents fully qualified name
@@ -55,6 +57,30 @@ public final class FqName {
       throw new IllegalStateException("There is no parent of the root fqName");
     }
     return parent;
+  }
+
+  @Nonnull
+  public List<String> toList() {
+    final List<String> names = new ArrayList<>(length());
+    for (FqName fqn = this;; fqn = fqn.getParent()) {
+      names.add(0, fqn.getName());
+      if (fqn.isRoot()) {
+        break;
+      }
+    }
+    return names;
+  }
+
+  @Nonnull
+  public FqName join(@Nonnull FqName rightNamePart) {
+    FqName result = this;
+
+    // get unfolded methods
+    for (final String name : rightNamePart.toList()) {
+      result = new FqName(name, result);
+    }
+
+    return result;
   }
 
   public boolean isRoot() {

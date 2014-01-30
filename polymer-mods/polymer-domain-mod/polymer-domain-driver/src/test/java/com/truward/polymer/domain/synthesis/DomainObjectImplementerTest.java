@@ -24,7 +24,7 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 /**
- * Sample spring-driven test.
+ * Tests {@link Implementer} in conjunction with the analysis-related classes.
  */
 public class DomainObjectImplementerTest {
 
