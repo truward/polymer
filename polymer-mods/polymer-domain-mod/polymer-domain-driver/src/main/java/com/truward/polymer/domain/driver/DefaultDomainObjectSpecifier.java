@@ -46,6 +46,16 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   private DomainAnalysisResult currentAnalysisResult;
   private DomainField currentField;
 
+
+  @Override
+  public DomainObjectSpecifier target(@Nonnull Class<?>... classes) {
+    for (final Class<?> targetClass : classes) {
+      targetSink.submit(analysisContext.analyze(targetClass));
+    }
+
+    return this;
+  }
+
   @Override
   @Nonnull
   public <T> T domainObject(@Nonnull Class<T> clazz) {
@@ -60,9 +70,6 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
     log.debug("Returned proxy instance for class {}", clazz);
 
     currentAnalysisResult = analysisContext.analyze(clazz);
-
-    // automatically introduce implementation target
-    targetSink.submit(currentAnalysisResult);
 
     return instance;
   }

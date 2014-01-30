@@ -21,6 +21,6 @@ public final class ModelSpecification {
 
   @Specification
   public void domainObject(@DomainObject UserAccount u) {
-    specifier.isNonNull(u.getNickname());
+    specifier.target(UserAccount.class).isNonNull(u.getNickname());
   }
 }

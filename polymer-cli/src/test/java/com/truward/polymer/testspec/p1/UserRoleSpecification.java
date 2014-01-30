@@ -17,6 +17,7 @@ public class UserRoleSpecification {
   @Specification
   public void spec(@DomainObject UserRole userRole) {
     specifier
+        .target(UserRole.class)
         .isNullable(userRole.getDescription())
         .hasLength(userRole.getName());
   }

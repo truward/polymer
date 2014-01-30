@@ -10,6 +10,27 @@ import javax.annotation.Nonnull;
  * @author Alexander Shabanov
  */
 public interface DomainObjectSpecifier {
+
+  /**
+   * Identifies provided classes as code generation targets.
+   *
+   * @param classes Source interface classes
+   * @return Current object specifier instance.
+   */
+  DomainObjectSpecifier target(@Nonnull Class<?>... classes);
+
+  /**
+   * Instantiates provided class, the instantiated target should be used then to provide specificator
+   * invocations.
+   * <code>
+   *   final UserAccount account = specifier.domainObject(UserAccount.class);
+   *   specifier.isNullable(account.getName()); // specificator invocation
+   * </code>
+   *
+   * @param clazz Interface class.
+   * @param <T> Interface type.
+   * @return Specificator instance.
+   */
   @Nonnull
   <T> T domainObject(@Nonnull Class<T> clazz);
 

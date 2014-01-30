@@ -18,12 +18,14 @@ public final class UserSpecification {
   @Specification
   public void spec(@DomainObject UserRole userRole) {
     specifier
+        .target(UserRole.class)
         .isNonNull(userRole.getName());
   }
 
   @Specification
   public void spec(@DomainObject User user) {
     specifier
+        .target(User.class)
         .isNullable(user.getId())
         .getObjectSettings(User.class).assignBuilder();
 
