@@ -445,7 +445,7 @@ public final class ClassImplementer {
         // ...=> (this.field != null ? this.field.hashCode() : null)
         generator.ch('(').thisMember(fieldName).spText("!=").text("null").spText("?")
             .thisMember(fieldName).dot("hashCode").ch('(', ')')
-            .spText(":").text("null")
+            .spText(":").text("0")
             .ch(')');
       } else {
         // ...=> this.field.hashCode()

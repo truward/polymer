@@ -9,7 +9,7 @@
   <name>Hello Polymer Application</name>
 
   <properties>
-    <polymer.version>0.0.5-SNAPSHOT</polymer.version>
+    <polymer.version>0.0.6-SNAPSHOT</polymer.version>
 
     <!--  compiler settings -->
     <maven.compiler.source>1.7</maven.compiler.source>
@@ -113,6 +113,12 @@
               <goal>compile</goal>
               <goal>testCompile</goal>
             </goals>
+            <configuration>
+              <!-- Avoid compilation of tests (if any exists) -->
+              <testExcludes>
+                <testExclude>**/test/**</testExclude>
+              </testExcludes>
+            </configuration>
           </execution>
           <execution>
             <id>build-generated-code</id>

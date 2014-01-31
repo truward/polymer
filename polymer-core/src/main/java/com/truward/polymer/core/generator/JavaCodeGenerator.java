@@ -58,17 +58,7 @@ public final class JavaCodeGenerator {
       throw new IllegalStateException("Generating package name multiple times does not make sense");
     }
 
-    text("package").ch(' ');
-    for (boolean next = false;;packageName = packageName.getParent(), next = true) {
-      if (next) {
-        ch('.');
-      }
-      text(packageName.getName());
-      if (packageName.isRoot()) {
-        break;
-      }
-    }
-    ch(';', '\n');
+    text("package").ch(' ').text(packageName.toString()).ch(';', '\n');
     importInsertIndex = elements.size();
   }
 

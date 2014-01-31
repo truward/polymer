@@ -7,6 +7,8 @@ import com.truward.polymer.core.driver.Implementer;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.core.output.MemOutputStreamProvider;
+import com.truward.polymer.domain.DefensiveCopyStyle;
+import com.truward.polymer.domain.DomainImplementerSettings;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
@@ -14,6 +16,7 @@ import com.truward.polymer.domain.analysis.DomainImplementationTargetSink;
 import com.truward.polymer.domain.analysis.support.DefaultDomainAnalysisContext;
 import com.truward.polymer.domain.driver.DomainImplementerSettingsProvider;
 import com.truward.polymer.domain.driver.support.DomainObjectImplementer;
+import com.truward.polymer.naming.FqName;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -58,6 +61,7 @@ public class DomainObjectImplementerTest {
   private Implementer implementer;
   private DomainImplementationTargetSink targetSink;
   private SpecificationStateAware specificationStateAware;
+  private DomainImplementerSettings settings;
 
   @Before
   public void setup() {
@@ -71,6 +75,7 @@ public class DomainObjectImplementerTest {
     implementer = injectionContext.getBean(Implementer.class);
     targetSink = injectionContext.getBean(DomainImplementationTargetSink.class);
     specificationStateAware = injectionContext.getBean(SpecificationStateAware.class);
+    settings = injectionContext.getBean(DomainImplementerSettings.class);
   }
 
   @Test
@@ -94,6 +99,21 @@ public class DomainObjectImplementerTest {
     generateCode(result);
     final String code = getOneContent(mosp);
     assertTrue(code.contains("package")); // TODO: more complex verification
+  }
+
+  @Test
+  public void shouldGenerateCustomPackage() {
+    final String packageName = "com.mysite.generated";
+    settings.setDefaultTargetPackageName(FqName.parse(packageName));
+    settings.setDefaultImplClassPrefix("Default");
+    settings.setDefaultImplClassSuffix("Implementation");
+    settings.setDefensiveCopyStyle(DefensiveCopyStyle.JDK);
+
+    final DomainAnalysisResult result = analysisContext.analyze(Primitive.class);
+    generateCode(result);
+    final String code = getOneContent(mosp);
+    assertTrue(code.contains("package " + packageName));
+    assertTrue(code.contains("class DefaultPrimitiveImplementation"));
   }
 
   //
