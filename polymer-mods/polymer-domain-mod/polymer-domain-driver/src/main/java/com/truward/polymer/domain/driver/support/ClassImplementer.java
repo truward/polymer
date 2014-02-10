@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableSet;
 import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.core.generator.model.LocalRefType;
 import com.truward.polymer.core.generator.model.TypeVisitor;
+import com.truward.polymer.core.util.Assert;
+import com.truward.polymer.core.util.TargetTrait;
 import com.truward.polymer.domain.analysis.*;
 import com.truward.polymer.domain.analysis.trait.GetterTrait;
 import com.truward.polymer.domain.analysis.trait.SetterTrait;
@@ -31,11 +33,11 @@ public final class ClassImplementer {
 
   public ClassImplementer(@Nonnull JavaCodeGenerator generator,
                           @Nonnull DomainImplementerSettingsReader implementerSettings,
-                          @Nonnull DomainImplementationTarget target) {
+                          @Nonnull DomainAnalysisResult analysisResult) {
     this.generator = generator;
     this.implementerSettings = implementerSettings;
-    this.targetName = target.getTargetName();
-    this.analysisResult = target.getAnalysisResult();
+    this.targetName = Assert.nonNull(analysisResult.findTrait(TargetTrait.KEY)).getTargetName();
+    this.analysisResult = analysisResult;
     this.implClass = new LocalRefType(targetName.getName());
   }
 

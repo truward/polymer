@@ -11,7 +11,8 @@ import javax.annotation.Nonnull;
 /**
  * @author Alexander Shabanov
  */
-public final class DomainImplementerSettingsProvider extends FreezableSupport implements DomainImplementerSettings, DomainImplementerSettingsReader {
+public final class DomainImplementerSettingsProvider extends FreezableSupport
+    implements DomainImplementerSettings, DomainImplementerSettingsReader {
   private DefensiveCopyStyle defensiveCopyStyle = DefensiveCopyStyle.JDK;
   private FqName defaultTargetPackageName = FqName.parse("generated");
   private String defaultImplClassPrefix = "";
@@ -21,12 +22,6 @@ public final class DomainImplementerSettingsProvider extends FreezableSupport im
   public void setDefensiveCopyStyle(@Nonnull DefensiveCopyStyle defensiveCopyStyle) {
     checkNonFrozen();
     this.defensiveCopyStyle = defensiveCopyStyle;
-  }
-
-  @Nonnull
-  @Override
-  public DefensiveCopyStyle getDefensiveCopyStyle() {
-    return defensiveCopyStyle;
   }
 
   @Override
@@ -39,6 +34,12 @@ public final class DomainImplementerSettingsProvider extends FreezableSupport im
   public void setDefaultImplClassPrefix(@Nonnull String prefix) {
     checkNonFrozen();
     this.defaultImplClassPrefix = prefix;
+  }
+
+  @Nonnull
+  @Override
+  public DefensiveCopyStyle getDefensiveCopyStyle() {
+    return defensiveCopyStyle;
   }
 
   @Override

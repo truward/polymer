@@ -7,11 +7,11 @@ import com.truward.polymer.core.freezable.FreezableSupport;
 import com.truward.polymer.core.generator.JavaCodeGenerator;
 import com.truward.polymer.core.output.DefaultFileTypes;
 import com.truward.polymer.core.output.OutputStreamProvider;
+import com.truward.polymer.core.util.Assert;
+import com.truward.polymer.core.util.TargetTrait;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
-import com.truward.polymer.domain.analysis.DomainImplementationTarget;
 import com.truward.polymer.domain.analysis.DomainImplementationTargetSink;
 import com.truward.polymer.domain.analysis.DomainImplementerSettingsReader;
-import com.truward.polymer.domain.analysis.support.DefaultDomainImplementationTarget;
 import com.truward.polymer.naming.FqName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,7 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
   @Resource
   private OutputStreamProvider outputStreamProvider;
 
-  private List<DomainImplementationTarget> implementationTargets = new ArrayList<>();
+  private List<DomainAnalysisResult> implementationTargets = new ArrayList<>();
 
   @Override
   public void generateImplementations() {
@@ -51,7 +51,8 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
 
   @Override
   public void submit(@Nonnull DomainAnalysisResult analysisResult) {
-    implementationTargets.add(new DefaultDomainImplementationTarget(analysisResult));
+    analysisResult.putTrait(new TargetTrait());
+    implementationTargets.add(analysisResult);
   }
 
   @Override
@@ -59,8 +60,8 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
     checkNonFrozen();
 
     if (state == SpecificationState.COMPLETED) {
-      for (final DomainImplementationTarget target : implementationTargets) {
-        target.setTargetName(getTargetClassName(target.getAnalysisResult()));
+      for (final DomainAnalysisResult target : implementationTargets) {
+        Assert.nonNull(target.findTrait(TargetTrait.KEY)).setTargetName(getTargetClassName(target));
       }
 
       freeze();
@@ -77,12 +78,13 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
     return new FqName(className, implementerSettings.getDefaultTargetPackageName());
   }
 
-  private void generateCode(@Nonnull List<DomainImplementationTarget> targets) {
-    for (final DomainImplementationTarget target : targets) {
+  private void generateCode(@Nonnull List<DomainAnalysisResult> analysisResults) {
+    for (final DomainAnalysisResult analysisResult : analysisResults) {
+      final TargetTrait targetTrait = Assert.nonNull(analysisResult.findTrait(TargetTrait.KEY));
       final JavaCodeGenerator generator = new JavaCodeGenerator();
-      generateCompilationUnit(generator, target);
+      generateCompilationUnit(generator, analysisResult);
       try {
-        final FqName targetName = target.getTargetName();
+        final FqName targetName = targetTrait.getTargetName();
         log.info("Generating file for {}", targetName);
 
         try (final OutputStream stream = outputStreamProvider.createStreamForFile(targetName, DefaultFileTypes.JAVA)) {
@@ -98,11 +100,10 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
     log.info("Done with code generation");
   }
 
-  private void generateCompilationUnit(@Nonnull JavaCodeGenerator generator, @Nonnull DomainImplementationTarget target) {
-    final ClassImplementer classImplementer = new ClassImplementer(generator, implementerSettings, target);
+  private void generateCompilationUnit(@Nonnull JavaCodeGenerator generator, @Nonnull DomainAnalysisResult analysisResult) {
+    final ClassImplementer classImplementer = new ClassImplementer(generator, implementerSettings, analysisResult);
     final Type implClass = classImplementer.getTargetClass();
-    final BuilderImplementer builderImplementer = new BuilderImplementer(generator, implClass,
-        target.getAnalysisResult());
+    final BuilderImplementer builderImplementer = new BuilderImplementer(generator, implClass, analysisResult);
 
     // compilation unit generation
     classImplementer.generateHeaderAndPrologue();
