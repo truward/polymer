@@ -1,4 +1,4 @@
-package com.truward.polymer.domain.driver.support;
+package com.truward.polymer.domain.implementer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -8,7 +8,10 @@ import com.truward.polymer.core.generator.model.LocalRefType;
 import com.truward.polymer.core.generator.model.TypeVisitor;
 import com.truward.polymer.core.util.Assert;
 import com.truward.polymer.core.util.TargetTrait;
-import com.truward.polymer.domain.analysis.*;
+import com.truward.polymer.domain.analysis.DomainAnalysisResult;
+import com.truward.polymer.domain.analysis.DomainField;
+import com.truward.polymer.domain.analysis.DomainImplementerSettingsReader;
+import com.truward.polymer.domain.analysis.TypeUtil;
 import com.truward.polymer.domain.analysis.trait.GetterTrait;
 import com.truward.polymer.domain.analysis.trait.SetterTrait;
 import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;

@@ -1,5 +1,8 @@
 package com.truward.polymer.core.driver;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * Handler of the specification classes, that maintains inner structure of the domain class.
  *
@@ -7,7 +10,15 @@ package com.truward.polymer.core.driver;
  */
 public interface SpecificationHandler {
 
-  void parseClass(Class<?> clazz);
+  /**
+   * Instantiates methods in the given class and parses specification methods taking into an account
+   * specification ordinals.
+   *
+   * @param clazz Specification definition class.
+   * @return Processed instance of the specification definition class.
+   */
+  @Nullable
+  Object parseClass(@Nonnull Class<?> clazz);
 
   void done();
 }

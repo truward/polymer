@@ -1,4 +1,4 @@
-package com.truward.polymer.domain.driver;
+package com.truward.polymer.domain.driver.support;
 
 import com.truward.polymer.core.freezable.FreezableSupport;
 import com.truward.polymer.domain.DefensiveCopyStyle;

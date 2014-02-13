@@ -1,4 +1,4 @@
-package com.truward.polymer.domain.driver;
+package com.truward.polymer.domain.driver.support;
 
 import com.google.common.base.Predicate;
 import com.truward.polymer.core.driver.SpecificationParameterProvider;

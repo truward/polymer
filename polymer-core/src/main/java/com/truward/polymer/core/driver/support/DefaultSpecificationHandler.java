@@ -18,9 +18,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Default implementation of {@link SpecificationHandler}
@@ -35,10 +33,11 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
   private InjectionContext injectionContext;
 
   @Override
-  public void parseClass(Class<?> clazz) {
+  @Nullable
+  public Object parseClass(@Nonnull Class<?> clazz) {
     if (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) {
       log.warn("Skipping interface or abstract class: {}", clazz);
-      return;
+      return null;
     }
 
     final List<Method> specificationMethods = new ArrayList<>();
@@ -50,7 +49,7 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
 
     if (specificationMethods.isEmpty()) {
       log.warn("No specification methods in class {}", clazz);
-      return;
+      return null;
     }
 
     try {
@@ -63,7 +62,13 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
         }
       }
 
+      // sort by ordinals
+      Collections.sort(specificationMethods, SpecificationOrderComparator.INSTANCE);
+
+      // invoke in the given order
       invokeSpecificationMethods(specificationMethods, instance, stateAwareBeans);
+
+      return instance;
     } catch (InstantiationException | IllegalAccessException e) {
       throw new RuntimeException("Uninstantiable class: no public default constructor", e);
     }
@@ -77,6 +82,23 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
   //
   // Private
   //
+
+  /**
+   * Compares two methods by looking to their ordinals.
+   */
+  private static final class SpecificationOrderComparator implements Comparator<Method> {
+    static final SpecificationOrderComparator INSTANCE = new SpecificationOrderComparator();
+
+    @Override
+    public int compare(Method lhs, Method rhs) {
+      return Integer.compare(getOrdinal(lhs), getOrdinal(rhs));
+    }
+
+    private static int getOrdinal(Method method) {
+      final Specification specification = method.getAnnotation(Specification.class);
+      return specification != null ? specification.ordinal() : Integer.MAX_VALUE;
+    }
+  }
 
   private void notifyState(@Nonnull Collection<? extends SpecificationStateAware> stateAwareBeans, @Nonnull SpecificationState state) {
     for (final SpecificationStateAware bean : stateAwareBeans) {

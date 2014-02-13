@@ -2,7 +2,7 @@ package com.truward.polymer.marshal;
 
 import com.truward.polymer.annotation.Specification;
 import com.truward.polymer.marshal.rest.HttpMethod;
-import com.truward.polymer.marshal.rest.RestSpecificationService;
+import com.truward.polymer.marshal.rest.RestSpecifier;
 import org.junit.Test;
 
 import java.util.List;
@@ -20,7 +20,7 @@ public class DummyTest {
   }
 
   @Specification
-  public void restApiAssigner(RestSpecificationService ss, @Exposed AnimalService service) {
+  public void restApiAssigner(RestSpecifier ss, @Exposed AnimalService service) {
     ss.getSettings().setBasePath("/zoo");
 
     ss.on(HttpMethod.GET, "/animal/{id}").trigger(service.getAnimal(ss.param(Long.class)));

@@ -5,7 +5,7 @@ package com.truward.polymer.marshal.rest;
  *
  * @author Alexander Shabanov
  */
-public interface RestSpecificationService {
+public interface RestSpecifier {
   RestSettings getSettings();
 
   <T> T param(Class<T> paramClass);

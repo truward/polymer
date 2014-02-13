@@ -1,10 +1,10 @@
-package com.truward.polymer.marshal.driver;
+package com.truward.polymer.marshal.rest.driver.support;
 
 import com.truward.polymer.core.driver.SpecificationParameterProvider;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.marshal.Exposed;
-import com.truward.polymer.marshal.rest.RestSpecificationService;
+import com.truward.polymer.marshal.rest.RestSpecifier;
 
 import javax.annotation.Nonnull;
 import java.lang.annotation.Annotation;
@@ -20,7 +20,7 @@ public class RestExposureDriver implements SpecificationParameterProvider, Speci
   public <T extends Annotation, R> boolean canProvideParameter(@Nonnull List<T> annotations, @Nonnull Class<R> resultType) {
     if (annotations.size() == 1 && Exposed.class.isAssignableFrom(annotations.get(0).getClass())) {
       return true; // exposed service object
-    } else if (annotations.size() == 0 && resultType.equals(RestSpecificationService.class)) {
+    } else if (annotations.size() == 0 && resultType.equals(RestSpecifier.class)) {
       return true; // associated rest service
     }
 
