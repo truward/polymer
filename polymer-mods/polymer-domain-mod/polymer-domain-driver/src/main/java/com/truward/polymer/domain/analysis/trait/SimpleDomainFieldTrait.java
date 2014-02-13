@@ -66,6 +66,8 @@ public enum SimpleDomainFieldTrait implements Trait<SimpleDomainFieldTrait>, Tra
     @Override
     public void verifyCompatibility(@Nonnull DomainField field) {
       final Type t = field.getFieldType();
+
+      //noinspection LoopStatementThatDoesntLoop
       do {
         if (!(t instanceof Class)) {
           break;

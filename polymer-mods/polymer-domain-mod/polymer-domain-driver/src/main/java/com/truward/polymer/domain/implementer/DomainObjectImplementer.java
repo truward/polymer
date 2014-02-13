@@ -51,7 +51,12 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
 
   @Override
   public void submit(@Nonnull DomainAnalysisResult analysisResult) {
-    analysisResult.putTrait(new TargetTrait());
+    checkNonFrozen();
+
+    final TargetTrait trait = new TargetTrait();
+    trait.setTargetName(getTargetClassName(analysisResult));
+    //Assert.nonNull(target.findTrait(TargetTrait.KEY)).setTargetName(getTargetClassName(target));
+    analysisResult.putTrait(trait);
     implementationTargets.add(analysisResult);
   }
 
@@ -60,9 +65,9 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
     checkNonFrozen();
 
     if (state == SpecificationState.COMPLETED) {
-      for (final DomainAnalysisResult target : implementationTargets) {
-        Assert.nonNull(target.findTrait(TargetTrait.KEY)).setTargetName(getTargetClassName(target));
-      }
+//      for (final DomainAnalysisResult target : implementationTargets) {
+//        Assert.nonNull(target.findTrait(TargetTrait.KEY)).setTargetName(getTargetClassName(target));
+//      }
 
       freeze();
     }
