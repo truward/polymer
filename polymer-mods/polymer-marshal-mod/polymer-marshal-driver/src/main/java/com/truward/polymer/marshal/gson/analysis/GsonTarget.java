@@ -21,4 +21,12 @@ public final class GsonTarget {
     }
     this.targetTrait = targetTrait;
   }
+
+  public DomainAnalysisResult getResult() {
+    return result;
+  }
+
+  public TargetTrait getTargetTrait() {
+    return targetTrait;
+  }
 }

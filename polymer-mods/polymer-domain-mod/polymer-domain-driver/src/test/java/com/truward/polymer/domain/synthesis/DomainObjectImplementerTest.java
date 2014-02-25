@@ -9,13 +9,11 @@ import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.core.output.MemOutputStreamProvider;
 import com.truward.polymer.domain.DefensiveCopyStyle;
 import com.truward.polymer.domain.DomainImplementerSettings;
+import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.analysis.DomainImplementationTargetSink;
-import com.truward.polymer.domain.analysis.support.DefaultDomainAnalysisContext;
-import com.truward.polymer.domain.driver.support.DomainImplementerSettingsProvider;
-import com.truward.polymer.domain.implementer.DomainObjectImplementer;
+import com.truward.polymer.domain.driver.support.DomainSpecificationDriver;
 import com.truward.polymer.naming.FqName;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +27,7 @@ import static org.junit.Assert.*;
 /**
  * Tests {@link Implementer} in conjunction with the analysis-related classes.
  */
-public class DomainObjectImplementerTest {
+public final class DomainObjectImplementerTest {
 
   @SuppressWarnings("UnusedDeclaration")
   interface User {
@@ -57,25 +55,23 @@ public class DomainObjectImplementerTest {
 
   private DomainAnalysisContext analysisContext;
   private MemOutputStreamProvider mosp;
-  private InjectionContext injectionContext = new DefaultInjectionContext();
   private Implementer implementer;
-  private DomainImplementationTargetSink targetSink;
-  private SpecificationStateAware specificationStateAware;
+  private List<SpecificationStateAware> specificationStateAwareBeans;
   private DomainImplementerSettings settings;
+  private DomainObjectSpecifier domainObjectSpecifier;
 
   @Before
   public void setup() {
     mosp = new MemOutputStreamProvider();
-    injectionContext.registerBean(DefaultDomainAnalysisContext.class);
+    final InjectionContext injectionContext = new DefaultInjectionContext();
     injectionContext.registerBean(mosp);
-    injectionContext.registerBean(new DomainImplementerSettingsProvider());
-    injectionContext.registerBean(DomainObjectImplementer.class);
+    new DomainSpecificationDriver().join(injectionContext);
 
     analysisContext = injectionContext.getBean(DomainAnalysisContext.class);
     implementer = injectionContext.getBean(Implementer.class);
-    targetSink = injectionContext.getBean(DomainImplementationTargetSink.class);
-    specificationStateAware = injectionContext.getBean(SpecificationStateAware.class);
+    specificationStateAwareBeans = injectionContext.getBeans(SpecificationStateAware.class);
     settings = injectionContext.getBean(DomainImplementerSettings.class);
+    domainObjectSpecifier = injectionContext.getBean(DomainObjectSpecifier.class);
   }
 
   @Test
@@ -87,16 +83,14 @@ public class DomainObjectImplementerTest {
 
   @Test
   public void shouldImplement() {
-    final DomainAnalysisResult result = analysisContext.analyze(User.class);
-    generateCode(result);
+    generateCode(User.class);
     final String code = getOneContent(mosp);
     assertTrue(code.contains("package")); // TODO: more complex verification
   }
 
   @Test
   public void shouldImplementEqualsAndHashCodeForPrimitiveType() {
-    final DomainAnalysisResult result = analysisContext.analyze(Primitive.class);
-    generateCode(result);
+    generateCode(Primitive.class);
     final String code = getOneContent(mosp);
     assertTrue(code.contains("package")); // TODO: more complex verification
   }
@@ -109,8 +103,7 @@ public class DomainObjectImplementerTest {
     settings.setDefaultImplClassSuffix("Implementation");
     settings.setDefensiveCopyStyle(DefensiveCopyStyle.JDK);
 
-    final DomainAnalysisResult result = analysisContext.analyze(Primitive.class);
-    generateCode(result);
+    generateCode(Primitive.class);
     final String code = getOneContent(mosp);
     assertTrue(code.contains("package " + packageName));
     assertTrue(code.contains("class DefaultPrimitiveImplementation"));
@@ -120,9 +113,13 @@ public class DomainObjectImplementerTest {
   // Private
   //
 
-  private void generateCode(DomainAnalysisResult result) {
-    targetSink.submit(result);
-    specificationStateAware.setState(SpecificationState.COMPLETED);
+  private void generateCode(Class<?> domainClass) {
+    domainObjectSpecifier.target(domainClass);
+
+    for (final SpecificationStateAware specificationStateAware : specificationStateAwareBeans) {
+      specificationStateAware.setState(SpecificationState.COMPLETED);
+    }
+
     implementer.generateImplementations();
   }
 
