@@ -145,7 +145,7 @@ public final class ClassImplementer {
         next = true;
       }
 
-      // type
+      // typed
       generator.type(field.getFieldType());
 
       // space and name
@@ -431,7 +431,7 @@ public final class ClassImplementer {
         // for byte, short and char: (int) fieldClass
         generator.cast(int.class).thisMember(fieldName);
       } else if (Integer.TYPE.equals(fieldClass)) {
-        // int type - use just member as is
+        // int typed - use just member as is
         generator.thisMember(fieldName);
       } else if (Long.TYPE.equals(fieldClass)) {
         // (int) (e ^ (e >>> 32))

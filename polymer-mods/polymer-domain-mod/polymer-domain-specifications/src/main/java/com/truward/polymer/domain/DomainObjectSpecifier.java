@@ -28,7 +28,7 @@ public interface DomainObjectSpecifier {
    * </code>
    *
    * @param clazz Interface class.
-   * @param <T> Interface type.
+   * @param <T> Interface typed.
    * @return Specificator instance.
    */
   @Nonnull

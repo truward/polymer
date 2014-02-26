@@ -29,7 +29,7 @@ public class JavaTypeRefManager {
 
       @Override
       public CodeObject visitClass(@Nonnull Type sourceType, @Nonnull Class<?> clazz) {
-        // non-array type
+        // non-array typed
         ClassRef classRef = classRefs.get(clazz);
         if (classRef == null) {
           classRef = new ClassRef(clazz);

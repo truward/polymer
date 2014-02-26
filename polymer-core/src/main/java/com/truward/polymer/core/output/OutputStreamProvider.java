@@ -20,7 +20,7 @@ public interface OutputStreamProvider {
    * extension 'java' the output file will be generated at $targetDir/com/mysite/App.java
    *
    * @param name Qualified entity name
-   * @param fileType Target file type, e.g. {@link com.truward.polymer.core.output.DefaultFileTypes#JAVA}
+   * @param fileType Target file typed, e.g. {@link com.truward.polymer.core.output.DefaultFileTypes#JAVA}
    * @return Created output stream
    * @throws IOException On I/O error
    */

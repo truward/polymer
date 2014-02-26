@@ -1,4 +1,4 @@
-package com.truward.polymer.core.generator2.model;
+package com.truward.polymer.core.code;
 
 /**
  * @author Alexander Shabanov

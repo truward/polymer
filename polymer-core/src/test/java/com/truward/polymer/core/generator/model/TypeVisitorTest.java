@@ -68,9 +68,9 @@ public final class TypeVisitorTest {
 
 
   /**
-   * Dummy test method which is needed for {@link #shouldDetectGenericType()} to introduce parameterized type.
+   * Dummy test method which is needed for {@link #shouldDetectGenericType()} to introduce parameterized typed.
    *
-   * @return Test type
+   * @return Test typed
    */
   @Ignore
   @Generated("For Reflection Test")

@@ -1,5 +1,6 @@
 package com.truward.polymer.core.generator2;
 
+import com.truward.polymer.core.code.generator.CodeGenerator;
 import com.truward.polymer.naming.FqName;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -22,5 +23,8 @@ public class GeneratorTest {
   @Test
   public void shouldGenerateCode() {
     target.s("package").sp().s(FqName.parse("com.company.product")).c('\n');
+
+    // String getName()
+    target.t(String.class).sp().s("getName").c('(', ')', ';');
   }
 }

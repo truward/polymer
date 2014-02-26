@@ -98,7 +98,7 @@ public final class JavaCodeGenerator {
     return this;
   }
 
-  // new {type}
+  // new {typed}
   public JavaCodeGenerator newType(Type type) {
     text("new").ch(' ').type(type);
     return this;

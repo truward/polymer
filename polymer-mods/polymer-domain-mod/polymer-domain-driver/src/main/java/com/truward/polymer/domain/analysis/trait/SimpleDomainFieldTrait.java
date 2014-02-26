@@ -78,7 +78,7 @@ public enum SimpleDomainFieldTrait implements Trait<SimpleDomainFieldTrait>, Tra
           break;
         }
 
-        return; // ok, non-negative check can be done for this type
+        return; // ok, non-negative check can be done for this typed
       } while (false);
 
       throw new RuntimeException("Only numeric fields can be associated with NON_NEGATIVE trait");
