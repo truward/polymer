@@ -1,10 +1,13 @@
 package com.truward.polymer.core.support.code;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.truward.polymer.core.code.builder.TypeManager;
+import com.truward.polymer.core.code.typed.GenArray;
 import com.truward.polymer.core.code.typed.GenClass;
 import com.truward.polymer.core.code.typed.GenParameterizedType;
 import com.truward.polymer.core.code.typed.GenType;
+import com.truward.polymer.core.freezable.FreezableSupport;
 import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
@@ -14,7 +17,7 @@ import java.util.*;
 /**
  * @author Alexander Shabanov
  */
-public final class DefaultTypeManager implements TypeManager {
+public final class DefaultTypeManager extends FreezableSupport implements TypeManager {
   private static final FqName JAVA_LANG = FqName.parse("java.lang");
 
   private static final int DEFAULT_INITIAL_SIZE = 50;
@@ -22,10 +25,12 @@ public final class DefaultTypeManager implements TypeManager {
   private final Set<GenClass> genClasses = new HashSet<>(DEFAULT_INITIAL_SIZE);
   private final Map<Class<?>, GenClass> classToGen = new HashMap<>(DEFAULT_INITIAL_SIZE);
   private FqName currentPackage;
+  private Set<GenClass> classesWithSimpleNames;
 
 
   @Override
   public void start(@Nonnull FqName currentPackage) {
+    checkNonFrozen();
     this.currentPackage = currentPackage;
     genClasses.clear();
     classToGen.clear();
@@ -34,6 +39,9 @@ public final class DefaultTypeManager implements TypeManager {
   @Nonnull
   @Override
   public GenType adaptType(@Nonnull Type type) {
+    ensureInitialized();
+    checkNonFrozen();
+
     return TypeVisitor.apply(new TypeVisitor<GenType>() {
       @Override
       public GenType visitArray(@Nonnull Type sourceType, @Nonnull Class<?> elementType) {
@@ -43,13 +51,13 @@ public final class DefaultTypeManager implements TypeManager {
       @Override
       public GenType visitClass(@Nonnull Type sourceType, @Nonnull Class<?> clazz) {
         // non-array typed
-        GenClass classRef = classToGen.get(clazz);
-        if (classRef == null) {
-          classRef = new JavaClassRef(clazz);
-          classToGen.put(clazz, classRef);
-          genClasses.add(classRef);
+        GenClass genClass = classToGen.get(clazz);
+        if (genClass == null) {
+          genClass = new JavaGenClass(clazz);
+          classToGen.put(clazz, genClass);
+          genClasses.add(genClass);
         }
-        return classRef;
+        return genClass;
       }
 
       @Override
@@ -73,8 +81,9 @@ public final class DefaultTypeManager implements TypeManager {
   }
 
   @Override
-  @Nonnull
-  public List<FqName> getImportNames() {
+  protected void setFrozen() {
+    cannotBeFrozenIf(currentPackage == null, "Current package is not initialized");
+
     final Map<String, GenClass> simpleNameToRef = new HashMap<>(genClasses.size() * 2);
 
     // add those referenced classes that are visible by default
@@ -106,38 +115,70 @@ public final class DefaultTypeManager implements TypeManager {
       simpleNameToRef.put(simpleName, genClass);
     }
 
+    classesWithSimpleNames = ImmutableSet.copyOf(simpleNameToRef.values());
+
+    super.setFrozen();
+  }
+
+  @Override
+  @Nonnull
+  public List<FqName> getImportNames() {
+    checkIsFrozen();
+
     final Set<FqName> importStatements = new TreeSet<>();
-    for (final GenClass classRef : genClasses) {
-      if (isVisibleByDefault(classRef) || simpleNameToRef.values().contains(classRef)) {
+    for (final GenClass genClass : genClasses) {
+      if (isVisibleByDefault(genClass) || !classesWithSimpleNames.contains(genClass)) {
         continue;
       }
 
-      importStatements.add(classRef.getFqName());
+      importStatements.add(genClass.getFqName());
     }
 
     return ImmutableList.copyOf(importStatements);
+  }
+
+  @Override
+  public boolean isFqNameRequired(@Nonnull GenClass genClass) {
+    checkIsFrozen();
+    return !isVisibleByDefault(genClass) && !classesWithSimpleNames.contains(genClass);
+
   }
 
   //
   // Private
   //
 
+  private void ensureInitialized() {
+    if (currentPackage == null) {
+      throw new IllegalStateException("Can't adapt type: current package has not been set");
+    }
+  }
+
   private boolean isVisibleByDefault(GenClass genClass) {
-    final FqName parentFqName = genClass.getFqName().getParent();
-    return !parentFqName.isRoot() && (parentFqName.equals(JAVA_LANG) ||
-        parentFqName.equals(currentPackage));
+    if (genClass.isPrimitive()) {
+      return true; // primitive types are always visible
+    }
+
+    final FqName fqName = genClass.getFqName();
+    if (fqName.isRoot()) {
+      return currentPackage.isRoot();
+    }
+
+    final FqName parentFqName = fqName.getParent();
+    return parentFqName.equals(JAVA_LANG) || parentFqName.equals(currentPackage);
 
   }
 
-  private static final class GenArrayImpl implements GenType {
+  private static final class GenArrayImpl implements GenArray {
     private final GenType elementType;
 
     private GenArrayImpl(@Nonnull GenType elementType) {
       this.elementType = elementType;
     }
 
+    @Override
     @Nonnull
-    private GenType getElementType() {
+    public GenType getElementType() {
       return elementType;
     }
   }
@@ -160,18 +201,14 @@ public final class DefaultTypeManager implements TypeManager {
     }
   }
 
-  private static final class JavaClassRef implements GenClass {
+  private static final class JavaGenClass implements GenClass {
     private final Class<?> originClass;
     private transient final FqName targetName;
 
-    public JavaClassRef(@Nonnull Class<?> originClass) {
+    public JavaGenClass(@Nonnull Class<?> originClass) {
+      assert !originClass.isArray();
       this.originClass = originClass;
       this.targetName = FqName.parse(originClass.getName());
-      assert !originClass.isArray();
-    }
-
-    public Class<?> getOriginClass() {
-      return originClass;
     }
 
     @Override
@@ -183,6 +220,16 @@ public final class DefaultTypeManager implements TypeManager {
     @Override
     public FqName getFqName() {
       return targetName;
+    }
+
+    @Override
+    public boolean isPrimitive() {
+      return originClass.isPrimitive();
+    }
+
+    @Override
+    public String toString() {
+      return "JavaGenClass#" + originClass.toString();
     }
   }
 }

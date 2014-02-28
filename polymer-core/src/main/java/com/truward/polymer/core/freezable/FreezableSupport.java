@@ -8,9 +8,15 @@ package com.truward.polymer.core.freezable;
 public abstract class FreezableSupport implements Freezable {
   private boolean frozen;
 
-  protected void checkNonFrozen() {
+  protected final void checkNonFrozen() {
     if (isFrozen()) {
       throw new IllegalStateException("Modification is not allowed for the frozen object");
+    }
+  }
+
+  protected final void checkIsFrozen() {
+    if (!isFrozen()) {
+      throw new IllegalStateException("Operation is not allowed for the non-frozen object");
     }
   }
 
@@ -36,6 +42,10 @@ public abstract class FreezableSupport implements Freezable {
 
   @Override
   public final void freeze() {
+    if (frozen) {
+      return;
+    }
+
     setFrozen();
   }
 }

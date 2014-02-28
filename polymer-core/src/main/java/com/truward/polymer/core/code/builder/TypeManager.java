@@ -1,6 +1,8 @@
 package com.truward.polymer.core.code.builder;
 
+import com.truward.polymer.core.code.typed.GenClass;
 import com.truward.polymer.core.code.typed.GenType;
+import com.truward.polymer.core.freezable.Freezable;
 import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
@@ -10,7 +12,7 @@ import java.util.List;
 /**
  * @author Alexander Shabanov
  */
-public interface TypeManager {
+public interface TypeManager extends Freezable {
 
   void start(@Nonnull FqName currentPackage);
 
@@ -19,4 +21,6 @@ public interface TypeManager {
 
   @Nonnull
   List<FqName> getImportNames();
+
+  boolean isFqNameRequired(@Nonnull GenClass genClass);
 }

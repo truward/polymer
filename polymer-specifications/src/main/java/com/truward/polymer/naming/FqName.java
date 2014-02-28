@@ -3,6 +3,7 @@ package com.truward.polymer.naming;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +12,9 @@ import java.util.List;
  *
  * @author Alexander Shabanov
  */
-public final class FqName {
+public final class FqName implements Comparable<FqName>, Serializable {
+  private static final long serialVersionUID = 1034564186589752765L;
+
   private final String name;
   private final FqName parent;
   /** Precalculated hash code, optimized for immutable FqName, default to 0 */
@@ -85,6 +88,22 @@ public final class FqName {
 
   public boolean isRoot() {
     return parent == null;
+  }
+
+  @Override
+  public int compareTo(FqName o) {
+    int r = getName().compareTo(o.getName());
+    if (r != 0) {
+      return r;
+    }
+
+    if (isRoot()) {
+      return o.isRoot() ? 0 : -1;
+    } else if (o.isRoot()) {
+      return 1;
+    }
+
+    return getParent().compareTo(o.getParent());
   }
 
   @Override

@@ -1,9 +1,12 @@
 package com.truward.polymer.core.code.builder;
 
+import com.truward.polymer.core.code.CodeObject;
 import com.truward.polymer.core.freezable.Freezable;
 import com.truward.polymer.naming.FqName;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Type;
+import java.util.List;
 
 /**
  * Represents code output stream
@@ -13,20 +16,29 @@ import java.lang.reflect.Type;
 public interface CodeStream extends Freezable {
 
   // char
-  ModuleBuilder c(char ch);
+  @Nonnull CodeStream c(char ch);
 
-  ModuleBuilder c(char... chars);
+  @Nonnull CodeStream c(@Nonnull char... chars);
 
   // string
-  ModuleBuilder s(String string);
+  @Nonnull CodeStream s(@Nonnull String string);
 
-  ModuleBuilder s(String... strings);
+  @Nonnull CodeStream s(@Nonnull String... strings);
 
-  ModuleBuilder s(FqName fqName);
+  @Nonnull CodeStream s(@Nonnull FqName fqName);
 
   // space
-  ModuleBuilder sp();
+  @Nonnull CodeStream sp();
+
+  // end-of-line
+  @Nonnull CodeStream eol();
 
   // types
-  ModuleBuilder t(Type type);
+  @Nonnull CodeStream t(@Nonnull Type type);
+
+
+  /**
+   * @return Returns list of childs added to this stream.
+   */
+  @Nonnull List<CodeObject> getChilds();
 }

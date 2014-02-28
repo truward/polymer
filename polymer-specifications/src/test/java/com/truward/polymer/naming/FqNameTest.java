@@ -93,8 +93,15 @@ public final class FqNameTest {
       for (int j = 0; j < names.length; ++j) {
         if (i != j) {
           assertNotSame("Names should not be the same", names[i], names[j]);
-          int hc1 = names[i].hashCode();
-          int hc2 = names[j].hashCode();
+
+          // compareTo tests
+          final int cmp = names[i].compareTo(names[j]);
+          assertNotSame(0, cmp);
+          assertEquals(cmp, -names[j].compareTo(names[i]));
+
+          // compare hash codes
+          final int hc1 = names[i].hashCode();
+          final int hc2 = names[j].hashCode();
 
           // Hash codes might be the same, but it's highly unlikely for them to match for our tested strings
           // It is not necessarily an error if they do match each other, but
@@ -102,6 +109,15 @@ public final class FqNameTest {
           if (hc1 == hc2) {
             System.err.println("Hash codes of names=[" + names[i] + ", " + names[j] + "] matches");
           }
+        } else {
+          // assert matches
+          final FqName name = names[i];
+          final FqName clone = FqName.parse(name.toString());
+          assertEquals(0, name.compareTo(name));
+          assertEquals(0, name.compareTo(clone));
+          assertEquals(name, clone);
+          assertEquals(clone, name);
+          assertEquals(name.hashCode(), clone.hashCode());
         }
       }
     }
