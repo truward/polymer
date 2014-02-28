@@ -1,9 +1,9 @@
 package com.truward.polymer.core.code.typed;
 
-import com.truward.polymer.core.code.CodeObject;
+import com.truward.polymer.core.code.GenObject;
 
 /**
  * @author Alexander Shabanov
  */
-public interface GenType extends CodeObject {
+public interface GenType extends GenObject {
 }

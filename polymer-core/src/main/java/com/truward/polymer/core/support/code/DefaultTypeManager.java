@@ -181,6 +181,11 @@ public final class DefaultTypeManager extends FreezableSupport implements TypeMa
     public GenType getElementType() {
       return elementType;
     }
+
+    @Override
+    public String toString() {
+      return elementType.toString() + "[]";
+    }
   }
 
   private static final class GenParameterizedTypeImpl implements GenParameterizedType {
@@ -198,6 +203,24 @@ public final class DefaultTypeManager extends FreezableSupport implements TypeMa
 
     @Nonnull @Override public List<GenType> getTypeParameters() {
       return arguments;
+    }
+
+    @Override
+    public String toString() {
+      final StringBuilder result = new StringBuilder(100);
+      result.append(rawType);
+      result.append('<');
+      boolean next = false;
+      for (final GenType arg : getTypeParameters()) {
+        if (next) {
+          result.append(", ");
+        } else {
+          next = true;
+        }
+        result.append(arg);
+      }
+      result.append('>');
+      return result.toString();
     }
   }
 

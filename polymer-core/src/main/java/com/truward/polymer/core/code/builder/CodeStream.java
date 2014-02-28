@@ -1,6 +1,6 @@
 package com.truward.polymer.core.code.builder;
 
-import com.truward.polymer.core.code.CodeObject;
+import com.truward.polymer.core.code.GenObject;
 import com.truward.polymer.core.freezable.Freezable;
 import com.truward.polymer.naming.FqName;
 
@@ -36,9 +36,11 @@ public interface CodeStream extends Freezable {
   // types
   @Nonnull CodeStream t(@Nonnull Type type);
 
+  // code object
+  @Nonnull CodeStream object(@Nonnull GenObject genObject);
 
   /**
    * @return Returns list of childs added to this stream.
    */
-  @Nonnull List<CodeObject> getChilds();
+  @Nonnull List<GenObject> getChilds();
 }

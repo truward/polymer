@@ -9,9 +9,6 @@ import java.util.List;
  * @author Alexander Shabanov
  */
 public interface ModuleBuilder extends Freezable {
-  void start(FqName packageName);
-
-  void insertImports(List<FqName> imports);
 
   CodeStream getStream();
 

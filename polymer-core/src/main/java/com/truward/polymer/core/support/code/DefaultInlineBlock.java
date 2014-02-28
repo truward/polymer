@@ -2,7 +2,7 @@ package com.truward.polymer.core.support.code;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.truward.polymer.core.code.CodeObject;
+import com.truward.polymer.core.code.GenObject;
 import com.truward.polymer.core.code.builder.CodeStream;
 import com.truward.polymer.core.code.builder.TypeManager;
 import com.truward.polymer.core.code.untyped.GenChar;
@@ -23,7 +23,7 @@ import java.util.Map;
  * @author Alexander Shabanov
  */
 public final class DefaultInlineBlock extends FreezableSupport implements GenInlineBlock {
-  private List<CodeObject> childs = new ArrayList<>(30);
+  private List<GenObject> childs = new ArrayList<>(30);
   private final TypeManager typeManager;
   private static final Map<String, GenStringImpl> STRING_CACHE;
 
@@ -57,6 +57,10 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
 
   public DefaultInlineBlock(@Nonnull TypeManager typeManager) {
     this.typeManager = typeManager;
+  }
+
+  public DefaultInlineBlock() {
+    this(StubTypeManager.INSTANCE);
   }
 
   @Nonnull
@@ -119,7 +123,13 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
 
   @Nonnull
   @Override
-  public List<CodeObject> getChilds() {
+  public CodeStream object(@Nonnull GenObject genObject) {
+    return append(genObject);
+  }
+
+  @Nonnull
+  @Override
+  public List<GenObject> getChilds() {
     checkNonFrozen();
     return childs;
   }
@@ -135,9 +145,9 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
   //
   
   @Nonnull
-  private CodeStream append(@Nonnull CodeObject codeObject) {
+  private CodeStream append(@Nonnull GenObject genObject) {
     checkNonFrozen();
-    childs.add(codeObject);
+    childs.add(genObject);
     return this;
   }
 
@@ -172,6 +182,11 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
       }
       return new GenCharImpl(ch);
     }
+
+    @Override
+    public String toString() {
+      return Character.toString(ch);
+    }
   }
 
   private static final class GenStringImpl implements GenString {
@@ -184,6 +199,11 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
     @Override
     public String getString() {
       return value;
+    }
+
+    @Override
+    public String toString() {
+      return getString();
     }
   }
 
@@ -204,5 +224,15 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
     public FqName getFqName() {
       return fqName;
     }
+
+    @Override
+    public String toString() {
+      return getFqName().toString();
+    }
+  }
+
+  @Override
+  public String toString() {
+    return childs.toString();
   }
 }
