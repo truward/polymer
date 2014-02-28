@@ -36,8 +36,12 @@ public final class DefaultCodePrinter implements CodePrinter {
     this.typeManager = typeManager;
   }
 
+  public DefaultCodePrinter(@Nonnull Writer writer, @Nonnull TypeManager typeManager) {
+    this(writer, DEFAULT_INDENT_UNIT, typeManager);
+  }
+
   public DefaultCodePrinter(@Nonnull Writer writer) {
-    this(writer, DEFAULT_INDENT_UNIT, StubTypeManager.INSTANCE);
+    this(writer, StubTypeManager.INSTANCE);
   }
 
   @Override

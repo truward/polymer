@@ -130,7 +130,7 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
   @Nonnull
   @Override
   public List<GenObject> getChilds() {
-    checkNonFrozen();
+    checkIsFrozen();
     return childs;
   }
 

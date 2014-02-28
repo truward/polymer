@@ -12,8 +12,10 @@ import org.junit.Test;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -32,7 +34,7 @@ public final class TypeManagerTest {
   @Before
   public void init() {
     typeManager = new DefaultTypeManager();
-    typeManager.start(currentPackage);
+    typeManager.setPackageName(currentPackage);
   }
 
   @Test
@@ -100,10 +102,15 @@ public final class TypeManagerTest {
     assertEquals(genTypes.length, ImmutableSet.copyOf(genTypes).size()); // there should be no duplicates
 
     typeManager.freeze();
-    assertEquals(ImmutableList.of(FqName.parse("java.util.List")), typeManager.getImportNames());
+    assertEquals(1, typeManager.getImportNames().size());
 
-    assertTrue(typeManager.isFqNameRequired(list1));
-    assertTrue(typeManager.isFqNameRequired(list2));
+    int fqNameRequired = 0;
+    for (final GenType genType : genTypes) {
+      if (typeManager.isFqNameRequired((GenClass) genType)) {
+        ++fqNameRequired;
+      }
+    }
+    assertEquals(2, fqNameRequired);
   }
 
   //

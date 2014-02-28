@@ -14,7 +14,9 @@ import java.util.List;
  */
 public interface TypeManager extends Freezable {
 
-  void start(@Nonnull FqName currentPackage);
+  void start();
+
+  void setPackageName(@Nonnull FqName currentPackage);
 
   @Nonnull
   GenType adaptType(@Nonnull Type type);

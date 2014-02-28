@@ -29,17 +29,22 @@ public final class DefaultTypeManager extends FreezableSupport implements TypeMa
 
 
   @Override
-  public void start(@Nonnull FqName currentPackage) {
-    checkNonFrozen();
-    this.currentPackage = currentPackage;
+  public void start() {
+    melt();
+    currentPackage = null;
     genClasses.clear();
     classToGen.clear();
+  }
+
+  @Override
+  public void setPackageName(@Nonnull FqName currentPackage) {
+    checkNonFrozen();
+    this.currentPackage = currentPackage;
   }
 
   @Nonnull
   @Override
   public GenType adaptType(@Nonnull Type type) {
-    ensureInitialized();
     checkNonFrozen();
 
     return TypeVisitor.apply(new TypeVisitor<GenType>() {
@@ -147,12 +152,6 @@ public final class DefaultTypeManager extends FreezableSupport implements TypeMa
   //
   // Private
   //
-
-  private void ensureInitialized() {
-    if (currentPackage == null) {
-      throw new IllegalStateException("Can't adapt type: current package has not been set");
-    }
-  }
 
   private boolean isVisibleByDefault(GenClass genClass) {
     if (genClass.isPrimitive()) {

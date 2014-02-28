@@ -1,6 +1,5 @@
 package com.truward.polymer.core.support.code;
 
-import com.truward.polymer.core.code.builder.CodeStream;
 import com.truward.polymer.core.code.builder.ModuleBuilder;
 import com.truward.polymer.core.code.builder.TypeManager;
 import com.truward.polymer.core.code.untyped.GenInlineBlock;
@@ -30,17 +29,16 @@ public final class DefaultModuleBuilder extends FreezableSupport implements Modu
   }
 
   @Override
-  public CodeStream getStream() {
+  public GenInlineBlock getStream() {
     return codeStream;
   }
 
   @Override
-  public FqName getPackageName() {
-    return packageName;
-  }
-
-  @Override
   protected void setFrozen() {
+    // set current package to the type manager
+    typeManager.setPackageName(packageName);
+
+    // freeze type manager, that will trigger preparation of the types
     typeManager.freeze();
 
     // insert imports

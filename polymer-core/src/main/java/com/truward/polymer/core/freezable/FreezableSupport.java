@@ -24,6 +24,10 @@ public abstract class FreezableSupport implements Freezable {
     frozen = true;
   }
 
+  protected void melt() {
+    frozen = false;
+  }
+
   /**
    * Utility method, that verifies the condition and throws {@link CannotBeFrozenException} if condition is true.
    *

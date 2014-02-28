@@ -22,7 +22,12 @@ public final class StubTypeManager implements TypeManager {
   }
 
   @Override
-  public void start(@Nonnull FqName currentPackage) {
+  public void start() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void setPackageName(@Nonnull FqName currentPackage) {
     throw new UnsupportedOperationException();
   }
 
