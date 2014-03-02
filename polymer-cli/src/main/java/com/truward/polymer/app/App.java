@@ -3,11 +3,11 @@ package com.truward.polymer.app;
 import com.google.common.annotations.VisibleForTesting;
 import com.truward.di.InjectionContext;
 import com.truward.polymer.app.util.ClassScanner;
-import com.truward.polymer.core.PolymerModule;
 import com.truward.polymer.core.driver.Implementer;
 import com.truward.polymer.core.driver.SpecificationHandler;
 import com.truward.polymer.core.output.FSOutputStreamProvider;
 import com.truward.polymer.core.output.OutputStreamProvider;
+import com.truward.polymer.core.support.PolymerModule;
 
 import javax.annotation.Nonnull;
 import java.io.File;

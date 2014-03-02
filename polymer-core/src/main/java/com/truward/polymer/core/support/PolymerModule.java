@@ -1,4 +1,4 @@
-package com.truward.polymer.core;
+package com.truward.polymer.core.support;
 
 import com.truward.di.InjectionContext;
 import com.truward.di.support.DefaultInjectionContext;

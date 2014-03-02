@@ -1,16 +1,17 @@
 package com.truward.polymer.domain.implementer;
 
-import com.truward.polymer.core.generator.JavaCodeGenerator;
-import com.truward.polymer.core.generator.model.LocalRefType;
-import com.truward.polymer.core.generator.model.TypeVisitor;
+import com.truward.polymer.core.code.builder.CodeStream;
+import com.truward.polymer.core.code.typed.GenClass;
+import com.truward.polymer.core.code.typed.TypeVisitor;
 import com.truward.polymer.core.types.DefaultParameterizedType;
-import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
+import com.truward.polymer.domain.analysis.FieldUtil;
+import com.truward.polymer.domain.analysis.OriginMethodRole;
+import com.truward.polymer.domain.analysis.support.GenDomainClass;
 import com.truward.polymer.domain.analysis.support.Names;
-import com.truward.polymer.domain.analysis.trait.BuilderTrait;
-import com.truward.polymer.domain.analysis.trait.GetterTrait;
 
 import javax.annotation.Nonnull;
+import javax.lang.model.element.Modifier;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -20,96 +21,93 @@ import java.util.*;
  *
  * @author Alexander Shabanov
  */
-public final class BuilderImplementer {
-  private final JavaCodeGenerator generator;
-  private final Type implClass;
-  private final Type builderClass;
-  private final DomainAnalysisResult analysisResult;
+public final class BuilderImplementer extends AbstractDomainImplementer {
 
-  public BuilderImplementer(@Nonnull JavaCodeGenerator generator,
-                            @Nonnull Type implClass,
-                            @Nonnull DomainAnalysisResult analysisResult) {
-    this.generator = generator;
-    this.implClass = implClass;
-    this.analysisResult = analysisResult;
-
-    // TODO: support non-inner builder types
-    this.builderClass = new LocalRefType("Builder");
+  public BuilderImplementer(@Nonnull CodeStream codeStream, @Nonnull GenDomainClass domainClass) {
+    super(codeStream, domainClass);
+    if (!domainClass.getGenBuilderClass().isSupported()) {
+      throw new IllegalStateException("Builder class is not supported");
+    }
+    if (!domainClass.getGenBuilderClass().hasFqName()) {
+      throw new IllegalStateException("Builder class has no name");
+    }
   }
 
-  public boolean isInnerBuilderSupported() {
-    return analysisResult.hasTrait(BuilderTrait.KEY);
+  @Nonnull
+  public GenClass getBuilderClass() {
+    return getDomainClass().getGenBuilderClass();
   }
 
   public void generateInnerBuilder() {
-    final List<DomainField> fields = analysisResult.getFields();
+    final List<DomainField> fields = getAnalysisResult().getFields();
 
     generateEmptyNewBuilderMethod();
     generateNewBuilderMethod(fields);
 
-    generator.ch('\n');
+    c('\n');
 
     // class Builder
-    generator.ch('\n').textWithSpaces("public", "static", "final", "class").ch(' ').type(builderClass).ch(' ', '{');
+    c('\n').s("public").sps("static").s("final").sps("class")
+        .t(getBuilderClass()).sp().c('{');
 
     // builder fields
     for (final DomainField field : fields) {
-      ImplementerUtil.generateField(generator, field, false);
+      field(field, Modifier.PRIVATE);
     }
 
     // private constructor
-    generator.ch('\n').text("private").ch(' ').type(builderClass).ch('(').ch(')', ' ', '{');
+    eol().s("private").sp().t(getBuilderClass()).c('(').c(')', ' ', '{');
     // we need to initialize certain fields
     for (final DomainField field : fields) {
       generateInitializerForBuilderField(field);
     }
-    generator.ch('}');
+    c('}');
 
     // setters
     for (final DomainField field : fields) {
-      generateSettersForBuilder(field, builderClass);
+      generateSettersForBuilder(field);
     }
 
     generateBuildMethod(fields);
 
-    generator.ch('}'); // end of 'class Builder'
+    c('}'); // end of 'class Builder'
   }
 
   private void generateEmptyNewBuilderMethod() {
     // newBuilder() method
-    generator.ch('\n').text("public").ch(' ').text("static").ch(' ').type(builderClass).ch(' ').text("newBuilder")
-        .ch('(', ')', ' ', '{')
-        .text("return").ch(' ').newType(builderClass).ch('(', ')', ';')
-        .ch('}');
+    c('\n').s("public").sps("static").t(getBuilderClass()).sp().s("newBuilder")
+        .c('(', ')', ' ', '{')
+        .s("return").sp().newType(getBuilderClass()).c('(', ')', ';')
+        .c('}');
   }
 
   private void generateNewBuilderMethod(List<DomainField> fields) {
     // newBuilder({TargetClass} value) method
     final String valueParam = Names.VALUE;
     final String resultVar = Names.RESULT;
-    generator.ch('\n').text("public").ch(' ').text("static").ch(' ').type(builderClass).ch(' ').text("newBuilder")
-        .ch('(').type(analysisResult.getOriginClass()).ch(' ').text(valueParam).ch(')', ' ', '{')
-        .text("final").ch(' ').type(builderClass).ch(' ').text(resultVar).ch(' ', '=', ' ')
-        .text("newBuilder").ch('(', ')', ';');
+    c('\n').s("public").sp().s("static").sp().t(getBuilderClass()).sp().s("newBuilder")
+        .c('(').t(getOriginClass()).sp().s(valueParam).c(')', ' ', '{')
+        .s("final").sp().t(getBuilderClass()).sp().s(resultVar).c(' ', '=', ' ')
+        .s("newBuilder").c('(', ')', ';');
 
     // explodes into invocation of multiple setters in the current builder
     for (final DomainField field : fields) {
       final String fieldName = field.getFieldName();
-      generator.text(resultVar);
+      s(resultVar);
       TypeVisitor.apply(new TypeVisitor<Void>() {
         @Override
         public Void visitType(@Nonnull Type sourceType) {
-          generator.dot(Names.createPrefixedName(Names.SET_PREFIX, fieldName));
+          dot(Names.createPrefixedName(Names.SET_PREFIX, fieldName));
           return null;
         }
 
         @Override
         public Void visitGenericType(@Nonnull Type sourceType, @Nonnull Class<?> rawType, @Nonnull List<Type> args) {
           if (List.class.equals(rawType) || Set.class.equals(rawType)) {
-            generator.dot(Names.createPrefixedName("addAllTo", fieldName));
+            dot(Names.createPrefixedName("addAllTo", fieldName));
             return null;
           } else if (Map.class.equals(rawType)) {
-            generator.dot(Names.createPrefixedName("putAllTo", fieldName));
+            dot(Names.createPrefixedName("putAllTo", fieldName));
             return null;
           }
 
@@ -118,31 +116,32 @@ public final class BuilderImplementer {
       }, field.getFieldType());
 
       // TODO: make generation of this method entirely optional
-      final GetterTrait getterTrait = field.findTrait(GetterTrait.KEY);
-      if (getterTrait == null) {
+
+      final String getterName = FieldUtil.getMethodName(field, OriginMethodRole.GETTER);
+      if (getterName == null) {
         throw new UnsupportedOperationException("Can't generate newBuilder for field that has no getters in the " +
             "origin interface: " + field.getClass() + ": " + field.getFieldName());
       }
-      generator.ch('(').text(valueParam).dot(getterTrait.getGetterName()).ch('(', ')', ')', ';');
+      c('(').s(valueParam).dot(getterName).c('(', ')', ')', ';');
     }
 
-    generator.text("return").ch(' ').text(resultVar).ch(';')
-        .ch('}');
+    s("return").sp().s(resultVar).c(';')
+        .c('}');
   }
 
   private void generateBuildMethod(List<DomainField> fields) {
-    generator.ch('\n').text("public").ch(' ').type(analysisResult.getOriginClass()).ch(' ').text("build")
-        .ch('(', ')', ' ', '{').text("return").ch(' ').newType(implClass).ch('(');
+    c('\n').s("public").sp().t(getOriginClass()).sp().s("build")
+        .c('(', ')', ' ', '{').s("return").sp().newType(getDomainClass()).c('(');
     boolean next = false;
     for (final DomainField field : fields) {
       if (next) {
-        generator.ch(',', ' ');
+        c(',', ' ');
       } else {
         next = true;
       }
-      generator.text(field.getFieldName());
+      s(field.getFieldName());
     }
-    generator.ch(')', ';', '}');
+    c(')', ';', '}');
   }
 
   private void generateInitializerForBuilderField(DomainField field) {
@@ -170,8 +169,8 @@ public final class BuilderImplementer {
 
         // generate copy: new RawType<{Args..}>(fieldName); - e.g. new ArrayList<{Type}(fieldName);
         if (rawTypeForCopy != null) {
-          generator.thisMember(fieldName).ch(' ', '=', ' ')
-              .newType(DefaultParameterizedType.from(rawTypeForCopy, args)).ch('(').text(fieldName).ch(')', ';');
+          thisDot(fieldName).c(' ', '=', ' ')
+              .newType(DefaultParameterizedType.from(rawTypeForCopy, args)).c('(').s(fieldName).c(')', ';');
           return null;
         }
 
@@ -180,12 +179,12 @@ public final class BuilderImplementer {
     }, field.getFieldType());
   }
 
-  private void generateSettersForBuilder(DomainField field, final Type builderClass) {
+  private void generateSettersForBuilder(DomainField field) {
     final String fieldName = field.getFieldName();
     TypeVisitor.apply(new TypeVisitor<Void>() {
       @Override
       public Void visitType(@Nonnull Type sourceType) {
-        generateBuilderSetter(builderClass, sourceType, fieldName);
+        generateBuilderSetter(getDomainClass(), sourceType, fieldName);
         return null;
       }
 
@@ -195,21 +194,21 @@ public final class BuilderImplementer {
         if (List.class.equals(rawType)) {
           assert args.size() == 1;
           // Special setters: add & addAll
-          generateBuilderAppender(builderClass, args.get(0), fieldName);
-          generateBuilderBulkAppender(builderClass, sourceType, fieldName);
+          generateBuilderAppender(getDomainClass(), args.get(0), fieldName);
+          generateBuilderBulkAppender(getDomainClass(), sourceType, fieldName);
           return null;
         } else if (Map.class.equals(rawType)) {
           assert args.size() == 2;
           final Type keyType = args.get(0);
           final Type valueType = args.get(1);
-          generateBuilderPut(builderClass, keyType, valueType, fieldName);
-          generateBuilderPutAll(builderClass, sourceType, fieldName);
+          generateBuilderPut(getDomainClass(), keyType, valueType, fieldName);
+          generateBuilderPutAll(getDomainClass(), sourceType, fieldName);
           return null;
         } else if (Set.class.equals(rawType)) {
           assert args.size() == 1;
           // Special setters: add & addAll
-          generateBuilderAppender(builderClass, args.get(0), fieldName);
-          generateBuilderBulkAppender(builderClass, sourceType, fieldName);
+          generateBuilderAppender(getDomainClass(), args.get(0), fieldName);
+          generateBuilderBulkAppender(getDomainClass(), sourceType, fieldName);
           return null;
         }
 
@@ -224,81 +223,81 @@ public final class BuilderImplementer {
     //    return this;
     // }
 
-    generator.ch('\n')
-        .text("public").ch(' ').type(builderClass).ch(' ')
-        .text(Names.createPrefixedName(Names.SET_PREFIX, fieldName)).ch('(');
+    c('\n')
+        .s("public").sp().t(builderClass).sp()
+        .s(Names.createPrefixedName(Names.SET_PREFIX, fieldName)).c('(');
     // arg - ({FieldType} {fieldName})
-    generator.typedVar(fieldType, fieldName);
-    generator.ch(')', ' ', '{');
+    var(fieldType, fieldName);
+    c(')', ' ', '{');
     // this.{fieldName} = {fieldName};
-    generator.thisMember(fieldName).ch(' ').text("=").ch(' ').text(fieldName).ch(';');
+    thisDot(fieldName).spc('=').s(fieldName).c(';');
     // return this;
-    generator.text("return").ch(' ').text("this").ch(';');
-    generator.ch('}');
+    s("return").sp().s("this").c(';');
+    c('}');
   }
 
   private void generateBuilderAppender(Type builderClass, Type elementType, String fieldName) {
     final String elementParam = Names.ELEMENT;
 
-    generator.ch('\n')
-        .text("public").ch(' ').type(builderClass).ch(' ')
-        .text(Names.createPrefixedName("addTo", fieldName)).ch('(');
+    c('\n')
+        .s("public").sp().t(builderClass).sp()
+        .s(Names.createPrefixedName("addTo", fieldName)).c('(');
     // arg - ({ElementType} element)
-    generator.typedVar(elementType, elementParam);
-    generator.ch(')', ' ', '{');
+    var(elementType, elementParam);
+    c(')', ' ', '{');
     // this.{fieldName}.add(element);
-    generator.thisMember(fieldName).dot("add").ch('(').text(elementParam).ch(')', ';');
+    thisDot(fieldName).dot("add").c('(').s(elementParam).c(')', ';');
     // return this;
-    generator.text("return").ch(' ').text("this").ch(';');
-    generator.ch('}');
+    s("return").sp().s("this").c(';');
+    c('}');
   }
 
   private void generateBuilderBulkAppender(Type builderClass, Type fieldType, String fieldName) {
     final String paramName = Names.ELEMENTS;
 
-    generator.ch('\n')
-        .text("public").ch(' ').type(builderClass).ch(' ')
-        .text(Names.createPrefixedName("addAllTo", fieldName)).ch('(');
+    c('\n')
+        .s("public").sp().t(builderClass).sp()
+        .s(Names.createPrefixedName("addAllTo", fieldName)).c('(');
     // arg - ({FieldType} elements)
-    generator.typedVar(fieldType, paramName);
-    generator.ch(')', ' ', '{');
+    var(fieldType, paramName);
+    c(')', ' ', '{');
     // this.{fieldName}.addAll(elements);
-    generator.thisMember(fieldName).dot("addAll").ch('(').text(paramName).ch(')', ';');
+    thisDot(fieldName).dot("addAll").c('(').s(paramName).c(')', ';');
     // return this;
-    generator.text("return").ch(' ').text("this").ch(';');
-    generator.ch('}');
+    s("return").sp().s("this").c(';');
+    c('}');
   }
 
   private void generateBuilderPut(Type builderClass, Type keyType, Type valueType, String fieldName) {
     final String keyParam = Names.KEY;
     final String valueParam = Names.VALUE;
 
-    generator.ch('\n')
-        .text("public").ch(' ').type(builderClass).ch(' ')
-        .text(Names.createPrefixedName("putTo", fieldName)).ch('(');
+    c('\n')
+        .s("public").sp().t(builderClass).sp()
+        .s(Names.createPrefixedName("putTo", fieldName)).c('(');
     // arg - ({KeyType} key, {ValueType} value)
-    generator.typedVar(keyType, keyParam).ch(',', ' ').typedVar(valueType, valueParam);
-    generator.ch(')', ' ', '{');
+    var(keyType, keyParam).c(',', ' ').var(valueType, valueParam);
+    c(')', ' ', '{');
     // this.{fieldName}.put(key, value);
-    generator.thisMember(fieldName).dot("put").ch('(').text(keyParam).ch(',', ' ').text(valueParam).ch(')', ';');
+    thisDot(fieldName).dot("put").c('(').s(keyParam).c(',', ' ').s(valueParam).c(')', ';');
     // return this;
-    generator.text("return").ch(' ').text("this").ch(';');
-    generator.ch('}');
+    s("return").sp().s("this").c(';');
+    c('}');
   }
 
   private void generateBuilderPutAll(Type builderClass, Type fieldType, String fieldName) {
     final String elementsName = Names.ELEMENTS;
 
-    generator.ch('\n')
-        .text("public").ch(' ').type(builderClass).ch(' ')
-        .text(Names.createPrefixedName("putAllTo", fieldName)).ch('(');
+    c('\n')
+        .s("public").sp().t(builderClass).sp()
+        .s(Names.createPrefixedName("putAllTo", fieldName)).c('(');
     // arg - ({FieldType} elements)
-    generator.typedVar(fieldType, elementsName);
-    generator.ch(')', ' ', '{');
+    var(fieldType, elementsName);
+    c(')', ' ', '{');
     // this.{fieldName}.addAll(elements);
-    generator.thisMember(fieldName).dot("putAll").ch('(').text(elementsName).ch(')', ';');
+    thisDot(fieldName).dot("putAll").c('(').s(elementsName).c(')', ';');
     // return this;
-    generator.text("return").ch(' ').text("this").ch(';');
-    generator.ch('}');
+    s("return").sp().s("this").c(';');
+    c('}');
   }
 }

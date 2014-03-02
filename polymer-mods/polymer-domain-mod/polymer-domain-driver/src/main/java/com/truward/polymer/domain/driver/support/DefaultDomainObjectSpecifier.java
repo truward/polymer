@@ -6,14 +6,9 @@ import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.core.types.DefaultValues;
 import com.truward.polymer.domain.*;
-import com.truward.polymer.domain.analysis.DomainAnalysisContext;
-import com.truward.polymer.domain.analysis.DomainAnalysisResult;
-import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.analysis.DomainImplementationTargetSink;
-import com.truward.polymer.domain.analysis.trait.BuilderTrait;
-import com.truward.polymer.domain.analysis.trait.GetterTrait;
-import com.truward.polymer.domain.analysis.trait.ImplementationNameTrait;
-import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;
+import com.truward.polymer.domain.analysis.*;
+import com.truward.polymer.domain.analysis.support.GenDomainClass;
+import com.truward.polymer.naming.FqName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,25 +87,25 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   @Override
   @Nonnull
   public DomainObjectSpecifier isNullable(Object field) {
-    return setupTrait(SimpleDomainFieldTrait.NULLABLE);
+    return putFieldTrait(FieldTrait.NULLABLE);
   }
 
   @Nonnull
   @Override
   public DomainObjectSpecifier isNonNull(Object field) {
-    return setupTrait(SimpleDomainFieldTrait.NONNULL);
+    return putFieldTrait(FieldTrait.NONNULL);
   }
 
   @Override
   @Nonnull
   public DomainObjectSpecifier hasLength(String field) {
-    return setupTrait(SimpleDomainFieldTrait.HAS_LENGTH);
+    return putFieldTrait(FieldTrait.HAS_LENGTH);
   }
 
   @Override
   @Nonnull
   public DomainObjectSpecifier isNonNegative(int field) {
-    return setupTrait(SimpleDomainFieldTrait.NON_NEGATIVE);
+    return putFieldTrait(FieldTrait.NON_NEGATIVE);
   }
 
   @Override
@@ -134,10 +129,9 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   // Private
   //
 
-  private DomainObjectSpecifier setupTrait(@Nonnull SimpleDomainFieldTrait fieldTrait) {
+  private DomainObjectSpecifier putFieldTrait(@Nonnull FieldTrait fieldTrait) {
     checkRecordingStateAndField();
     try {
-      fieldTrait.verifyCompatibility(currentField);
       currentField.putTrait(fieldTrait);
     } finally {
       currentField = null;
@@ -163,7 +157,7 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
     }
   }
 
-  private static final class DefaultDomainObjectSettings implements DomainObjectSettings {
+  private final class DefaultDomainObjectSettings implements DomainObjectSettings {
 
     private final DomainAnalysisResult analysisResult;
 
@@ -173,18 +167,24 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
 
     @Override
     public DomainObjectBuilderSettings assignBuilder() {
-      BuilderTrait builderTrait = analysisResult.findTrait(BuilderTrait.KEY);
-      if (builderTrait == null) {
-        builderTrait = new BuilderTrait();
-        analysisResult.putTrait(builderTrait);
-      }
-
-      return builderTrait.getSettings();
+      final GenDomainClass.GenBuilderClass settings = getDomainClass().getGenBuilderClass();
+      settings.setSupported(true);
+      return settings;
     }
 
     @Override
-    public void setImplementationName(@Nonnull String implementationName) {
-      analysisResult.putTrait(new ImplementationNameTrait(implementationName));
+    public void setTargetName(@Nonnull FqName implementationName) {
+      getDomainClass().setFqName(implementationName);
+    }
+
+    @Nonnull
+    private GenDomainClass getDomainClass() {
+      final GenDomainClass genDomainClass = targetSink.getTarget(analysisResult);
+      if (genDomainClass == null) {
+        throw new IllegalStateException("Can't assign builder: it is not known whether the class has " +
+            "the corresponding generation target or not");
+      }
+      return genDomainClass;
     }
   }
 
@@ -198,8 +198,9 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
       currentField = getField(currentAnalysisResult, new Predicate<DomainField>() {
         @Override
         public boolean apply(DomainField input) {
-          final GetterTrait getterTrait = input.findTrait(GetterTrait.KEY);
-          return getterTrait != null && methodName.equals(getterTrait.getGetterName());
+          final String getterName = FieldUtil.getMethodName(input, OriginMethodRole.GETTER);
+          // TODO: check types, getter form, etc.
+          return methodName.equals(getterName);
         }
       });
 

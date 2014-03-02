@@ -3,6 +3,7 @@ package com.truward.polymer.testspec.p2;
 import com.truward.polymer.annotation.Specification;
 import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSpecifier;
+import com.truward.polymer.naming.FqName;
 import com.truward.polymer.testspec.model.User;
 import com.truward.polymer.testspec.model.UserRole;
 
@@ -29,6 +30,6 @@ public final class UserSpecification {
         .isNullable(user.getId())
         .getObjectSettings(User.class).assignBuilder();
 
-    specifier.getObjectSettings(User.class).setImplementationName("User");
+    specifier.getObjectSettings(User.class).setTargetName(FqName.parse("com.target.User"));
   }
 }

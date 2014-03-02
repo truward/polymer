@@ -1,11 +1,18 @@
 package com.truward.polymer.core.types;
 
+import com.google.common.collect.ImmutableSet;
+
+import java.util.Set;
+
 /**
  * Utility class that is aware of the default values that correspond to the given classes.
  *
  * @author Alexander Shabanov
  */
 public final class DefaultValues {
+  public static final Set<Class<?>> NUMERIC_PRIMITIVES = ImmutableSet.<Class<?>>of(int.class, char.class, byte.class,
+      long.class, double.class, float.class);
+
   private DefaultValues() {}
 
   public static Object getDefaultValueFor(Class<?> clazz) {
@@ -26,7 +33,8 @@ public final class DefaultValues {
         return 0.0d;
       }
 
-      throw new UnsupportedOperationException("Unknown primitive type: " + clazz);
+      throw new UnsupportedOperationException("Unsupported primitive type: " + clazz + ", supported types: " +
+          NUMERIC_PRIMITIVES);
     }
 
     return null;

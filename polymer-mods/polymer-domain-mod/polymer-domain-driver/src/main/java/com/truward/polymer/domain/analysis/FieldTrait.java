@@ -1,26 +1,20 @@
-package com.truward.polymer.domain.analysis.trait;
+package com.truward.polymer.domain.analysis;
 
-import com.truward.polymer.core.trait.Trait;
-import com.truward.polymer.core.trait.TraitKey;
-import com.truward.polymer.core.trait.TraitUtil;
-import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.analysis.TypeUtil;
+import com.truward.polymer.core.types.DefaultValues;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.Type;
 
 /**
  * @author Alexander Shabanov
  */
-public enum SimpleDomainFieldTrait implements Trait<SimpleDomainFieldTrait>, TraitKey<SimpleDomainFieldTrait> {
-
+public enum FieldTrait {
   /**
    * Designates a nullable field, can not be applied to the primitive types.
    */
   NULLABLE {
     @Override
     public void verifyCompatibility(@Nonnull DomainField field) {
-      TraitUtil.incompatibleWith(this, field, NONNULL);
+      incompatibleWith(field, NONNULL);
     }
   },
 
@@ -30,7 +24,7 @@ public enum SimpleDomainFieldTrait implements Trait<SimpleDomainFieldTrait>, Tra
   NONNULL {
     @Override
     public void verifyCompatibility(@Nonnull DomainField field) {
-      TraitUtil.incompatibleWith(this, field, NULLABLE);
+      incompatibleWith(field, NULLABLE);
     }
   },
 
@@ -42,7 +36,7 @@ public enum SimpleDomainFieldTrait implements Trait<SimpleDomainFieldTrait>, Tra
   MUTABLE {
     @Override
     public void verifyCompatibility(@Nonnull DomainField field) {
-      TraitUtil.incompatibleWith(this, field, IMMUTABLE);
+      incompatibleWith(field, IMMUTABLE);
     }
   },
 
@@ -53,7 +47,7 @@ public enum SimpleDomainFieldTrait implements Trait<SimpleDomainFieldTrait>, Tra
   IMMUTABLE {
     @Override
     public void verifyCompatibility(@Nonnull DomainField field) {
-      TraitUtil.incompatibleWith(this, field, MUTABLE);
+      incompatibleWith(field, MUTABLE);
     }
   },
 
@@ -65,23 +59,10 @@ public enum SimpleDomainFieldTrait implements Trait<SimpleDomainFieldTrait>, Tra
 
     @Override
     public void verifyCompatibility(@Nonnull DomainField field) {
-      final Type t = field.getFieldType();
-
-      //noinspection LoopStatementThatDoesntLoop
-      do {
-        if (!(t instanceof Class)) {
-          break;
-        }
-
-        final Class<?> c = (Class<?>) t;
-        if (!Number.class.isAssignableFrom(c) && !TypeUtil.NUMERIC_PRIMITIVES.contains(c)) {
-          break;
-        }
-
-        return; // ok, non-negative check can be done for this typed
-      } while (false);
-
-      throw new RuntimeException("Only numeric fields can be associated with NON_NEGATIVE trait");
+      final Class<?> fieldClass = field.getFieldTypeAsClass();
+      if (fieldClass == null || !Number.class.isAssignableFrom(fieldClass) || !DefaultValues.NUMERIC_PRIMITIVES.contains(fieldClass)) {
+        throw new RuntimeException("Only numeric fields can be associated with NON_NEGATIVE trait");
+      }
     }
   },
 
@@ -95,7 +76,7 @@ public enum SimpleDomainFieldTrait implements Trait<SimpleDomainFieldTrait>, Tra
         throw new RuntimeException("Only string fields can be associated with HAS_LENGTH trait");
       }
 
-      TraitUtil.incompatibleWith(this, field, NULLABLE);
+      incompatibleWith(field, NULLABLE);
     }
   };
 
@@ -103,24 +84,18 @@ public enum SimpleDomainFieldTrait implements Trait<SimpleDomainFieldTrait>, Tra
   // Impl
   //
 
-  @Nonnull
-  @Override
-  public SimpleDomainFieldTrait getKey() {
-    return this;
-  }
-
-
-  @Nonnull
-  @Override
-  public Class<SimpleDomainFieldTrait> getTraitClass() {
-    return SimpleDomainFieldTrait.class;
-  }
-
   /**
    * Verifies, whether the trait is compatible with the existing one in the given trait container
    *
    * @param field Field
    */
   public void verifyCompatibility(@Nonnull DomainField field) {
+  }
+
+  public final void incompatibleWith(@Nonnull DomainField field, @Nonnull FieldTrait other) {
+    if (field.hasTrait(other)) {
+      throw new IllegalStateException("Field " + field + " is incompatible with trait " + this.name() +
+          " as it already has trait " + other.name());
+    }
   }
 }

@@ -1,5 +1,7 @@
 package com.truward.polymer.domain;
 
+import com.truward.polymer.naming.FqName;
+
 import javax.annotation.Nonnull;
 
 /**
@@ -10,5 +12,5 @@ import javax.annotation.Nonnull;
 public interface DomainObjectSettings {
   DomainObjectBuilderSettings assignBuilder();
 
-  void setImplementationName(@Nonnull String implementationName);
+  void setTargetName(@Nonnull FqName implementationName);
 }

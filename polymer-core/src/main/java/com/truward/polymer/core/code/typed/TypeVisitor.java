@@ -1,7 +1,6 @@
-package com.truward.polymer.core.support.code;
+package com.truward.polymer.core.code.typed;
 
 import com.google.common.collect.ImmutableList;
-import com.truward.polymer.core.code.typed.GenClass;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.ParameterizedType;
@@ -28,7 +27,15 @@ public abstract class TypeVisitor<R> {
     return visitType(sourceType);
   }
 
-  public R visitLocalRef(@Nonnull Type sourceType, @Nonnull GenClass ref) {
+  public R visitGenClass(@Nonnull Type sourceType, @Nonnull GenClass genClass) {
+    return visitType(sourceType);
+  }
+
+  public R visitGenArray(@Nonnull Type sourceType, @Nonnull GenArray genArray) {
+    return visitType(sourceType);
+  }
+
+  public R visitGenParameterizedType(@Nonnull Type sourceType, @Nonnull GenParameterizedType genParameterizedType) {
     return visitType(sourceType);
   }
 
@@ -50,7 +57,11 @@ public abstract class TypeVisitor<R> {
         return visitor.visitType(sourceType);
       }
     } else if (sourceType instanceof GenClass) {
-      return visitor.visitLocalRef(sourceType, (GenClass) sourceType);
+      return visitor.visitGenClass(sourceType, (GenClass) sourceType);
+    } else if (sourceType instanceof GenArray) {
+      return visitor.visitGenArray(sourceType, (GenArray) sourceType);
+    } else if (sourceType instanceof GenParameterizedType) {
+      return visitor.visitGenParameterizedType(sourceType, (GenParameterizedType) sourceType);
     } else {
       return visitor.visitType(sourceType);
     }

@@ -3,21 +3,13 @@ package com.truward.polymer.domain.implementer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.truward.polymer.core.generator.JavaCodeGenerator;
-import com.truward.polymer.core.generator.model.LocalRefType;
-import com.truward.polymer.core.generator.model.TypeVisitor;
-import com.truward.polymer.core.util.Assert;
-import com.truward.polymer.core.util.TargetTrait;
-import com.truward.polymer.domain.analysis.DomainAnalysisResult;
-import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.analysis.DomainImplementerSettingsReader;
-import com.truward.polymer.domain.analysis.TypeUtil;
-import com.truward.polymer.domain.analysis.trait.GetterTrait;
-import com.truward.polymer.domain.analysis.trait.SetterTrait;
-import com.truward.polymer.domain.analysis.trait.SimpleDomainFieldTrait;
-import com.truward.polymer.naming.FqName;
+import com.truward.polymer.core.code.builder.CodeStream;
+import com.truward.polymer.core.code.typed.TypeVisitor;
+import com.truward.polymer.domain.analysis.*;
+import com.truward.polymer.domain.analysis.support.GenDomainClass;
 
 import javax.annotation.Nonnull;
+import javax.lang.model.element.Modifier;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -26,73 +18,57 @@ import java.util.*;
  *
  * @author Alexander Shabanov
  */
-public final class ClassImplementer {
+public final class ClassImplementer extends AbstractDomainImplementer {
   // current generator
-  private final JavaCodeGenerator generator;
-  private final DomainAnalysisResult analysisResult;
-  private final LocalRefType implClass;
-  private final FqName targetName;
   private final DomainImplementerSettingsReader implementerSettings;
 
-  public ClassImplementer(@Nonnull JavaCodeGenerator generator,
-                          @Nonnull DomainImplementerSettingsReader implementerSettings,
-                          @Nonnull DomainAnalysisResult analysisResult) {
-    this.generator = generator;
+  public ClassImplementer(@Nonnull CodeStream codeStream, @Nonnull GenDomainClass domainClass,
+                          @Nonnull DomainImplementerSettingsReader implementerSettings) {
+    super(codeStream, domainClass);
     this.implementerSettings = implementerSettings;
-    this.targetName = Assert.nonNull(analysisResult.findTrait(TargetTrait.KEY)).getTargetName();
-    this.analysisResult = analysisResult;
-    this.implClass = new LocalRefType(targetName.getName());
   }
 
-  @Nonnull
-  public LocalRefType getTargetClass() {
-    return implClass;
-  }
+  public void generateHead() {
+    s("public").sp().s("class").sp().s(getDomainClass().getFqName().getName());
 
-  public void generateHeaderAndPrologue() {
-    if (!targetName.isRoot()) {
-      generator.packageDirective(targetName.getParent());
-    }
-
-
-    generator.textWithSpaces("public", "class").ch(' ').type(implClass);
     // implements
-    generator.ch(' ').text("implements").ch(' ').type(analysisResult.getOriginClass());
-    generator.ch(' ', '{');
+    sp().s("implements").sp().t(getAnalysisResult().getOriginClass()).c(' ', '{');
 
     // fields
-    for (final DomainField field : analysisResult.getFields()) {
-      ImplementerUtil.generateField(generator, field, field.hasTrait(SimpleDomainFieldTrait.MUTABLE));
+    for (final DomainField field : getAnalysisResult().getFields()) {
+      final List<Modifier> modifiers = field.hasTrait(FieldTrait.MUTABLE) ? ImmutableList.<Modifier>of() :
+          ImmutableList.of(Modifier.FINAL);
+      field(field, modifiers);
     }
 
     // ctor
-    generateConstructor(analysisResult, implClass);
+    generateConstructor();
 
     // getters
-    for (final DomainField field : analysisResult.getFields()) {
+    for (final DomainField field : getAnalysisResult().getFields()) {
       generateFinalGetter(field);
     }
 
     // setters
-    for (final DomainField field : analysisResult.getFields()) {
+    for (final DomainField field : getAnalysisResult().getFields()) {
       generateFinalSetter(field);
     }
 
     // toString
-    generator.ch('\n');
-    generateToString(implClass, analysisResult.getFields());
+    c('\n');
+    generateToString(getAnalysisResult().getFields());
 
     // hashCode
-    generator.ch('\n');
-    generateHashCode(analysisResult.getFields());
+    c('\n');
+    generateHashCode(getAnalysisResult().getFields());
 
     // equals
-    generator.ch('\n');
-    generateEquals(implClass, analysisResult.getFields());
+    c('\n');
+    generateEquals(getAnalysisResult().getFields());
   }
 
   public void generateEpilogue() {
-    generator.ch('}'); // end of class body
+    c('}'); // end of class body
   }
 
   //
@@ -100,8 +76,8 @@ public final class ClassImplementer {
   //
 
   private void generateFinalSetter(DomainField field) {
-    final SetterTrait setterTrait = field.findTrait(SetterTrait.KEY);
-    if (setterTrait == null) {
+    final String setterName = FieldUtil.getMethodName(field, OriginMethodRole.SETTER);
+    if (setterName == null) {
       // no setter
       return;
     }
@@ -109,75 +85,74 @@ public final class ClassImplementer {
     final String fieldName = field.getFieldName();
 
     // @Override public void set{FieldName}
-    generator.ch('\n')
-        .annotate(Override.class).text("public").ch(' ').text("final").ch(' ').type(void.class).ch(' ')
-        .text(setterTrait.getSetterName()).ch('(');
+    c('\n');
+    annotate(Override.class).s("public").sp().s("final").sp().t(void.class).sp();
+    s(setterName).c('(');
     // arg - ({FieldType} {FieldName})
-    generator.typedVar(field.getFieldType(), fieldName);
-    generator.ch(')', ' ', '{');
+    var(field.getFieldType(), fieldName);
+    c(')', ' ', '{');
     // impl { this.{FieldName} = {FieldName}; }
-    generator.thisMember(fieldName).ch(' ').text("=").ch(' ').text(fieldName).ch(';');
-    generator.ch('}');
+    thisDot(fieldName).c(' ', '=', ' ').s(fieldName).c(';');
+    c('}');
   }
 
 
   private void generateFinalGetter(DomainField field) {
-    final GetterTrait getterTrait = field.findTrait(GetterTrait.KEY);
-    if (getterTrait == null) {
+    final String getterName = FieldUtil.getMethodName(field, OriginMethodRole.GETTER);
+    if (getterName == null) {
       return; // no getter trait
     }
 
-    generator.ch('\n')
-        .annotate(Override.class).text("public").ch(' ').text("final").ch(' ').type(field.getFieldType()).ch(' ')
-        .text(getterTrait.getGetterName()).ch('(', ')', ' ', '{');
-    generator.text("return").ch(' ').thisMember(field.getFieldName()).ch(';');
-    generator.ch('}');
+    c('\n');
+    annotate(Override.class).s("public").sp().s("final").sp().t(field.getFieldType()).sp();
+    s(getterName).c('(', ')', ' ', '{');
+    s("return").sp().thisDot(field.getFieldName()).c(';');
+    c('}');
   }
 
-  private void generateConstructor(DomainAnalysisResult analysisResult, Type implClass) {
-    generator.ch('\n');
-    generator.text("public").ch(' ').type(implClass).ch('(');
+  private void generateConstructor() {
+    c('\n');
+    s("public").sp().t(getDomainClass()).c('(');
     boolean next = false;
-    for (final DomainField field : analysisResult.getFields()) {
+    for (final DomainField field : getAnalysisResult().getFields()) {
       if (next) {
-        generator.ch(',', ' ');
+        c(',', ' ');
       } else {
         next = true;
       }
 
       // typed
-      generator.type(field.getFieldType());
+      t(field.getFieldType());
 
       // space and name
-      generator.ch(' ').text(field.getFieldName());
+      c(' ').s(field.getFieldName());
     }
-    generator.ch(')', ' ', '{');
+    c(')', ' ', '{');
 
     // verification of the input arguments
-    for (final DomainField field : analysisResult.getFields()) {
+    for (final DomainField field : getAnalysisResult().getFields()) {
       generateNullCheckIfNeeded(field);
     }
 
     // body
-    for (final DomainField field : analysisResult.getFields()) {
+    for (final DomainField field : getAnalysisResult().getFields()) {
       generateAssignment(field);
     }
-    generator.ch('}');
+    c('}');
   }
 
   private void generateAssignment(DomainField field) {
-    final JavaCodeGenerator generator = this.generator;
     final String fieldName = field.getFieldName();
-    generator.thisMember(fieldName).spText("=");
+    thisDot(fieldName).spc('=');
     generateCopy(fieldName, field.getFieldType());
-    generator.ch(';');
+    c(';');
   }
 
   private void generateCopy(final String var, Type type) {
     TypeVisitor.apply(new TypeVisitor<Void>() {
       @Override
       public Void visitType(@Nonnull Type sourceType) {
-        generator.text(var);
+        s(var);
         return null;
       }
 
@@ -241,24 +216,24 @@ public final class ClassImplementer {
 
   private void generateListCopyJdk(String var, Type elementType) {
     // Collections.unmodifiableList(Arrays.asList($listVar.toArray(new String[$listVar.size()])))
-    generator.type(Collections.class).dot("unmodifiableList").ch('(')
-        .type(Arrays.class).dot("asList").ch('(').text(var).dot("toArray").ch('(')
-        .newType(elementType).ch('[').text(var).dot("size").ch('(', ')', ']')
-        .ch(')').ch(')').ch(')');
+    t(Collections.class).dot("unmodifiableList").c('(')
+        .t(Arrays.class).dot("asList").c('(').s(var).dot("toArray").c('(')
+        .newType(elementType).c('[').s(var).dot("size").c('(', ')', ']')
+        .c(')').c(')').c(')');
   }
 
   private void generateMapCopyJdk(String var, Type keyType, Type valueType) {
     // Collections.unmodifiableMap(new HashMap<{KeyType}, {ValueType}>(var))
-    generator.type(Collections.class).dot("unmodifiableMap").ch('(')
-        .newType(HashMap.class).ch('<').type(keyType).ch(',', ' ').type(valueType).ch('>').ch('(').text(var).ch(')')
-        .ch(')');
+    t(Collections.class).dot("unmodifiableMap").c('(')
+        .newType(HashMap.class).c('<').t(keyType).c(',', ' ').t(valueType).c('>').c('(').s(var).c(')')
+        .c(')');
   }
 
   private void generateSetCopyJdk(String var, Type elementType) {
     // Collections.unmodifiableSet(new HashSet<{ElementType}>(var))
-    generator.type(Collections.class).dot("unmodifiableSet").ch('(')
-        .newType(HashSet.class).ch('<').type(elementType).ch('>').ch('(').text(var).ch(')')
-        .ch(')');
+    t(Collections.class).dot("unmodifiableSet").c('(')
+        .newType(HashSet.class).c('<').t(elementType).c('>').c('(').s(var).c(')')
+        .c(')');
   }
 
   //
@@ -266,15 +241,15 @@ public final class ClassImplementer {
   //
 
   private void generateListCopyGuava(String var) {
-    generator.type(ImmutableList.class).dot("copyOf").ch('(').text(var).ch(')');
+    t(ImmutableList.class).dot("copyOf").c('(').s(var).c(')');
   }
 
   private void generateMapCopyGuava(String var) {
-    generator.type(ImmutableMap.class).dot("copyOf").ch('(').text(var).ch(')');
+    t(ImmutableMap.class).dot("copyOf").c('(').s(var).c(')');
   }
 
   private void generateSetCopyGuava(String var) {
-    generator.type(ImmutableSet.class).dot("copyOf").ch('(').text(var).ch(')');
+    t(ImmutableSet.class).dot("copyOf").c('(').s(var).c(')');
   }
 
   //
@@ -283,91 +258,91 @@ public final class ClassImplementer {
 
 
 
-  private void generateToString(Type implClass, Collection<? extends DomainField> fields) {
-    generator.annotate(Override.class).text("public").ch(' ').type(String.class).ch(' ').text("toString").ch('(', ')', ' ', '{');
+  private void generateToString(Collection<? extends DomainField> fields) {
+    annotate(Override.class).s("public").sp().t(String.class).sp().s("toString").c('(', ')', ' ', '{');
 
     // ==> final StringBuilder result = new StringBuilder();
-    generator.text("final").ch(' ').type(StringBuilder.class).ch(' ').text("result").ch(' ', '=', ' ')
-        .newType(StringBuilder.class).ch('(', ')', ';');
+    s("final").sp().t(StringBuilder.class).sp().s("result").c(' ', '=', ' ')
+        .newType(StringBuilder.class).c('(', ')', ';');
 
     // ==> result.append("ClassName#{");
-    generator.text("result").dot("append").ch('(', '\"').type(implClass).text("#{").ch('\"', ')', ';');
+    s("result").dot("append").c('(', '\"').t(getDomainClass()).s("#{").c('\"', ')', ';');
 
     // fields
     boolean next = false;
     for (final DomainField field : fields) {
-      generator.text("result");
+      s("result");
       if (next) {
-        generator.dot("append").ch('(', '\"').text(", ").ch('\"', ')');
+        dot("append").c('(', '\"').s(", ").c('\"', ')');
       } else {
         next = true;
       }
 
-      generator.dot("append").ch('(', '\"').text(field.getFieldName()).text(": ").ch('\"', ')');
+      dot("append").c('(', '\"').s(field.getFieldName()).s(": ").c('\"', ')');
       // TODO: another way to retrieve field - e.g. getter?
-      generator.dot("append").ch('(').thisMember(field.getFieldName()).ch(')', ';');
+      dot("append").c('(').thisDot(field.getFieldName()).c(')', ';');
     }
 
     // ==> result.append('}');
-    generator.text("result").dot("append").ch('(', '\'').text("}").ch('\'', ')', ';');
+    s("result").dot("append").c('(', '\'').s("}").c('\'', ')', ';');
 
     // ==> return result.toString();
-    generator.text("return").ch(' ').text("result").dot("toString").ch('(', ')', ';');
+    s("return").sp().s("result").dot("toString").c('(', ')', ';');
 
-    generator.ch('}'); // end of function
+    c('}'); // end of function
   }
 
-  public void generateEquals(Type implClass, Collection<? extends DomainField> fields) {
+  public void generateEquals(Collection<? extends DomainField> fields) {
     final String objectParam = "o";
     final String other = "other";
 
-    generator.annotate(Override.class).text("public").ch(' ').type(boolean.class).ch(' ').text("equals").ch('(')
-        .type(Object.class).ch(' ').text(objectParam).ch(')', ' ', '{');
+    annotate(Override.class).s("public").sp().t(boolean.class).sp().s("equals").c('(')
+        .t(Object.class).sp().s(objectParam).c(')', ' ', '{');
 
     // if (this == o) return true;
-    generator.text("if").ch(' ', '(').text("this").spText("==").text(objectParam).ch(')', ' ', '{')
-        .text("return").ch(' ').text("true").ch(';').ch('}');
+    s("if").c(' ', '(').s("this").sp().s("==").sp().s(objectParam).c(')', ' ', '{')
+        .s("return").sp().s("true").c(';').c('}');
 
     // if (o == null || getClass() != o.getClass()) return false;
-    generator.text("if").ch(' ', '(').text(objectParam).spText("==").text("null")
-        .spText("||").text("getClass").ch('(', ')').spText("!=")
-        .member(objectParam, "getClass").ch('(', ')')
-        .ch(')', ' ', '{').text("return", "false").ch(';').ch('}').ch('\n');
+    s("if").c(' ', '(').s(objectParam).sp().s("==").sp().s("null")
+        .sp().s("||").sp().s("getClass").c('(', ')').sp().s("!=").sp()
+        .dot(objectParam, "getClass").c('(', ')')
+        .c(')', ' ', '{').s("return").sp().s("false").c(';').c('}').c('\n');
 
     // final ClassName other = (ClassName) o;
-    generator.text("final").ch(' ').type(implClass).ch(' ').text(other).ch(' ', '=', ' ', '(')
-        .type(implClass).ch(')', ' ').text(objectParam).ch(';');
+    s("final").sp().t(getDomainClass()).sp().s(other).c(' ', '=', ' ', '(')
+        .t(getDomainClass()).c(')', ' ').s(objectParam).c(';');
 
     // iterate over the given fields
     for (final DomainField field : fields) {
       // if (...) { return false; }
-      generator.text("if").ch(' ', '(');
+      s("if").c(' ', '(');
 
       // if-condition
       generateNonEqualsIfCondition(field, other);
 
-      generator.ch(')', ' ', '{').text("return", "false").ch(';', '}');
+      c(')', ' ', '{').s("return").sp().s("false").c(';', '}');
     }
 
     // return true
-    generator.ch('\n').text("return", "true").ch(';');
+    c('\n').s("return").sp().s("true").c(';');
 
-    generator.ch('}'); // end of function
+    c('}'); // end of function
   }
 
   private void generateHashCode(Collection<? extends DomainField> fields) {
     final String result = "result";
     final String temp = "temp";
 
-    generator.annotate(Override.class).text("public").ch(' ').type(int.class).ch(' ').text("hashCode")
-        .ch('(', ')', ' ', '{');
+    annotate(Override.class).s("public").sp().t(int.class).sp().s("hashCode")
+        .c('(', ')', ' ', '{');
 
     // int result = 0
-    generator.type(int.class).ch(' ').text(result).spText("=").ch('0', ';');
+    t(int.class).sp().s(result).sp().s("=").sp().c('0', ';');
     // additional variable for calculating hash code for doubles
     boolean tempLongRequired = false;
     for (final DomainField field : fields) {
-      final Class<?> fieldClass = TypeUtil.asClass(field);
+      final Class<?> fieldClass = field.getFieldTypeAsClass();
       if (Double.TYPE.equals(fieldClass)) {
         tempLongRequired = true;
         break;
@@ -376,7 +351,7 @@ public final class ClassImplementer {
 
     if (tempLongRequired) {
       // long temp
-      generator.type(long.class).ch(' ').text(temp).ch(';');
+      t(long.class).sp().s(temp).c(';');
     }
 
     // result calculation
@@ -385,27 +360,27 @@ public final class ClassImplementer {
     }
 
     // return result;
-    generator.text("return", result).ch(';');
+    s("return").sp().s(result).c(';');
 
-    generator.ch('}'); // end of function
+    c('}'); // end of function
   }
 
   private void generateNullCheckIfNeeded(DomainField field) {
-    if (!TypeUtil.isNullCheckRequired(field)) {
+    if (!FieldUtil.isNullCheckRequired(field)) {
       return;
     }
 
     // assuming param name equals to the field name
     final String paramName = field.getFieldName();
-    generator.text("if").ch(' ').ch('(').text(paramName).spText("==").text("null").ch(')', ' ', '{');
-    generator.text("throw").ch(' ').newType(IllegalArgumentException.class).ch('(', '\"')
-        .text("Parameter " + paramName + " is null")
-        .ch('\"', ')', ';');
-    generator.ch('}');
+    s("if").sp().c('(').s(paramName).sp().s("==").sp().s("null").c(')', ' ', '{');
+    s("throw").sp().newType(IllegalArgumentException.class).c('(', '\"')
+        .s("Parameter " + paramName + " is null")
+        .c('\"', ')', ';');
+    c('}');
   }
 
   private void generateHashCodeAddition(DomainField field, String result, String temp) {
-    final Class<?> fieldClass = TypeUtil.asClass(field);
+    final Class<?> fieldClass = field.getFieldTypeAsClass();
     final String fieldName = field.getFieldName();
 
     boolean doubleField = false;
@@ -413,90 +388,91 @@ public final class ClassImplementer {
       // special case: double field
       doubleField = true;
       // temp = Double.doubleToLongBits(g);
-      generator.text(temp).spText("=").type(Double.class).dot("doubleToLongBits").ch('(').thisMember(fieldName).ch(')', ';');
+      s(temp).spc('=').t(Double.class).dot("doubleToLongBits").c('(').thisDot(fieldName).c(')', ';');
     }
 
     // Common code predecessor: result = 31 * result + ...;
-    generator.text(result).spText("=").text("31").spText("*").text(result).spText("+");
+    s(result).spc('=').s("31").spc('*').s(result).spc('+');
     if (doubleField) {
       // (int) (temp ^ (temp >>> 32))
-      generator.cast(int.class).ch('(').text(temp).spText("^")
-          .ch('(').text(temp).spText(">>>").text("32").ch(')', ')');
+      cast(int.class).c('(').s(temp).spc('^')
+          .c('(').s(temp).sps(">>>").s("32").c(')', ')');
     } else if (fieldClass != null && fieldClass.isPrimitive()) {
       // special cases for primitive types
       if (Boolean.TYPE.equals(fieldClass)) {
         // (this.field ? 1 : 0)
-        generator.ch('(').thisMember(fieldName).spText("?").ch('1').spText(":").ch('0').ch(')');
+        c('(').thisDot(fieldName).spc('?').c('1').spc(':').c('0').c(')');
       } else if (Byte.TYPE.equals(fieldClass) || Short.TYPE.equals(fieldClass) || Character.TYPE.equals(fieldClass)) {
         // for byte, short and char: (int) fieldClass
-        generator.cast(int.class).thisMember(fieldName);
+        cast(int.class).thisDot(fieldName);
       } else if (Integer.TYPE.equals(fieldClass)) {
         // int typed - use just member as is
-        generator.thisMember(fieldName);
+        thisDot(fieldName);
       } else if (Long.TYPE.equals(fieldClass)) {
         // (int) (e ^ (e >>> 32))
-        generator.cast(int.class).ch('(').thisMember(fieldName).spText("^")
-            .ch('(').thisMember(fieldName).spText(">>>").text("32").ch(')', ')');
+        cast(int.class).c('(').thisDot(fieldName).spc('^')
+            .c('(').thisDot(fieldName);
+        sps(">>>").s("32").c(')', ')');
       } else if (Float.TYPE.equals(fieldClass)) {
         // (f != +0.0f ? Float.floatToIntBits(f) : 0)
-        generator.ch('(').thisMember(fieldName).spText("!=").text("+0.0f").spText("?")
-            .type(Float.class).dot("floatToIntBits").ch('(').thisMember(fieldName).ch(')').spText(":").ch('0', ')');
+        c('(').thisDot(fieldName).sps("!=").s("+0.0f").spc('?')
+            .t(Float.class).dot("floatToIntBits").c('(').thisDot(fieldName).c(')').spc(':').c('0', ')');
       } else {
         throw new UnsupportedOperationException("Unsupported primitive type: " + fieldClass);
       }
     } else {
       // object case:
-      if (TypeUtil.isNullCheckRequired(field)) {
+      if (FieldUtil.isNullCheckRequired(field)) {
         // ...=> (this.field != null ? this.field.hashCode() : null)
-        generator.ch('(').thisMember(fieldName).spText("!=").text("null").spText("?")
-            .thisMember(fieldName).dot("hashCode").ch('(', ')')
-            .spText(":").text("0")
-            .ch(')');
+        c('(').thisDot(fieldName).sps("!=").s("null").spc('?')
+            .thisDot(fieldName).dot("hashCode").c('(', ')')
+            .spc(':').s("0")
+            .c(')');
       } else {
         // ...=> this.field.hashCode()
-        generator.thisMember(fieldName).dot("hashCode").ch('(', ')');
+        thisDot(fieldName).dot("hashCode").c('(', ')');
       }
     }
 
-    generator.ch(';');
+    c(';');
   }
 
   private void generateNonEqualsIfCondition(DomainField field, String other) {
     final String fieldName = field.getFieldName();
-    final Class<?> fieldClass = TypeUtil.asClass(field);
+    final Class<?> fieldClass = field.getFieldTypeAsClass();
 
     // special logic for primitive members
     if (fieldClass != null && fieldClass.isPrimitive()) {
       // float and double require special comparison
       if (fieldClass.equals(Float.class)) {
         // Float.compare(this.field, other.field) != 0
-        generator.type(Float.class).dot("compare").ch('(')
-            .thisMember(fieldName).ch(',', ' ').member(other, fieldName)
-            .ch(')').spText("!=").ch('0');
+        t(Float.class).dot("compare").c('(').thisDot(fieldName).c(',', ' ');
+        dot(other, fieldName);
+        c(')').sps("!=").c('0');
         return;
       } else if (fieldClass.equals(Double.class)) {
         // Double.compare(this.field, other.field) != 0
-        generator.type(Float.class).dot("compare").ch('(')
-            .thisMember(fieldName).ch(',', ' ').member(other, fieldName)
-            .ch(')').spText("!=").ch('0');
+        t(Float.class).dot("compare").c('(')
+            .thisDot(fieldName).c(',', ' ').dot(other, fieldName)
+            .c(')').sps("!=").c('0');
         return;
       }
 
       // this.field != other.field
-      generator.thisMember(fieldName).spText("!=").member(other, fieldName);
+      thisDot(fieldName).sps("!=").dot(other, fieldName);
       return;
     }
 
     // generic class case, use equals
-    if (TypeUtil.isNullCheckRequired(field)) {
+    if (FieldUtil.isNullCheckRequired(field)) {
       // this.field != null ? !this.field.equals(other.field) : other.field != null
-      generator.thisMember(fieldName).spText("!=").text("null").spText("?")
-          .ch('!').thisMember(fieldName).dot("equals").ch('(').member(other, fieldName).ch(')')
-          .spText(":").member(other, fieldName).spText("!=").text("null");
+      thisDot(fieldName).sps("!=").s("null").spc('?')
+          .c('!').thisDot(fieldName).dot("equals").c('(').dot(other, fieldName).c(')')
+          .spc(':').dot(other, fieldName).sps("!=").s("null");
       return;
     }
 
     // !this.field.equals(other.equals)
-    generator.ch('!').thisMember(fieldName).dot("equals").ch('(').member(other, fieldName).ch(')');
+    c('!').thisDot(fieldName).dot("equals").c('(').dot(other, fieldName).c(')');
   }
 }

@@ -130,7 +130,6 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
   @Nonnull
   @Override
   public List<GenObject> getChilds() {
-    checkIsFrozen();
     return childs;
   }
 
@@ -217,6 +216,11 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
     @Override
     public void setFqName(@Nonnull FqName name) {
       throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean hasFqName() {
+      return true;
     }
 
     @Nonnull

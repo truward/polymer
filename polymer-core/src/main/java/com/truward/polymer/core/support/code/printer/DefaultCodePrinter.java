@@ -11,6 +11,7 @@ import com.truward.polymer.core.code.untyped.GenChar;
 import com.truward.polymer.core.code.untyped.GenFqNamed;
 import com.truward.polymer.core.code.untyped.GenInlineBlock;
 import com.truward.polymer.core.code.untyped.GenString;
+import com.truward.polymer.core.code.visitor.GenObjectVisitor;
 import com.truward.polymer.core.support.code.StubTypeManager;
 import com.truward.polymer.naming.FqName;
 
@@ -46,7 +47,7 @@ public final class DefaultCodePrinter implements CodePrinter {
 
   @Override
   public void print(@Nonnull GenObject object) throws IOException {
-    PrintVisitor.apply(object, new PrintVisitor() {
+    GenObjectVisitor.apply(object, new GenObjectVisitor<IOException>() {
       @Override
       public void visitChar(@Nonnull GenChar o) throws IOException {
         printChar(o.getChar());
@@ -166,64 +167,6 @@ public final class DefaultCodePrinter implements CodePrinter {
         writer.append(indentUnit);
       }
       doIndent = false;
-    }
-  }
-
-
-  private static abstract class PrintVisitor {
-
-    public void visitObject(@Nonnull GenObject o) throws IOException {
-      throw new IllegalStateException("Undefined visitor method for object " + o);
-    }
-
-    public void visitChar(@Nonnull GenChar o) throws IOException {
-      visitObject(o);
-    }
-
-    public void visitString(@Nonnull GenString o) throws IOException {
-      visitObject(o);
-    }
-
-    public void visitFqNamed(@Nonnull GenFqNamed o) throws IOException {
-      visitObject(o);
-    }
-
-    public void visitInlineBlock(@Nonnull GenInlineBlock o) throws IOException {
-      visitObject(o);
-    }
-
-    public void visitArray(@Nonnull GenArray o) throws IOException {
-      visitObject(o);
-    }
-
-    public void visitClass(@Nonnull GenClass o) throws IOException {
-      visitObject(o);
-    }
-
-    public void visitParameterizedType(@Nonnull GenParameterizedType o) throws IOException {
-      visitObject(o);
-    }
-
-
-
-    public static void apply(@Nonnull GenObject o, @Nonnull PrintVisitor visitor) throws IOException {
-      if (o instanceof GenChar) {
-        visitor.visitChar((GenChar) o);
-      } else if (o instanceof GenString) {
-        visitor.visitString((GenString) o);
-      } else if (o instanceof GenFqNamed) {
-        visitor.visitFqNamed((GenFqNamed) o);
-      } else if (o instanceof GenInlineBlock) {
-        visitor.visitInlineBlock((GenInlineBlock) o);
-      } else if (o instanceof GenArray) {
-        visitor.visitArray((GenArray) o);
-      } else if (o instanceof GenClass) {
-        visitor.visitClass((GenClass) o);
-      } else if (o instanceof GenParameterizedType) {
-        visitor.visitParameterizedType((GenParameterizedType) o);
-      } else {
-        visitor.visitObject(o);
-      }
     }
   }
 }

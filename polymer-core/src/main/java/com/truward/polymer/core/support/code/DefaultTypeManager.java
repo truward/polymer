@@ -3,10 +3,7 @@ package com.truward.polymer.core.support.code;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.truward.polymer.core.code.builder.TypeManager;
-import com.truward.polymer.core.code.typed.GenArray;
-import com.truward.polymer.core.code.typed.GenClass;
-import com.truward.polymer.core.code.typed.GenParameterizedType;
-import com.truward.polymer.core.code.typed.GenType;
+import com.truward.polymer.core.code.typed.*;
 import com.truward.polymer.core.freezable.FreezableSupport;
 import com.truward.polymer.naming.FqName;
 
@@ -78,7 +75,7 @@ public final class DefaultTypeManager extends FreezableSupport implements TypeMa
       }
 
       @Override
-      public GenType visitLocalRef(@Nonnull Type sourceType, @Nonnull GenClass ref) {
+      public GenType visitGenClass(@Nonnull Type sourceType, @Nonnull GenClass ref) {
         genClasses.add(ref);
         return ref;
       }
@@ -242,6 +239,11 @@ public final class DefaultTypeManager extends FreezableSupport implements TypeMa
     @Override
     public FqName getFqName() {
       return targetName;
+    }
+
+    @Override
+    public boolean hasFqName() {
+      return true;
     }
 
     @Override

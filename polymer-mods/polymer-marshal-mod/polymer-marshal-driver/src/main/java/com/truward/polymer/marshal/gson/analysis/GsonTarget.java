@@ -1,7 +1,7 @@
 package com.truward.polymer.marshal.gson.analysis;
 
-import com.truward.polymer.core.util.TargetTrait;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
+import com.truward.polymer.domain.analysis.support.GenDomainClass;
 
 import javax.annotation.Nonnull;
 
@@ -9,24 +9,17 @@ import javax.annotation.Nonnull;
  * @author Alexander Shabanov
  */
 public final class GsonTarget {
-  private final DomainAnalysisResult result;
-  private final TargetTrait targetTrait;
+  private final GenDomainClass domainClass;
 
-  public GsonTarget(@Nonnull DomainAnalysisResult result) {
-    this.result = result;
-    final TargetTrait targetTrait = result.findTrait(TargetTrait.KEY);
-    if (targetTrait == null) {
-      throw new IllegalStateException("Target trait is null for a given class " + result.getOriginClass() + " - " +
-          "domain object has no associated implementation, can't generate marshaller code");
-    }
-    this.targetTrait = targetTrait;
+  public GsonTarget(@Nonnull GenDomainClass domainClass) {
+    this.domainClass = domainClass;
   }
 
-  public DomainAnalysisResult getResult() {
-    return result;
+  public GenDomainClass getDomainClass() {
+    return domainClass;
   }
 
-  public TargetTrait getTargetTrait() {
-    return targetTrait;
+  public DomainAnalysisResult getAnalysisResult() {
+    return domainClass.getOrigin();
   }
 }

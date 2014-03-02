@@ -1,7 +1,6 @@
 package com.truward.polymer.domain.analysis.support;
 
 import com.google.common.collect.ImmutableList;
-import com.truward.polymer.core.trait.TraitContainerSupport;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
 
@@ -11,7 +10,7 @@ import java.util.List;
 /**
  * @author Alexander Shabanov
  */
-public final class DefaultDomainAnalysisResult extends TraitContainerSupport implements DomainAnalysisResult {
+public final class DefaultDomainAnalysisResult implements DomainAnalysisResult {
   private final Class<?> originClass;
   private final List<DomainAnalysisResult> parents;
   private final List<DomainField> declaredFields;

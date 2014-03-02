@@ -11,6 +11,8 @@ public interface FqNamedObject {
 
   void setFqName(@Nonnull FqName name);
 
+  boolean hasFqName();
+
   @Nonnull
   FqName getFqName();
 }

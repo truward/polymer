@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.analysis.trait.GetterTrait;
+import com.truward.polymer.domain.analysis.OriginMethodRole;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
@@ -106,8 +106,8 @@ public final class DefaultDomainAnalysisContext implements DomainAnalysisContext
         throw new RuntimeException("Unsupported getter " + method + "with parameters in the domain object");
       }
 
-      final DomainField result = new DefaultDomainField(Names.asFieldName(method.getName()), method);
-      result.putTrait(new GetterTrait(methodName));
+      final DomainField result = new DefaultDomainField(Names.asFieldName(method.getName()), method.getReturnType());
+      result.putOriginMethod(OriginMethodRole.GETTER, method);
       return result;
     }
 
