@@ -39,6 +39,7 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
     addToCache(cache, "final");
     addToCache(cache, "volatile");
     addToCache(cache, "transient");
+    addToCache(cache, "synchronized");
     addToCache(cache, "true");
     addToCache(cache, "false");
     addToCache(cache, "null");
@@ -47,6 +48,11 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
     addToCache(cache, "new");
     addToCache(cache, "this");
     addToCache(cache, "super");
+    addToCache(cache, "if");
+    addToCache(cache, "else");
+    addToCache(cache, "for");
+    addToCache(cache, "while");
+    addToCache(cache, "do");
 
     STRING_CACHE = ImmutableMap.copyOf(cache);
   }
@@ -123,8 +129,8 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
 
   @Nonnull
   @Override
-  public CodeStream object(@Nonnull GenObject genObject) {
-    return append(genObject);
+  public CodeStream obj(@Nonnull GenObject obj) {
+    return append(obj);
   }
 
   @Nonnull

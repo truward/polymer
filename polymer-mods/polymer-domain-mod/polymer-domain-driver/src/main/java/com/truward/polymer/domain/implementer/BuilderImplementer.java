@@ -3,7 +3,7 @@ package com.truward.polymer.domain.implementer;
 import com.truward.polymer.core.code.builder.CodeStream;
 import com.truward.polymer.core.code.typed.GenClass;
 import com.truward.polymer.core.code.typed.TypeVisitor;
-import com.truward.polymer.core.types.DefaultParameterizedType;
+import com.truward.polymer.core.types.SynteticParameterizedType;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.FieldUtil;
 import com.truward.polymer.domain.analysis.OriginMethodRole;
@@ -170,7 +170,7 @@ public final class BuilderImplementer extends AbstractDomainImplementer {
         // generate copy: new RawType<{Args..}>(fieldName); - e.g. new ArrayList<{Type}(fieldName);
         if (rawTypeForCopy != null) {
           thisDot(fieldName).c(' ', '=', ' ')
-              .newType(DefaultParameterizedType.from(rawTypeForCopy, args)).c('(').s(fieldName).c(')', ';');
+              .newType(SynteticParameterizedType.from(rawTypeForCopy, args)).c('(').s(fieldName).c(')', ';');
           return null;
         }
 

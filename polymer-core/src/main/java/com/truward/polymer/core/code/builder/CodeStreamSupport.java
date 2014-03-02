@@ -154,8 +154,8 @@ public abstract class CodeStreamSupport implements CodeStream {
 
   @Nonnull
   @Override
-  public CodeStreamSupport object(@Nonnull GenObject genObject) {
-    getRootCodeStream().object(genObject);
+  public CodeStreamSupport obj(@Nonnull GenObject obj) {
+    getRootCodeStream().obj(obj);
     return this;
   }
 

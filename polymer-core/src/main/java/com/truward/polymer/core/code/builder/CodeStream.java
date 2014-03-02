@@ -37,7 +37,7 @@ public interface CodeStream extends Freezable {
   @Nonnull CodeStream t(@Nonnull Type type);
 
   // code object
-  @Nonnull CodeStream object(@Nonnull GenObject genObject);
+  @Nonnull CodeStream obj(@Nonnull GenObject obj);
   /**
    * @return Returns list of childs added to this stream.
    */

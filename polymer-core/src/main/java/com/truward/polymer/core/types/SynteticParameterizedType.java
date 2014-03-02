@@ -10,12 +10,12 @@ import java.util.List;
  *
  * @author Alexander Shabanov
  */
-public class DefaultParameterizedType implements ParameterizedType {
+public final class SynteticParameterizedType implements ParameterizedType {
   private final Type owner;
   private final Type rawType;
   private final Type[] arguments;
 
-  public DefaultParameterizedType(Type owner, Type rawType, Type[] arguments) {
+  public SynteticParameterizedType(Type owner, Type rawType, Type[] arguments) {
     assert rawType != null && arguments != null;
     this.owner = owner;
     this.rawType = rawType;
@@ -23,11 +23,11 @@ public class DefaultParameterizedType implements ParameterizedType {
   }
 
   public static ParameterizedType from(Type rawType, Type... args) {
-    return new DefaultParameterizedType(null, rawType, args);
+    return new SynteticParameterizedType(null, rawType, args);
   }
 
   public static ParameterizedType from(Type rawType, List<Type> args) {
-    return new DefaultParameterizedType(null, rawType, args.toArray(new Type[args.size()]));
+    return new SynteticParameterizedType(null, rawType, args.toArray(new Type[args.size()]));
   }
 
   @Override

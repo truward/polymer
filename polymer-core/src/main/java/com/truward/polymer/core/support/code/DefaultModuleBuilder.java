@@ -25,7 +25,7 @@ public final class DefaultModuleBuilder extends FreezableSupport implements Modu
 
     this.codeStream.s("package").sp().s(packageName).c(';').eol();
     this.imports = new DefaultInlineBlock();
-    this.codeStream.object(this.imports);
+    this.codeStream.obj(this.imports);
   }
 
   @Override

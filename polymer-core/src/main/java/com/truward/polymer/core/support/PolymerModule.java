@@ -3,7 +3,7 @@ package com.truward.polymer.core.support;
 import com.truward.di.InjectionContext;
 import com.truward.di.support.DefaultInjectionContext;
 import com.truward.polymer.core.driver.SpecificationDriver;
-import com.truward.polymer.core.driver.support.DefaultSpecificationHandler;
+import com.truward.polymer.core.support.driver.DefaultSpecificationHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
