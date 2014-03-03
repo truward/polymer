@@ -91,7 +91,7 @@ public class GsonMarshallingTest {
     @Specification(ordinal = 2)
     public void specifyGsonSerialization() {
       gsonMarshallingSpecifier
-          .setGeneratorTarget(FqName.parse("generated.GsonSerializer"))
+          .setGeneratorTarget(FqName.parse("generated.GsonMarshallers"))
           .addDomainEntity(Foo.class);
     }
   }

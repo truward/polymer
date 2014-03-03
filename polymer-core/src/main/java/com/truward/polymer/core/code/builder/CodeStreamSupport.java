@@ -78,6 +78,18 @@ public abstract class CodeStreamSupport implements CodeStream {
     return c('(').t(type).c(')');
   }
 
+  @Nonnull
+  public final CodeStreamSupport val(@Nonnull String str) {
+    // TODO: escape string if needed!
+    return c('"').s(str).c('"');
+  }
+
+  @Nonnull
+  public final CodeStreamSupport val(char ch) {
+    // TODO: escape char if needed!
+    return c('"').c(ch).c('"');
+  }
+
   //=> _{c}_ <== _ is a space
   @Nonnull
   public final CodeStreamSupport spc(char c) {
@@ -112,6 +124,12 @@ public abstract class CodeStreamSupport implements CodeStream {
   @Nonnull
   public final CodeStreamSupport publicStaticFinalClass() {
     return s("public").sp().s("static").sp().s("final").sp().s("class").sp();
+  }
+
+  //=> {objName}.{getterName}()
+  @Nonnull
+  public final CodeStreamSupport callGetter(@Nonnull String objectName, @Nonnull String getterName) {
+    return dot(objectName, getterName).c('(').c(')');
   }
 
   //

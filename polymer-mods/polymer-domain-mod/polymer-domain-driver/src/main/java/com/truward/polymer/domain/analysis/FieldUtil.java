@@ -17,7 +17,12 @@ public final class FieldUtil {
     return method != null ? method.getName() : null;
   }
 
+  public static boolean isNullable(@Nonnull DomainField field) {
+    return !field.isPrimitive() && field.hasTrait(FieldTrait.MUTABLE);
+
+  }
+
   public static boolean isNullCheckRequired(@Nonnull DomainField field) {
-    return field.hasTrait(FieldTrait.IMMUTABLE) || !field.hasTrait(FieldTrait.MUTABLE);
+    return !field.isPrimitive() && (field.hasTrait(FieldTrait.IMMUTABLE) || !field.hasTrait(FieldTrait.MUTABLE));
   }
 }

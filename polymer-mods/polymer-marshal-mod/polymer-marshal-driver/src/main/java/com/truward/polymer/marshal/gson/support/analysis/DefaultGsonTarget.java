@@ -1,20 +1,13 @@
 package com.truward.polymer.marshal.gson.support.analysis;
 
-import com.truward.polymer.core.code.typed.GenClass;
 import com.truward.polymer.core.code.typed.GenEmergentClass;
 import com.truward.polymer.core.freezable.FreezableSupport;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
-import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.support.GenDomainClass;
 import com.truward.polymer.marshal.gson.analysis.GenTypeAdapterClass;
-import com.truward.polymer.marshal.gson.analysis.GsonField;
 import com.truward.polymer.marshal.gson.analysis.GsonTarget;
-import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Alexander Shabanov
@@ -44,6 +37,16 @@ public final class DefaultGsonTarget extends FreezableSupport implements GsonTar
   @Override
   public GenTypeAdapterClass getTypeAdapter() {
     return typeAdapterClass;
+  }
+
+  @Override
+  public boolean isReaderSupportRequested() {
+    return true;
+  }
+
+  @Override
+  public boolean isWriterSupportRequested() {
+    return true;
   }
 
   @Override

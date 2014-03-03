@@ -18,4 +18,8 @@ public interface GsonTarget extends Freezable {
 
   @Nonnull
   GenTypeAdapterClass getTypeAdapter();
+
+  boolean isReaderSupportRequested();
+
+  boolean isWriterSupportRequested();
 }

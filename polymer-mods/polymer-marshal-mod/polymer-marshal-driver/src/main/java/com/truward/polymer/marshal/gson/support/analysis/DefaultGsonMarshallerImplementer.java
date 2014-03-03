@@ -8,6 +8,7 @@ import com.truward.polymer.core.code.builder.TypeManager;
 import com.truward.polymer.core.code.printer.CodePrinter;
 import com.truward.polymer.core.code.typed.GenClass;
 import com.truward.polymer.core.code.typed.GenClassReference;
+import com.truward.polymer.core.code.typed.TypeVisitor;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.core.freezable.FreezableSupport;
@@ -18,6 +19,10 @@ import com.truward.polymer.core.support.code.DefaultTypeManager;
 import com.truward.polymer.core.support.code.printer.DefaultCodePrinter;
 import com.truward.polymer.core.types.SynteticParameterizedType;
 import com.truward.polymer.core.util.Assert;
+import com.truward.polymer.domain.analysis.DomainField;
+import com.truward.polymer.domain.analysis.FieldTrait;
+import com.truward.polymer.domain.analysis.FieldUtil;
+import com.truward.polymer.domain.analysis.OriginMethodRole;
 import com.truward.polymer.domain.analysis.support.GenDomainClass;
 import com.truward.polymer.domain.analysis.support.Names;
 import com.truward.polymer.marshal.gson.analysis.GsonMarshallerImplementer;
@@ -31,6 +36,7 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
@@ -189,31 +195,91 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
       annotate(Override.class).s("public").sp().t(void.class).sp().s("write").c('(');
       var(G_JSON_WRITER, out).c(',').sp().var(originDomainClass, value);
       c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
-      s("writeObject").c('(').s(out).c(',').sp().s(value).c(')').c(';');
+      if (target.isWriterSupportRequested()) {
+        s("writeObject").c('(').s(out).c(',').sp().s(value).c(')').c(';');
+      } else {
+        throwUnsupportedOperationException();
+      }
       c('}').eol(); // End of write(JsonWriter out, {DomainClass} value)
 
       // public {DomainClass} read(JsonReader in) throws IOException {...}
       annotate(Override.class).s("public").sp().t(originDomainClass).sp().s("read").c('(');
       var(G_JSON_READER, IN_PARAM_NAME);
       c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
-      s("return").sp().s("readObject").c('(').s(in).c(')').c(';');
+      if (target.isReaderSupportRequested()) {
+        s("return").sp().s("readObject").c('(').s(in).c(')').c(';');
+      } else {
+        throwUnsupportedOperationException();
+      }
       c('}').eol(); // End of write(JsonWriter out, {DomainClass} value)
 
-      // public static void writeObject(JsonWriter out, {DomainClass} value) throws IOException {...}
-      s("public").sp().s("static").sp().t(void.class).sp().s("writeObject").c('(');
-      var(G_JSON_WRITER, out).c(',').sp().var(originDomainClass, value);
-      c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
-      throwUnsupportedOperationException();
-      c('}').eol(); // End of writeObject(JsonWriter out, {DomainClass} value)
+      if (target.isWriterSupportRequested()) {
+        // public static void writeObject(JsonWriter out, {DomainClass} value) throws IOException {...}
+        s("public").sp().s("static").sp().t(void.class).sp().s("writeObject").c('(');
+        var(G_JSON_WRITER, out).c(',').sp().var(originDomainClass, value);
+        c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
+        generateTypeAdapterWriteObjectBody(out, value, target);
+        c('}').eol(); // End of writeObject(JsonWriter out, {DomainClass} value)
+      }
 
-      // public static {DomainClass} readObject(JsonReader in) throws IOException {...}
-      s("public").sp().s("static").sp().t(originDomainClass).sp().s("readObject").c('(');
-      var(G_JSON_READER, IN_PARAM_NAME);
-      c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
-      throwUnsupportedOperationException();
-      c('}'); // End of readObject(JsonReader in)
+      if (target.isReaderSupportRequested()) {
+        // public static {DomainClass} readObject(JsonReader in) throws IOException {...}
+        s("public").sp().s("static").sp().t(originDomainClass).sp().s("readObject").c('(');
+        var(G_JSON_READER, IN_PARAM_NAME);
+        c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
+        generateTypeAdapterReadObjectBody();
+        c('}'); // End of readObject(JsonReader in)
+      }
 
       c('}'); // End of TypeAdapter class body
+    }
+
+    private void generateTypeAdapterWriteObjectBody(String out, String value, GsonTarget target) {
+      dot(out, "beginObject").c('(', ')', ';');
+      for (final DomainField field : target.getDomainAnalysisResult().getFields()) {
+        final String jsonName = field.getFieldName();
+        final String getterName = FieldUtil.getMethodName(field, OriginMethodRole.GETTER);
+        if (getterName == null) {
+          throw new UnsupportedOperationException("Can't generate writeObject: field " + field +
+              " has no associated getter");
+        }
+
+        if (FieldUtil.isNullable(field)) {
+
+        }
+
+        // all the fields should have getter
+        dot(out, "name").c('(').val(jsonName).c(')', ';');
+        if (isDefaultValueSupportedForWrite(field.getFieldType())) {
+          dot(out, "value").c('(').callGetter(value, getterName).c(')', ';');
+        } else {
+          throw new UnsupportedOperationException("Unsupported field type: " + field);
+        }
+      }
+      dot(out, "endObject").c('(', ')', ';');
+    }
+
+    private boolean isDefaultValueSupportedForWrite(@Nonnull Type type) {
+      return TypeVisitor.apply(new TypeVisitor<Boolean>() {
+        @Override
+        public Boolean visitType(@Nonnull Type sourceType) {
+          return false;
+        }
+
+        @Override
+        public Boolean visitClass(@Nonnull Type sourceType, @Nonnull Class<?> clazz) {
+          // JsonWriter.value() supports: boolean, double, long, String, Number
+          return Number.class.isAssignableFrom(clazz) || String.class.equals(clazz) ||
+              double.class.equals(clazz) || float.class.equals(clazz) ||
+              byte.class.equals(clazz) || char.class.equals(clazz) || short.class.equals(clazz) ||
+              int.class.equals(clazz) || long.class.equals(clazz) ||
+              boolean.class.equals(clazz);
+        }
+      }, type);
+    }
+
+    private void generateTypeAdapterReadObjectBody() {
+      throwUnsupportedOperationException();
     }
 
     /*
