@@ -42,12 +42,12 @@ public class SpecificationHandlerTest {
   @Test
   public void shouldSortSpecByOrdinals() {
     // spec 1
-    OrdinalSumProvider sumProvider = (OrdinalSumProvider) specificationHandler.parseClass(OrderedSpec1.class);
+    OrdinalSumProvider sumProvider = specificationHandler.parseClass(OrderedSpec1.class);
     assertNotNull(sumProvider);
     assertEquals("Accumulated ordinal sum should be 321", 321, sumProvider.getOrdinalOrderSum());
 
     // spec 2
-    sumProvider = (OrdinalSumProvider) specificationHandler.parseClass(OrderedSpec2.class);
+    sumProvider = specificationHandler.parseClass(OrderedSpec2.class);
     assertNotNull(sumProvider);
     assertEquals("Accumulated ordinal sum should be 321", 321, sumProvider.getOrdinalOrderSum());
   }

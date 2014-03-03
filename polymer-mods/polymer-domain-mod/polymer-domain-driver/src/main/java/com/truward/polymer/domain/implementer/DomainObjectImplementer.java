@@ -75,10 +75,7 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
     checkNonFrozen();
 
     if (state == SpecificationState.COMPLETED) {
-//      for (final DomainAnalysisResult target : implementationTargets) {
-//        Assert.nonNull(target.findTrait(TargetTrait.KEY)).setTargetName(getTargetClassName(target));
-//      }
-
+      finalizeTargets();
       freeze();
     }
   }
@@ -87,13 +84,7 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
   // Private
   //
 
-  private FqName getTargetClassName(@Nonnull DomainAnalysisResult result) {
-    final String className = implementerSettings.getDefaultImplClassPrefix() +
-        result.getOriginClass().getSimpleName() + implementerSettings.getDefaultImplClassSuffix();
-    return new FqName(className, implementerSettings.getDefaultTargetPackageName());
-  }
-
-  private void generateCode() {
+  private void finalizeTargets() {
     for (final GenDomainClass implementationTarget : implementationTargets.values()) {
       if (!implementationTarget.hasFqName()) {
         implementationTarget.setFqName(getTargetClassName(implementationTarget.getOrigin()));
@@ -106,28 +97,42 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
       }
       // freeze target class
       implementationTarget.freeze();
+    }
+  }
 
-      try {
-        final FqName targetName = implementationTarget.getFqName();
-        log.info("Generating file for {}", targetName);
+  private FqName getTargetClassName(@Nonnull DomainAnalysisResult result) {
+    final String className = implementerSettings.getDefaultImplClassPrefix() +
+        result.getOriginClass().getSimpleName() + implementerSettings.getDefaultImplClassSuffix();
+    return new FqName(className, implementerSettings.getDefaultTargetPackageName());
+  }
 
-        final TypeManager typeManager = new DefaultTypeManager();
-        final ModuleBuilder moduleBuilder = new DefaultModuleBuilder(targetName.getParent(), typeManager);
-        generateCompilationUnit(moduleBuilder.getStream(), implementationTarget);
-        moduleBuilder.freeze();
-
-        try (final OutputStream stream = outputStreamProvider.createStreamForFile(targetName, DefaultFileTypes.JAVA)) {
-          try (final OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8)) {
-            final CodePrinter codePrinter = new DefaultCodePrinter(writer, typeManager);
-            codePrinter.print(moduleBuilder.getStream());
-          }
-        }
-      } catch (IOException e) {
-        throw new RuntimeException(e);
+  private void generateCode() {
+    try {
+      for (final GenDomainClass implementationTarget : implementationTargets.values()) {
+        generateCode(implementationTarget);
       }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
 
     log.info("Done with code generation");
+  }
+
+  private void generateCode(@Nonnull GenDomainClass implementationTarget) throws IOException {
+    final FqName targetName = implementationTarget.getFqName();
+    log.info("Generating file for {}", targetName);
+
+    final TypeManager typeManager = new DefaultTypeManager();
+    final ModuleBuilder moduleBuilder = new DefaultModuleBuilder(targetName.getParent(), typeManager);
+    generateCompilationUnit(moduleBuilder.getStream(), implementationTarget);
+    moduleBuilder.freeze();
+
+    try (final OutputStream stream = outputStreamProvider.createStreamForFile(targetName, DefaultFileTypes.JAVA)) {
+      try (final OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8)) {
+        final CodePrinter codePrinter = new DefaultCodePrinter(writer, typeManager);
+        codePrinter.print(moduleBuilder.getStream());
+      }
+    }
   }
 
   private void generateCompilationUnit(@Nonnull CodeStream codeStream, @Nonnull GenDomainClass domainClass) {

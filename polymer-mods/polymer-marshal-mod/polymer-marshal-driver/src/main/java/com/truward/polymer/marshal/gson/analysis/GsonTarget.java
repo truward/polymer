@@ -8,18 +8,10 @@ import javax.annotation.Nonnull;
 /**
  * @author Alexander Shabanov
  */
-public final class GsonTarget {
-  private final GenDomainClass domainClass;
+public interface GsonTarget {
+  @Nonnull
+  DomainAnalysisResult getDomainAnalysisResult();
 
-  public GsonTarget(@Nonnull GenDomainClass domainClass) {
-    this.domainClass = domainClass;
-  }
-
-  public GenDomainClass getDomainClass() {
-    return domainClass;
-  }
-
-  public DomainAnalysisResult getAnalysisResult() {
-    return domainClass.getOrigin();
-  }
+  @Nonnull
+  GenDomainClass getDomainClass();
 }

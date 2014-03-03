@@ -3,10 +3,7 @@ package com.truward.polymer.core.support.driver;
 import com.google.common.collect.ImmutableList;
 import com.truward.di.InjectionContext;
 import com.truward.polymer.annotation.Specification;
-import com.truward.polymer.core.driver.SpecificationHandler;
-import com.truward.polymer.core.driver.SpecificationParameterProvider;
-import com.truward.polymer.core.driver.SpecificationState;
-import com.truward.polymer.core.driver.SpecificationStateAware;
+import com.truward.polymer.core.driver.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +31,7 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
 
   @Override
   @Nullable
-  public Object parseClass(@Nonnull Class<?> clazz) {
+  public <T> T parseClass(@Nonnull Class<T> clazz) {
     if (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) {
       log.warn("Skipping interface or abstract class: {}", clazz);
       return null;
@@ -53,7 +50,7 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
     }
 
     try {
-      final Object instance = clazz.newInstance();
+      final T instance = clazz.newInstance();
       final List<Object> resources = provideResources(clazz, instance);
       final List<SpecificationStateAware> stateAwareBeans = new ArrayList<>();
       for (final Object resource : resources) {
@@ -76,7 +73,7 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
 
   @Override
   public void done() {
-    notifyState(injectionContext.getBeans(SpecificationStateAware.class), SpecificationState.COMPLETED);
+    SpecificationUtil.notifyState(injectionContext.getBeans(SpecificationStateAware.class), SpecificationState.COMPLETED);
   }
 
   //
@@ -100,20 +97,14 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
     }
   }
 
-  private void notifyState(@Nonnull Collection<? extends SpecificationStateAware> stateAwareBeans, @Nonnull SpecificationState state) {
-    for (final SpecificationStateAware bean : stateAwareBeans) {
-      bean.setState(state);
-    }
-  }
-
   private void invokeSpecificationMethods(@Nonnull List<Method> specificationMethods,
                                           @Nonnull Object instance,
                                           @Nonnull List<SpecificationStateAware> stateAwareBeans) {
     try {
       for (final Method method : specificationMethods) {
-        notifyState(stateAwareBeans, SpecificationState.RECORDING);
+        SpecificationUtil.notifyState(stateAwareBeans, SpecificationState.RECORDING);
         invokeMethod(instance, method);
-        notifyState(stateAwareBeans, SpecificationState.SUBMITTED);
+        SpecificationUtil.notifyState(stateAwareBeans, SpecificationState.SUBMITTED);
       }
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException("Unable to invoke method", e);

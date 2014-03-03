@@ -18,7 +18,7 @@ public interface SpecificationHandler {
    * @return Processed instance of the specification definition class.
    */
   @Nullable
-  Object parseClass(@Nonnull Class<?> clazz);
+  <T> T parseClass(@Nonnull Class<T> clazz);
 
   void done();
 }

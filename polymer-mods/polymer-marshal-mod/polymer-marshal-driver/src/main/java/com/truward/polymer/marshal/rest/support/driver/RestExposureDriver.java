@@ -1,5 +1,7 @@
-package com.truward.polymer.marshal.rest.driver.support;
+package com.truward.polymer.marshal.rest.support.driver;
 
+import com.truward.di.InjectionContext;
+import com.truward.polymer.core.driver.SpecificationDriver;
 import com.truward.polymer.core.driver.SpecificationParameterProvider;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
@@ -13,8 +15,12 @@ import java.util.List;
 /**
  * @author Alexander Shabanov
  */
-public class RestExposureDriver implements SpecificationParameterProvider, SpecificationStateAware {
+public class RestExposureDriver implements SpecificationDriver, SpecificationParameterProvider, SpecificationStateAware {
 
+  @Override
+  public void join(@Nonnull InjectionContext context) {
+    throw new IllegalStateException();
+  }
 
   @Override
   public <T extends Annotation, R> boolean canProvideParameter(@Nonnull List<T> annotations, @Nonnull Class<R> resultType) {

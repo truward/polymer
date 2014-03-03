@@ -6,6 +6,7 @@ import com.truward.di.support.DefaultInjectionContext;
 import com.truward.polymer.core.driver.Implementer;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
+import com.truward.polymer.core.driver.SpecificationUtil;
 import com.truward.polymer.core.output.MemOutputStreamProvider;
 import com.truward.polymer.domain.DefensiveCopyStyle;
 import com.truward.polymer.domain.DomainImplementerSettings;
@@ -115,11 +116,7 @@ public final class DomainObjectImplementerTest {
 
   private void generateCode(Class<?> domainClass) {
     domainObjectSpecifier.target(domainClass);
-
-    for (final SpecificationStateAware specificationStateAware : specificationStateAwareBeans) {
-      specificationStateAware.setState(SpecificationState.COMPLETED);
-    }
-
+    SpecificationUtil.notifyState(specificationStateAwareBeans, SpecificationState.COMPLETED);
     implementer.generateImplementations();
   }
 
