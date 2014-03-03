@@ -29,7 +29,7 @@ public final class ClassImplementer extends AbstractDomainImplementer {
   }
 
   public void generateHead() {
-    s("public").sp().s("class").sp().s(getDomainClass().getFqName().getName());
+    publicFinalClass().s(getDomainClass().getFqName().getName());
 
     // implements
     sp().s("implements").sp().t(getAnalysisResult().getOriginClass()).c(' ', '{');
@@ -164,7 +164,7 @@ public final class ClassImplementer extends AbstractDomainImplementer {
       }
 
       @Override
-      public Void visitGenericType(@Nonnull Type sourceType, @Nonnull Class<?> rawType, @Nonnull List<Type> args) {
+      public Void visitGenericType(@Nonnull Type sourceType, @Nonnull Type rawType, @Nonnull List<Type> args) {
         switch (implementerSettings.getDefensiveCopyStyle()) {
           case JDK:
             if (List.class.equals(rawType)) {

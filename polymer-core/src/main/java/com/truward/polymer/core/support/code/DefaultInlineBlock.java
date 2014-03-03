@@ -53,6 +53,11 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
     addToCache(cache, "for");
     addToCache(cache, "while");
     addToCache(cache, "do");
+    addToCache(cache, "throw");
+    addToCache(cache, "throws");
+    addToCache(cache, "try");
+    addToCache(cache, "catch");
+    addToCache(cache, "finally");
 
     STRING_CACHE = ImmutableMap.copyOf(cache);
   }

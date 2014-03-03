@@ -47,8 +47,7 @@ public final class BuilderImplementer extends AbstractDomainImplementer {
     c('\n');
 
     // class Builder
-    c('\n').s("public").sps("static").s("final").sps("class")
-        .t(getBuilderClass()).sp().c('{');
+    publicStaticFinalClass().s(getBuilderClass().getFqName().getName()).sp().c('{');
 
     // builder fields
     for (final DomainField field : fields) {
@@ -102,7 +101,7 @@ public final class BuilderImplementer extends AbstractDomainImplementer {
         }
 
         @Override
-        public Void visitGenericType(@Nonnull Type sourceType, @Nonnull Class<?> rawType, @Nonnull List<Type> args) {
+        public Void visitGenericType(@Nonnull Type sourceType, @Nonnull Type rawType, @Nonnull List<Type> args) {
           if (List.class.equals(rawType) || Set.class.equals(rawType)) {
             dot(Names.createPrefixedName("addAllTo", fieldName));
             return null;
@@ -153,7 +152,7 @@ public final class BuilderImplementer extends AbstractDomainImplementer {
       }
 
       @Override
-      public Void visitGenericType(@Nonnull Type sourceType, @Nonnull Class<?> rawType, @Nonnull List<Type> args) {
+      public Void visitGenericType(@Nonnull Type sourceType, @Nonnull Type rawType, @Nonnull List<Type> args) {
         // Special case for lists, sets and maps
         Class<?> rawTypeForCopy = null;
         if (List.class.equals(rawType)) {
@@ -189,7 +188,7 @@ public final class BuilderImplementer extends AbstractDomainImplementer {
       }
 
       @Override
-      public Void visitGenericType(@Nonnull Type sourceType, @Nonnull Class<?> rawType, @Nonnull List<Type> args) {
+      public Void visitGenericType(@Nonnull Type sourceType, @Nonnull Type rawType, @Nonnull List<Type> args) {
         // Special case for lists, sets and maps
         if (List.class.equals(rawType)) {
           assert args.size() == 1;

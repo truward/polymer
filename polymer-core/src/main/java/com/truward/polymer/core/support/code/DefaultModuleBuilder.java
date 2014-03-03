@@ -13,17 +13,17 @@ import java.util.List;
  * @author Alexander Shabanov
  */
 public final class DefaultModuleBuilder extends FreezableSupport implements ModuleBuilder {
-  private final FqName packageName;
+  private final FqName targetClassName;
   private final GenInlineBlock codeStream;
   private final TypeManager typeManager;
   private final GenInlineBlock imports;
 
-  public DefaultModuleBuilder(@Nonnull FqName packageName, @Nonnull TypeManager typeManager) {
-    this.packageName = packageName;
+  public DefaultModuleBuilder(@Nonnull FqName targetClassName, @Nonnull TypeManager typeManager) {
+    this.targetClassName = targetClassName;
     this.typeManager = typeManager;
     this.codeStream = new DefaultInlineBlock(typeManager);
 
-    this.codeStream.s("package").sp().s(packageName).c(';').eol();
+    this.codeStream.s("package").sp().s(targetClassName).c(';').eol();
     this.imports = new DefaultInlineBlock();
     this.codeStream.obj(this.imports);
   }
@@ -36,7 +36,7 @@ public final class DefaultModuleBuilder extends FreezableSupport implements Modu
   @Override
   protected void setFrozen() {
     // set current package to the type manager
-    typeManager.setPackageName(packageName);
+    typeManager.setPackageName(targetClassName);
 
     // freeze type manager, that will trigger preparation of the types
     typeManager.freeze();

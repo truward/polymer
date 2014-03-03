@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
  *
  * @author Alexander Shabanov
  */
-public abstract class GenEmergentClass extends FreezableSupport implements GenClass, Freezable {
+public abstract class GenEmergentClass extends FreezableSupport implements GenClass {
   private FqName fqName;
 
   @Override

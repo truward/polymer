@@ -1,11 +1,13 @@
 package com.truward.polymer.marshal.gson.support.analysis;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.truward.polymer.core.code.builder.CodeStream;
 import com.truward.polymer.core.code.builder.CodeStreamSupport;
 import com.truward.polymer.core.code.builder.ModuleBuilder;
 import com.truward.polymer.core.code.builder.TypeManager;
 import com.truward.polymer.core.code.printer.CodePrinter;
+import com.truward.polymer.core.code.typed.GenClass;
+import com.truward.polymer.core.code.typed.GenClassReference;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.core.freezable.FreezableSupport;
@@ -14,9 +16,12 @@ import com.truward.polymer.core.output.OutputStreamProvider;
 import com.truward.polymer.core.support.code.DefaultModuleBuilder;
 import com.truward.polymer.core.support.code.DefaultTypeManager;
 import com.truward.polymer.core.support.code.printer.DefaultCodePrinter;
+import com.truward.polymer.core.types.SynteticParameterizedType;
+import com.truward.polymer.core.util.Assert;
 import com.truward.polymer.domain.analysis.support.GenDomainClass;
-import com.truward.polymer.marshal.gson.analysis.GsonTarget;
+import com.truward.polymer.domain.analysis.support.Names;
 import com.truward.polymer.marshal.gson.analysis.GsonMarshallerImplementer;
+import com.truward.polymer.marshal.gson.analysis.GsonTarget;
 import com.truward.polymer.naming.FqName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +34,6 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,6 +47,8 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
 
   @Resource
   private OutputStreamProvider outputStreamProvider;
+
+  private FqName targetClassName;
 
   @Override
   public void submit(@Nonnull GenDomainClass domainClass) {
@@ -59,23 +65,22 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
   @Override
   public void generateImplementations() {
     try {
-      final FqName targetName = FqName.parse("com.target.Foo");
-      log.info("Generating file for {}", targetName);
+      log.info("Generating file for {}", targetClassName);
 
       // prepare module generator
       final TypeManager typeManager = new DefaultTypeManager();
-      final ModuleBuilder moduleBuilder = new DefaultModuleBuilder(targetName.getParent(), typeManager);
+      final ModuleBuilder moduleBuilder = new DefaultModuleBuilder(targetClassName, typeManager);
 
       // generate code
-      final GsonBinderImplementer binderImplementer = new GsonBinderImplementer(targetName, moduleBuilder.getStream(),
-          domainClassToGsonTarget.values());
+      final GsonBinderImplementer binderImplementer = new GsonBinderImplementer(targetClassName,
+          moduleBuilder.getStream(), domainClassToGsonTarget);
       binderImplementer.generate();
 
       // freeze generated code
       moduleBuilder.freeze();
 
       // dump code to the file
-      try (final OutputStream stream = outputStreamProvider.createStreamForFile(targetName, DefaultFileTypes.JAVA)) {
+      try (final OutputStream stream = outputStreamProvider.createStreamForFile(targetClassName, DefaultFileTypes.JAVA)) {
         try (final OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8)) {
           final CodePrinter codePrinter = new DefaultCodePrinter(writer, typeManager);
           codePrinter.print(moduleBuilder.getStream());
@@ -91,6 +96,11 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
   @Override
   public void setState(@Nonnull SpecificationState state) {
     if (state == SpecificationState.COMPLETED) {
+      if (targetClassName == null) {
+        // TODO: exception?
+        targetClassName = FqName.parse("generated.GsonMarshaller");
+      }
+
       checkNonFrozen();
 
       finalizeAnalysis();
@@ -103,20 +113,44 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
   //
 
   private void finalizeAnalysis() {
-    // TODO: impl
-    log.info("Gson marshaller generation has been completed");
+    Assert.nonNull(targetClassName, "Target class name expected to be non-null");
+
+    for (final GsonTarget target : domainClassToGsonTarget.values()) {
+      final String typeAdapterClassName = target.getDomainClass().getOrigin().getOriginClass().getSimpleName() +
+          "TypeAdapter";
+
+      target.getTypeAdapter().setFqName(new FqName(typeAdapterClassName, targetClassName));
+    }
+
+
+    log.info("Gson marshaller analysis has been completed");
   }
 
   private static final class GsonBinderImplementer extends CodeStreamSupport {
     private final CodeStream codeStream;
-    private final List<GsonTarget> targets;
+    private final Map<GenDomainClass, GsonTarget> domainClassToGsonTarget;
     private final FqName fqName;
 
+    // google GSON classes
+    private static final GenClass G_PARSE_EXCEPTION = GenClassReference.from("com.google.gson.JsonParseException");
+    private static final GenClass G_TYPE_ADAPTER = GenClassReference.from("com.google.gson.TypeAdapter");
+    private static final GenClass G_JSON_READER = GenClassReference.from("com.google.gson.stream.JsonReader");
+    private static final GenClass G_JSON_TOKEN = GenClassReference.from("com.google.gson.stream.JsonToken");
+    private static final GenClass G_JSON_WRITER = GenClassReference.from("com.google.gson.stream.JsonWriter");
+
+    private static final String OUT_PARAM_NAME = "out";
+    private static final String IN_PARAM_NAME = "in";
+
     private GsonBinderImplementer(@Nonnull FqName fqName, @Nonnull CodeStream codeStream,
-                                  @Nonnull Collection<GsonTarget> targets) {
+                                  @Nonnull Map<GenDomainClass, GsonTarget> domainClassToGsonTarget) {
       this.fqName = fqName;
       this.codeStream = codeStream;
-      this.targets = ImmutableList.copyOf(targets);
+      this.domainClassToGsonTarget = ImmutableMap.copyOf(domainClassToGsonTarget);
+    }
+
+    @Nonnull
+    public Collection<GsonTarget> getTargets() {
+      return domainClassToGsonTarget.values();
     }
 
     @Nonnull
@@ -126,13 +160,125 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
     }
 
     public void generate() {
-      s("public").sps("final").s("class").sps(fqName.getName()).c('{');
+      publicFinalClass().s(fqName.getName()).sp().c('{');
 
-      for (final GsonTarget target : targets) {
-        s("// method for " + target.getDomainClass().getOrigin().getOriginClass()).eol();
+      for (final GsonTarget target : getTargets()) {
+        generateTypeAdapterClass(target);
       }
 
-      c('}'); // class body end
+      c('}').eol(); // class body end
     }
+
+    private void generateTypeAdapterClass(@Nonnull GsonTarget target) {
+      s("// type adapter " + target.getDomainClass().getOrigin().getOriginClass()).eol();
+
+      final Class<?> originDomainClass = target.getDomainAnalysisResult().getOriginClass();
+      final GenClass typeAdapterClass = target.getTypeAdapter();
+      //final GenClass domainClass = target.getDomainClass();
+      final String out = OUT_PARAM_NAME;
+      final String in = IN_PARAM_NAME;
+      final String value = Names.VALUE;
+
+      // public static final {TypeAdapterClass}
+      publicStaticFinalClass().s(typeAdapterClass.getFqName().getName()).sp();
+      // extends TypeAdapter<{DomainClass}>
+      s("extends").sp().t(SynteticParameterizedType.from(G_TYPE_ADAPTER, originDomainClass)).sp();
+      c('{'); // TypeAdapter class body
+
+      // @Override public void write(JsonWriter out, {DomainClass} value) throws IOException {...}
+      annotate(Override.class).s("public").sp().t(void.class).sp().s("write").c('(');
+      var(G_JSON_WRITER, out).c(',').sp().var(originDomainClass, value);
+      c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
+      s("writeObject").c('(').s(out).c(',').sp().s(value).c(')').c(';');
+      c('}').eol(); // End of write(JsonWriter out, {DomainClass} value)
+
+      // public {DomainClass} read(JsonReader in) throws IOException {...}
+      annotate(Override.class).s("public").sp().t(originDomainClass).sp().s("read").c('(');
+      var(G_JSON_READER, IN_PARAM_NAME);
+      c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
+      s("return").sp().s("readObject").c('(').s(in).c(')').c(';');
+      c('}').eol(); // End of write(JsonWriter out, {DomainClass} value)
+
+      // public static void writeObject(JsonWriter out, {DomainClass} value) throws IOException {...}
+      s("public").sp().s("static").sp().t(void.class).sp().s("writeObject").c('(');
+      var(G_JSON_WRITER, out).c(',').sp().var(originDomainClass, value);
+      c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
+      throwUnsupportedOperationException();
+      c('}').eol(); // End of writeObject(JsonWriter out, {DomainClass} value)
+
+      // public static {DomainClass} readObject(JsonReader in) throws IOException {...}
+      s("public").sp().s("static").sp().t(originDomainClass).sp().s("readObject").c('(');
+      var(G_JSON_READER, IN_PARAM_NAME);
+      c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
+      throwUnsupportedOperationException();
+      c('}'); // End of readObject(JsonReader in)
+
+      c('}'); // End of TypeAdapter class body
+    }
+
+    /*
+    Sample code:
+
+    public final class AnimalTypeAdapter extends TypeAdapter<Animal> {
+  @Override public void write(JsonWriter out, Animal value) throws IOException {
+    writeObject(out, value);
+  }
+
+  @Override
+  public Animal read(JsonReader in) throws IOException {
+    return readObject(in);
+  }
+
+  public static void writeObject(JsonWriter out, Animal value) throws IOException {
+    out.beginObject();
+    out.name("id");
+    out.value(value.getId());
+    out.name("name");
+    out.value(value.getName());
+    out.name("description");
+    DescriptionTypeAdapter.writeObject(out, value.getDescription());
+    out.name("type");
+    out.value(value.getType());
+    out.endObject();
+  }
+
+  public static Animal readObject(JsonReader in) throws IOException {
+    if (in.peek() == JsonToken.NULL) {
+      in.nextNull();
+      return null;
+    }
+
+    int id = 0;
+    String name = null;
+    Description description = null;
+    int type = 0;
+
+    in.beginObject();
+    while (in.hasNext()) {
+      final String fieldName = in.nextName();
+      if (fieldName.equals("id")) {
+        id = in.nextInt();
+      } else if (fieldName.equals("name")) {
+        name = in.nextString();
+      } else if (fieldName.equals("description")) {
+        description = DescriptionTypeAdapter.readObject(in);
+      } else if (fieldName.equals("type")) {
+        type = in.nextInt();
+      }else {
+        // WARN: unknown field
+        System.err.println("Unknown field " + fieldName + " for Animal object");
+      }
+    }
+    in.endObject();
+
+    if (name == null || description == null) {
+      throw new JsonParseException("No name or description");
+    }
+
+    return new Animal(id, name, description, type);
+  }
+}
+
+     */
   }
 }

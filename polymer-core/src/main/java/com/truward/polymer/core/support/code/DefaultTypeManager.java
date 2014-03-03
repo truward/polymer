@@ -63,7 +63,7 @@ public final class DefaultTypeManager extends FreezableSupport implements TypeMa
       }
 
       @Override
-      public GenType visitGenericType(@Nonnull Type sourceType, @Nonnull Class<?> rawType, @Nonnull List<Type> args) {
+      public GenType visitGenericType(@Nonnull Type sourceType, @Nonnull Type rawType, @Nonnull List<Type> args) {
         final GenType genRawType = adaptType(rawType);
 
         final GenType[] genArgs = new GenType[args.size()];
@@ -227,7 +227,12 @@ public final class DefaultTypeManager extends FreezableSupport implements TypeMa
     public JavaGenClass(@Nonnull Class<?> originClass) {
       assert !originClass.isArray();
       this.originClass = originClass;
-      this.targetName = FqName.parse(originClass.getName());
+      String className = originClass.getName();
+      if (className.contains("$")) {
+        // inner class
+        className = className.replace('$', '.');
+      }
+      this.targetName = FqName.parse(className);
     }
 
     @Override

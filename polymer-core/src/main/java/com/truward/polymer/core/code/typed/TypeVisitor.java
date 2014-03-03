@@ -19,7 +19,7 @@ public abstract class TypeVisitor<R> {
     return visitType(sourceType);
   }
 
-  public R visitGenericType(@Nonnull Type sourceType, @Nonnull Class<?> rawType, @Nonnull List<Type> args) {
+  public R visitGenericType(@Nonnull Type sourceType, @Nonnull Type rawType, @Nonnull List<Type> args) {
     return visitType(sourceType);
   }
 
@@ -50,12 +50,8 @@ public abstract class TypeVisitor<R> {
     } else if (sourceType instanceof ParameterizedType) {
       final ParameterizedType parameterizedType = (ParameterizedType) sourceType;
       final Type rawType = parameterizedType.getRawType();
-      if (rawType instanceof Class) {
-        return visitor.visitGenericType(sourceType, (Class<?>) rawType,
-            ImmutableList.copyOf(parameterizedType.getActualTypeArguments()));
-      } else {
-        return visitor.visitType(sourceType);
-      }
+      return visitor.visitGenericType(sourceType, rawType,
+          ImmutableList.copyOf(parameterizedType.getActualTypeArguments()));
     } else if (sourceType instanceof GenClass) {
       return visitor.visitGenClass(sourceType, (GenClass) sourceType);
     } else if (sourceType instanceof GenArray) {

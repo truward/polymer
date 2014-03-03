@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Base class, that provides a code stream support for implementers.
+ * Besides the methods, provided in {@link CodeStream} provides another ones for convenience purposes,
+ * that extend functionality of the basic {@link CodeStream}.
+ *
  * @author Alexander Shabanov
  */
 public abstract class CodeStreamSupport implements CodeStream {
@@ -90,6 +94,24 @@ public abstract class CodeStreamSupport implements CodeStream {
   @Nonnull
   public final CodeStreamSupport annotate(@Nonnull Type type) {
     return c('@').t(type).eol();
+  }
+
+  //=> throw new UnsupportedOperationException();
+  @Nonnull
+  public final CodeStreamSupport throwUnsupportedOperationException() {
+    return s("throw").sp().newType(UnsupportedOperationException.class).c('(', ')', ';');
+  }
+
+  //=> public_final_class_
+  @Nonnull
+  public final CodeStreamSupport publicFinalClass() {
+    return s("public").sp().s("final").sp().s("class").sp();
+  }
+
+  //=> public_static_final_class_
+  @Nonnull
+  public final CodeStreamSupport publicStaticFinalClass() {
+    return s("public").sp().s("static").sp().s("final").sp().s("class").sp();
   }
 
   //
