@@ -237,7 +237,6 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
     private void generateTypeAdapterWriteObjectBody(String out, String value, GsonTarget target) {
       dot(out, "beginObject").c('(', ')', ';');
       for (final DomainField field : target.getDomainAnalysisResult().getFields()) {
-        final String jsonName = field.getFieldName();
         final String getterName = FieldUtil.getMethodName(field, OriginMethodRole.GETTER);
         if (getterName == null) {
           throw new UnsupportedOperationException("Can't generate writeObject: field " + field +
@@ -245,18 +244,28 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
         }
 
         if (FieldUtil.isNullable(field)) {
-
-        }
-
-        // all the fields should have getter
-        dot(out, "name").c('(').val(jsonName).c(')', ';');
-        if (isDefaultValueSupportedForWrite(field.getFieldType())) {
-          dot(out, "value").c('(').callGetter(value, getterName).c(')', ';');
+          // if field is null we can omit generating field entry
+          s("if").c(' ', '(').callGetter(value, getterName).sps("!=").s("null");
+          c(')', ' ', '{');
+          generateFieldEntry(out, value, getterName, field);
+          c('}');
         } else {
-          throw new UnsupportedOperationException("Unsupported field type: " + field);
+          generateFieldEntry(out, value, getterName, field);
         }
       }
       dot(out, "endObject").c('(', ')', ';');
+    }
+
+    private void generateFieldEntry(String out, String value, String getterName, DomainField field) {
+      final String jsonName = field.getFieldName();
+
+      // all the fields should have getter
+      dot(out, "name").c('(').val(jsonName).c(')', ';');
+      if (isDefaultValueSupportedForWrite(field.getFieldType())) {
+        dot(out, "value").c('(').callGetter(value, getterName).c(')', ';');
+      } else {
+        throw new UnsupportedOperationException("Unsupported field type: " + field);
+      }
     }
 
     private boolean isDefaultValueSupportedForWrite(@Nonnull Type type) {

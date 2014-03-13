@@ -9,6 +9,7 @@ import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.core.driver.SpecificationUtil;
 import com.truward.polymer.core.output.MemOutputStreamProvider;
 import com.truward.polymer.core.support.driver.DefaultSpecificationHandler;
+import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.driver.support.DomainSpecificationDriver;
 import com.truward.polymer.marshal.gson.analysis.GsonMarshallerImplementer;
@@ -86,6 +87,11 @@ public class GsonMarshallingTest {
     @Specification(ordinal = 1)
     public void specifyDomainObject() {
       domainObjectSpecifier.target(Foo.class);
+    }
+
+    @Specification
+    public void specifyFooFieldTraits(@DomainObject Foo foo) {
+      domainObjectSpecifier.isNullable(foo.getId());
     }
 
     @Specification(ordinal = 2)

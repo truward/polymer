@@ -18,7 +18,7 @@ public final class FieldUtil {
   }
 
   public static boolean isNullable(@Nonnull DomainField field) {
-    return !field.isPrimitive() && field.hasTrait(FieldTrait.MUTABLE);
+    return !field.isPrimitive() && field.hasTrait(FieldTrait.NULLABLE);
 
   }
 
