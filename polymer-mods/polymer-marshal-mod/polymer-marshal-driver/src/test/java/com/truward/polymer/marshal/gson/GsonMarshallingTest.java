@@ -12,8 +12,9 @@ import com.truward.polymer.core.support.driver.DefaultSpecificationHandler;
 import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.driver.support.DomainSpecificationDriver;
-import com.truward.polymer.marshal.gson.analysis.GsonMarshallerImplementer;
-import com.truward.polymer.marshal.gson.support.driver.GsonMarshallingDriver;
+import com.truward.polymer.marshal.gson.support.GsonMarshallingDriver;
+import com.truward.polymer.marshal.json.JsonMarshallingSpecifier;
+import com.truward.polymer.marshal.json.analysis.JsonMarshallerImplementer;
 import com.truward.polymer.naming.FqName;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +31,7 @@ import static org.junit.Assert.assertTrue;
 public class GsonMarshallingTest {
 
   private MemOutputStreamProvider mosp;
-  private GsonMarshallerImplementer gsonMarshallerImplementer;
+  private JsonMarshallerImplementer jsonMarshallerImplementer;
   private SpecificationHandler specificationHandler;
   private List<SpecificationStateAware> specificationStateAwareBeans;
 
@@ -49,7 +50,7 @@ public class GsonMarshallingTest {
 
     specificationHandler = injectionContext.getBean(SpecificationHandler.class);
     specificationStateAwareBeans = injectionContext.getBeans(SpecificationStateAware.class);
-    gsonMarshallerImplementer = injectionContext.getBean(GsonMarshallerImplementer.class);
+    jsonMarshallerImplementer = injectionContext.getBean(JsonMarshallerImplementer.class);
   }
 
 
@@ -58,7 +59,7 @@ public class GsonMarshallingTest {
     specificationHandler.parseClass(FooSpecification.class);
     SpecificationUtil.notifyState(specificationStateAwareBeans, SpecificationState.COMPLETED);
 
-    gsonMarshallerImplementer.generateImplementations();
+    jsonMarshallerImplementer.generateImplementations();
 
     final String code = getOneContent();
     System.out.println(code);
@@ -82,7 +83,7 @@ public class GsonMarshallingTest {
     private DomainObjectSpecifier domainObjectSpecifier;
 
     @Resource
-    private GsonMarshallingSpecifier gsonMarshallingSpecifier;
+    private JsonMarshallingSpecifier jsonMarshallingSpecifier;
 
     @Specification(ordinal = 1)
     public void specifyDomainObject() {
@@ -96,7 +97,7 @@ public class GsonMarshallingTest {
 
     @Specification(ordinal = 2)
     public void specifyGsonSerialization() {
-      gsonMarshallingSpecifier
+      jsonMarshallingSpecifier
           .setGeneratorTarget(FqName.parse("generated.GsonMarshallers"))
           .addDomainEntity(Foo.class);
     }

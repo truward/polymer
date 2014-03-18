@@ -1,4 +1,4 @@
-package com.truward.polymer.marshal.gson.analysis;
+package com.truward.polymer.marshal.json.analysis;
 
 import com.truward.polymer.core.freezable.Freezable;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 /**
  * @author Alexander Shabanov
  */
-public interface GsonTarget extends Freezable {
+public interface JsonTarget extends Freezable {
   @Nonnull
   DomainAnalysisResult getDomainAnalysisResult();
 

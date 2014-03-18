@@ -1,4 +1,4 @@
-package com.truward.polymer.marshal.gson.analysis;
+package com.truward.polymer.marshal.json.analysis;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
  *
  * @author Alexander Shabanov
  */
-public interface GsonField {
+public interface JsonField {
 
   void setJsonName(@Nonnull String name);
 

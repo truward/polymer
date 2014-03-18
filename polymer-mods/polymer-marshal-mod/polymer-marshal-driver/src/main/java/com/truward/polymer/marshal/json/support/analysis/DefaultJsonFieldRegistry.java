@@ -1,8 +1,8 @@
-package com.truward.polymer.marshal.gson.support.analysis;
+package com.truward.polymer.marshal.json.support.analysis;
 
 import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.marshal.gson.analysis.GsonField;
-import com.truward.polymer.marshal.gson.analysis.GsonFieldRegistry;
+import com.truward.polymer.marshal.json.analysis.JsonField;
+import com.truward.polymer.marshal.json.analysis.JsonFieldRegistry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -12,18 +12,18 @@ import java.util.Map;
 /**
  * @author Alexander Shabanov
  */
-public final class DefaultGsonFieldRegistry implements GsonFieldRegistry {
-  private final Map<DomainField, GsonField> fieldMap = new HashMap<>();
+public final class DefaultJsonFieldRegistry implements JsonFieldRegistry {
+  private final Map<DomainField, JsonField> fieldMap = new HashMap<>();
 
   @Nullable
   @Override
-  public GsonField getField(@Nonnull DomainField domainField) {
+  public JsonField getField(@Nonnull DomainField domainField) {
     return fieldMap.get(domainField);
   }
 
   @Override
-  public void putField(@Nonnull DomainField domainField, @Nonnull GsonField gsonField) {
-    GsonField prev = fieldMap.get(domainField);
+  public void putField(@Nonnull DomainField domainField, @Nonnull JsonField gsonField) {
+    JsonField prev = fieldMap.get(domainField);
     if (prev != null) {
       throw new IllegalStateException("Detected clash with previous field: " + prev + ", current: " + gsonField);
     }
@@ -33,10 +33,10 @@ public final class DefaultGsonFieldRegistry implements GsonFieldRegistry {
 
   @Nonnull
   @Override
-  public GsonField adapt(@Nonnull DomainField domainField) {
-    GsonField gsonField = fieldMap.get(domainField);
+  public JsonField adapt(@Nonnull DomainField domainField) {
+    JsonField gsonField = fieldMap.get(domainField);
     if (gsonField == null) {
-      gsonField = new DefaultGsonField(domainField.getFieldName());
+      gsonField = new DefaultJsonField(domainField.getFieldName());
       fieldMap.put(domainField, gsonField);
     }
 
@@ -47,13 +47,13 @@ public final class DefaultGsonFieldRegistry implements GsonFieldRegistry {
   // Private
   //
 
-  private static final class DefaultGsonField implements GsonField {
+  private static final class DefaultJsonField implements JsonField {
     private String jsonName;
 
-    private DefaultGsonField() {
+    private DefaultJsonField() {
     }
 
-    private DefaultGsonField(String jsonName) {
+    private DefaultJsonField(String jsonName) {
       this();
       setJsonName(jsonName);
     }

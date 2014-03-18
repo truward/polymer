@@ -1,4 +1,4 @@
-package com.truward.polymer.marshal.rest.support.driver;
+package com.truward.polymer.marshal.rest.support;
 
 import com.truward.di.InjectionContext;
 import com.truward.polymer.core.driver.SpecificationDriver;
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * @author Alexander Shabanov
  */
-public class RestExposureDriver implements SpecificationDriver, SpecificationParameterProvider, SpecificationStateAware {
+public final class RestExposureDriver implements SpecificationDriver, SpecificationParameterProvider, SpecificationStateAware {
 
   @Override
   public void join(@Nonnull InjectionContext context) {

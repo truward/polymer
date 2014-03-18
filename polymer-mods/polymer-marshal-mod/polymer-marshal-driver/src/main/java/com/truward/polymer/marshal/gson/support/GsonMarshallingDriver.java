@@ -1,9 +1,8 @@
-package com.truward.polymer.marshal.gson.support.driver;
+package com.truward.polymer.marshal.gson.support;
 
 import com.truward.di.InjectionContext;
 import com.truward.polymer.core.driver.SpecificationDriver;
-import com.truward.polymer.marshal.gson.support.analysis.DefaultGsonMarshallerImplementer;
-import com.truward.polymer.marshal.gson.support.specification.DefaultGsonMarshallingSpecifier;
+import com.truward.polymer.marshal.json.support.DefaultJsonMarshallingSpecifier;
 
 import javax.annotation.Nonnull;
 
@@ -13,11 +12,10 @@ import javax.annotation.Nonnull;
  *
  * @author Alexander Shabanov
  */
-@SuppressWarnings("UnusedDeclaration") // false positive, this driver is used in ServiceLoader config
 public final class GsonMarshallingDriver implements SpecificationDriver {
   @Override
   public void join(@Nonnull InjectionContext context) {
-    context.registerBean(DefaultGsonMarshallingSpecifier.class);
+    context.registerBean(DefaultJsonMarshallingSpecifier.class);
     context.registerBean(DefaultGsonMarshallerImplementer.class);
   }
 }

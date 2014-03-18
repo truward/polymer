@@ -13,7 +13,6 @@ import javax.annotation.Nonnull;
  *
  * @author Alexander Shabanov
  */
-@SuppressWarnings("UnusedDeclaration") // false positive, this driver is used in the ServiceLoader config
 public final class DomainSpecificationDriver implements SpecificationDriver {
   @Override
   public void join(@Nonnull InjectionContext context) {

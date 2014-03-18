@@ -1,4 +1,4 @@
-package com.truward.polymer.marshal.gson.support.analysis;
+package com.truward.polymer.marshal.gson.support;
 
 import com.google.common.collect.ImmutableMap;
 import com.truward.polymer.core.code.builder.CodeStream;
@@ -20,13 +20,13 @@ import com.truward.polymer.core.support.code.printer.DefaultCodePrinter;
 import com.truward.polymer.core.types.SynteticParameterizedType;
 import com.truward.polymer.core.util.Assert;
 import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.analysis.FieldTrait;
 import com.truward.polymer.domain.analysis.FieldUtil;
 import com.truward.polymer.domain.analysis.OriginMethodRole;
 import com.truward.polymer.domain.analysis.support.GenDomainClass;
 import com.truward.polymer.domain.analysis.support.Names;
-import com.truward.polymer.marshal.gson.analysis.GsonMarshallerImplementer;
-import com.truward.polymer.marshal.gson.analysis.GsonTarget;
+import com.truward.polymer.marshal.json.analysis.JsonMarshallerImplementer;
+import com.truward.polymer.marshal.json.analysis.JsonTarget;
+import com.truward.polymer.marshal.json.support.analysis.DefaultJsonTarget;
 import com.truward.polymer.naming.FqName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,10 +46,10 @@ import java.util.Map;
  * @author Alexander Shabanov
  */
 public final class DefaultGsonMarshallerImplementer extends FreezableSupport
-    implements GsonMarshallerImplementer, SpecificationStateAware {
+    implements JsonMarshallerImplementer, SpecificationStateAware {
   private final Logger log = LoggerFactory.getLogger(DefaultGsonMarshallerImplementer.class);
 
-  private final Map<GenDomainClass, GsonTarget> domainClassToGsonTarget = new HashMap<>();
+  private final Map<GenDomainClass, JsonTarget> domainClassToJsonTarget = new HashMap<>();
 
   @Resource
   private OutputStreamProvider outputStreamProvider;
@@ -60,12 +60,12 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
   public void submit(@Nonnull GenDomainClass domainClass) {
     checkNonFrozen();
 
-    if (domainClassToGsonTarget.containsKey(domainClass)) {
+    if (domainClassToJsonTarget.containsKey(domainClass)) {
       log.info("Duplicate submission of domain class {}", domainClass);
       return;
     }
 
-    domainClassToGsonTarget.put(domainClass, new DefaultGsonTarget(domainClass));
+    domainClassToJsonTarget.put(domainClass, new DefaultJsonTarget(domainClass));
   }
 
   @Override
@@ -78,8 +78,8 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
       final ModuleBuilder moduleBuilder = new DefaultModuleBuilder(targetClassName, typeManager);
 
       // generate code
-      final GsonBinderImplementer binderImplementer = new GsonBinderImplementer(targetClassName,
-          moduleBuilder.getStream(), domainClassToGsonTarget);
+      final JsonBinderImplementer binderImplementer = new JsonBinderImplementer(targetClassName,
+          moduleBuilder.getStream(), domainClassToJsonTarget);
       binderImplementer.generate();
 
       // freeze generated code
@@ -104,7 +104,7 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
     if (state == SpecificationState.COMPLETED) {
       if (targetClassName == null) {
         // TODO: exception?
-        targetClassName = FqName.parse("generated.GsonMarshaller");
+        targetClassName = FqName.parse("generated.JsonMarshaller");
       }
 
       checkNonFrozen();
@@ -121,7 +121,7 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
   private void finalizeAnalysis() {
     Assert.nonNull(targetClassName, "Target class name expected to be non-null");
 
-    for (final GsonTarget target : domainClassToGsonTarget.values()) {
+    for (final JsonTarget target : domainClassToJsonTarget.values()) {
       final String typeAdapterClassName = target.getDomainClass().getOrigin().getOriginClass().getSimpleName() +
           "TypeAdapter";
 
@@ -129,12 +129,12 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
     }
 
 
-    log.info("Gson marshaller analysis has been completed");
+    log.info("Json marshaller analysis has been completed");
   }
 
-  private static final class GsonBinderImplementer extends CodeStreamSupport {
+  private static final class JsonBinderImplementer extends CodeStreamSupport {
     private final CodeStream codeStream;
-    private final Map<GenDomainClass, GsonTarget> domainClassToGsonTarget;
+    private final Map<GenDomainClass, JsonTarget> domainClassToJsonTarget;
     private final FqName fqName;
 
     // google GSON classes
@@ -147,16 +147,16 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
     private static final String OUT_PARAM_NAME = "out";
     private static final String IN_PARAM_NAME = "in";
 
-    private GsonBinderImplementer(@Nonnull FqName fqName, @Nonnull CodeStream codeStream,
-                                  @Nonnull Map<GenDomainClass, GsonTarget> domainClassToGsonTarget) {
+    private JsonBinderImplementer(@Nonnull FqName fqName, @Nonnull CodeStream codeStream,
+                                  @Nonnull Map<GenDomainClass, JsonTarget> domainClassToJsonTarget) {
       this.fqName = fqName;
       this.codeStream = codeStream;
-      this.domainClassToGsonTarget = ImmutableMap.copyOf(domainClassToGsonTarget);
+      this.domainClassToJsonTarget = ImmutableMap.copyOf(domainClassToJsonTarget);
     }
 
     @Nonnull
-    public Collection<GsonTarget> getTargets() {
-      return domainClassToGsonTarget.values();
+    public Collection<JsonTarget> getTargets() {
+      return domainClassToJsonTarget.values();
     }
 
     @Nonnull
@@ -168,14 +168,14 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
     public void generate() {
       publicFinalClass().s(fqName.getName()).sp().c('{');
 
-      for (final GsonTarget target : getTargets()) {
+      for (final JsonTarget target : getTargets()) {
         generateTypeAdapterClass(target);
       }
 
       c('}').eol(); // class body end
     }
 
-    private void generateTypeAdapterClass(@Nonnull GsonTarget target) {
+    private void generateTypeAdapterClass(@Nonnull JsonTarget target) {
       s("// type adapter " + target.getDomainClass().getOrigin().getOriginClass()).eol();
 
       final Class<?> originDomainClass = target.getDomainAnalysisResult().getOriginClass();
@@ -234,7 +234,7 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
       c('}'); // End of TypeAdapter class body
     }
 
-    private void generateTypeAdapterWriteObjectBody(String out, String value, GsonTarget target) {
+    private void generateTypeAdapterWriteObjectBody(String out, String value, JsonTarget target) {
       dot(out, "beginObject").c('(', ')', ';');
       for (final DomainField field : target.getDomainAnalysisResult().getFields()) {
         final String getterName = FieldUtil.getMethodName(field, OriginMethodRole.GETTER);

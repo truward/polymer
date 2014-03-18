@@ -1,2 +1,3 @@
-com.truward.polymer.marshal.gson.support.driver.GsonMarshallingDriver
-com.truward.polymer.marshal.rest.support.driver.RestExposureDriver
+com.truward.polymer.marshal.gson.support.GsonMarshallingDriver
+com.truward.polymer.marshal.jackson.support.JacksonMarshallingDriver
+com.truward.polymer.marshal.rest.support.RestExposureDriver
