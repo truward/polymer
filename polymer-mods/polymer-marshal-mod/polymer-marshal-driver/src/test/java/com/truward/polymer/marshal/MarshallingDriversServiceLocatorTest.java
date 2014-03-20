@@ -1,7 +1,9 @@
 package com.truward.polymer.marshal;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.truward.polymer.core.driver.SpecificationDriver;
 import com.truward.polymer.domain.driver.support.DomainSpecificationDriver;
 import com.truward.polymer.marshal.gson.support.GsonMarshallingDriver;
@@ -25,10 +27,14 @@ public final class MarshallingDriversServiceLocatorTest {
   public void shouldLocateDrivers() {
     final ServiceLoader<SpecificationDriver> driverServiceLoader = ServiceLoader.load(SpecificationDriver.class);
     final List<SpecificationDriver> drivers = ImmutableList.copyOf(driverServiceLoader);
-    assertEquals("Should find four drivers", 4, drivers.size());
     assertEquals(
         ImmutableSet.of(DomainSpecificationDriver.class, GsonMarshallingDriver.class, JacksonMarshallingDriver.class,
             RestExposureDriver.class),
-        ImmutableSet.<Class<?>>of(drivers.get(0).getClass(), drivers.get(1).getClass(), drivers.get(2).getClass()));
+        ImmutableSet.copyOf(Lists.transform(drivers, new Function<SpecificationDriver, Class<?>>() {
+          @Override
+          public Class<?> apply(SpecificationDriver input) {
+            return input.getClass();
+          }
+        })));
   }
 }

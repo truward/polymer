@@ -128,7 +128,6 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
       target.getTypeAdapter().setFqName(new FqName(typeAdapterClassName, targetClassName));
     }
 
-
     log.info("Json marshaller analysis has been completed");
   }
 
@@ -137,9 +136,13 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
     private final Map<GenDomainClass, JsonTarget> domainClassToJsonTarget;
     private final FqName fqName;
 
-    // google GSON classes
-    private static final GenClass G_PARSE_EXCEPTION = GenClassReference.from("com.google.gson.JsonParseException");
-    private static final GenClass G_TYPE_ADAPTER = GenClassReference.from("com.google.gson.TypeAdapter");
+    // jackson serializer classes
+    private static final GenClass C_JSON_PARSER = GenClassReference.from("com.fasterxml.jackson.core.JsonParser");
+    private static final GenClass C_JSON_GENERATOR = GenClassReference.from("com.fasterxml.jackson.core.JsonGenerator");
+
+
+
+    private static final GenClass G_TYPE_ADAPTER = GenClassReference.from("com.fasterxml.jackson.core.JsonParser");
     private static final GenClass G_JSON_READER = GenClassReference.from("com.google.gson.stream.JsonReader");
     private static final GenClass G_JSON_TOKEN = GenClassReference.from("com.google.gson.stream.JsonToken");
     private static final GenClass G_JSON_WRITER = GenClassReference.from("com.google.gson.stream.JsonWriter");
