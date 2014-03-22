@@ -16,7 +16,12 @@ public final class SynteticParameterizedType implements ParameterizedType {
   private final Type[] arguments;
 
   public SynteticParameterizedType(Type owner, Type rawType, Type[] arguments) {
-    assert rawType != null && arguments != null;
+    if (rawType == null) {
+      throw new IllegalArgumentException("rawType");
+    }
+    if (arguments == null) {
+      throw new IllegalArgumentException("arguments");
+    }
     this.owner = owner;
     this.rawType = rawType;
     this.arguments = Arrays.copyOf(arguments, arguments.length);
@@ -26,7 +31,7 @@ public final class SynteticParameterizedType implements ParameterizedType {
     return new SynteticParameterizedType(null, rawType, args);
   }
 
-  public static ParameterizedType from(Type rawType, List<Type> args) {
+  public static ParameterizedType from(Type rawType, List<? extends Type> args) {
     return new SynteticParameterizedType(null, rawType, args.toArray(new Type[args.size()]));
   }
 

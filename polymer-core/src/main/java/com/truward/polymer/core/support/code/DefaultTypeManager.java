@@ -46,7 +46,7 @@ public final class DefaultTypeManager extends FreezableSupport implements TypeMa
 
     return TypeVisitor.apply(new TypeVisitor<GenType>() {
       @Override
-      public GenType visitArray(@Nonnull Type sourceType, @Nonnull Class<?> elementType) {
+      public GenType visitArray(@Nonnull Type sourceType, @Nonnull Type elementType) {
         return new GenArrayImpl(adaptType(elementType));
       }
 
@@ -63,7 +63,7 @@ public final class DefaultTypeManager extends FreezableSupport implements TypeMa
       }
 
       @Override
-      public GenType visitGenericType(@Nonnull Type sourceType, @Nonnull Type rawType, @Nonnull List<Type> args) {
+      public GenType visitGenericType(@Nonnull Type sourceType, @Nonnull Type rawType, @Nonnull List<? extends Type> args) {
         final GenType genRawType = adaptType(rawType);
 
         final GenType[] genArgs = new GenType[args.size()];

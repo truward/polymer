@@ -1,4 +1,4 @@
-package com.truward.polymer.marshal.gson;
+package com.truward.polymer.marshal.jackson;
 
 import com.truward.di.InjectionContext;
 import com.truward.di.support.DefaultInjectionContext;
@@ -13,6 +13,7 @@ import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.driver.support.DomainSpecificationDriver;
 import com.truward.polymer.marshal.gson.support.GsonMarshallingDriver;
+import com.truward.polymer.marshal.jackson.support.JacksonMarshallingDriver;
 import com.truward.polymer.marshal.json.JsonMarshallingSpecifier;
 import com.truward.polymer.marshal.json.analysis.JsonMarshallerImplementer;
 import com.truward.polymer.naming.FqName;
@@ -28,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Alexander Shabanov
  */
-public final class GsonMarshallingTest {
+public final class JacksonMarshallingTest {
 
   private MemOutputStreamProvider mosp;
   private JsonMarshallerImplementer jsonMarshallerImplementer;
@@ -46,7 +47,7 @@ public final class GsonMarshallingTest {
     injectionContext.registerBean(DefaultSpecificationHandler.class);
 
     new DomainSpecificationDriver().join(injectionContext);
-    new GsonMarshallingDriver().join(injectionContext);
+    new JacksonMarshallingDriver().join(injectionContext);
 
     specificationHandler = injectionContext.getBean(SpecificationHandler.class);
     specificationStateAwareBeans = injectionContext.getBeans(SpecificationStateAware.class);
@@ -96,9 +97,9 @@ public final class GsonMarshallingTest {
     }
 
     @Specification(ordinal = 2)
-    public void specifyGsonSerialization() {
+    public void specifyJsonSerialization() {
       jsonMarshallingSpecifier
-          .setGeneratorTarget(FqName.parse("generated.GsonMarshallers"))
+          .setGeneratorTarget(FqName.parse("generated.JacksonMarshallers"))
           .addDomainEntity(Foo.class);
     }
   }

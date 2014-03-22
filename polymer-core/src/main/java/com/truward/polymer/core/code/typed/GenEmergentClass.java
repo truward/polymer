@@ -1,6 +1,5 @@
 package com.truward.polymer.core.code.typed;
 
-import com.truward.polymer.core.freezable.Freezable;
 import com.truward.polymer.core.freezable.FreezableSupport;
 import com.truward.polymer.naming.FqName;
 
@@ -11,7 +10,7 @@ import javax.annotation.Nonnull;
  *
  * @author Alexander Shabanov
  */
-public abstract class GenEmergentClass extends FreezableSupport implements GenClass {
+public class GenEmergentClass extends FreezableSupport implements GenClass {
   private FqName fqName;
 
   @Override

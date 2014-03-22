@@ -157,14 +157,14 @@ public final class ClassImplementer extends AbstractDomainImplementer {
       }
 
       @Override
-      public Void visitArray(@Nonnull Type sourceType, @Nonnull Class<?> elementType) {
+      public Void visitArray(@Nonnull Type sourceType, @Nonnull Type elementType) {
         // TODO: warning - exposed arrays breaks immutability
         // TODO: Array.copy(fieldName);
         return visitType(sourceType);
       }
 
       @Override
-      public Void visitGenericType(@Nonnull Type sourceType, @Nonnull Type rawType, @Nonnull List<Type> args) {
+      public Void visitGenericType(@Nonnull Type sourceType, @Nonnull Type rawType, @Nonnull List<? extends Type> args) {
         switch (implementerSettings.getDefensiveCopyStyle()) {
           case JDK:
             if (List.class.equals(rawType)) {

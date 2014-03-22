@@ -16,9 +16,6 @@ public interface JsonTarget extends Freezable {
   @Nonnull
   GenDomainClass getDomainClass();
 
-  @Nonnull
-  GenTypeAdapterClass getTypeAdapter();
-
   boolean isReaderSupportRequested();
 
   boolean isWriterSupportRequested();

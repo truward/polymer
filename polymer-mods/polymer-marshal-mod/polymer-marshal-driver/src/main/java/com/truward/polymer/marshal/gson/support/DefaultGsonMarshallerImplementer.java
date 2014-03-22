@@ -18,7 +18,6 @@ import com.truward.polymer.core.support.code.DefaultModuleBuilder;
 import com.truward.polymer.core.support.code.DefaultTypeManager;
 import com.truward.polymer.core.support.code.printer.DefaultCodePrinter;
 import com.truward.polymer.core.types.SynteticParameterizedType;
-import com.truward.polymer.core.util.Assert;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.FieldUtil;
 import com.truward.polymer.domain.analysis.OriginMethodRole;
@@ -42,6 +41,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.truward.polymer.core.util.Assert.nonNull;
+
 /**
  * @author Alexander Shabanov
  */
@@ -50,6 +51,7 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
   private final Logger log = LoggerFactory.getLogger(DefaultGsonMarshallerImplementer.class);
 
   private final Map<GenDomainClass, JsonTarget> domainClassToJsonTarget = new HashMap<>();
+  private final Map<JsonTarget, GenClass> typeAdapters = new HashMap<>();
 
   @Resource
   private OutputStreamProvider outputStreamProvider;
@@ -65,7 +67,8 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
       return;
     }
 
-    domainClassToJsonTarget.put(domainClass, new DefaultJsonTarget(domainClass));
+    final JsonTarget target = new DefaultJsonTarget(domainClass);
+    domainClassToJsonTarget.put(domainClass, target);
   }
 
   @Override
@@ -79,7 +82,7 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
 
       // generate code
       final JsonBinderImplementer binderImplementer = new JsonBinderImplementer(targetClassName,
-          moduleBuilder.getStream(), domainClassToJsonTarget);
+          moduleBuilder.getStream(), domainClassToJsonTarget, typeAdapters);
       binderImplementer.generate();
 
       // freeze generated code
@@ -119,13 +122,17 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
   //
 
   private void finalizeAnalysis() {
-    Assert.nonNull(targetClassName, "Target class name expected to be non-null");
+    nonNull(targetClassName, "Target class name expected to be non-null");
 
     for (final JsonTarget target : domainClassToJsonTarget.values()) {
+      final GenClass emergentClass = typeAdapters.get(target);
+      if (emergentClass != null) {
+        continue;
+      }
+
       final String typeAdapterClassName = target.getDomainClass().getOrigin().getOriginClass().getSimpleName() +
           "TypeAdapter";
-
-      target.getTypeAdapter().setFqName(new FqName(typeAdapterClassName, targetClassName));
+      typeAdapters.put(target, GenClassReference.from(new FqName(typeAdapterClassName, targetClassName)));
     }
 
     log.info("Json marshaller analysis has been completed");
@@ -135,26 +142,25 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
     private final CodeStream codeStream;
     private final Map<GenDomainClass, JsonTarget> domainClassToJsonTarget;
     private final FqName fqName;
+    private final Map<JsonTarget, GenClass> typeAdapters;
 
-    // jackson serializer classes
-    private static final GenClass C_JSON_PARSER = GenClassReference.from("com.fasterxml.jackson.core.JsonParser");
-    private static final GenClass C_JSON_GENERATOR = GenClassReference.from("com.fasterxml.jackson.core.JsonGenerator");
-
-
-
-    private static final GenClass G_TYPE_ADAPTER = GenClassReference.from("com.fasterxml.jackson.core.JsonParser");
-    private static final GenClass G_JSON_READER = GenClassReference.from("com.google.gson.stream.JsonReader");
-    private static final GenClass G_JSON_TOKEN = GenClassReference.from("com.google.gson.stream.JsonToken");
-    private static final GenClass G_JSON_WRITER = GenClassReference.from("com.google.gson.stream.JsonWriter");
+    private static final GenClass T_TYPE_ADAPTER = GenClassReference.from("com.google.gson.TypeAdapter");
+    private static final GenClass T_JSON_READER = GenClassReference.from("com.google.gson.stream.JsonReader");
+    private static final GenClass T_JSON_WRITER = GenClassReference.from("com.google.gson.stream.JsonWriter");
+    //private static final GenClass G_JSON_TOKEN = GenClassReference.from("com.google.gson.stream.JsonToken");
+    //private static final GenClass G_PARSE_EXCEPTION = GenClassReference.from("com.google.gson.JsonParseException");
 
     private static final String OUT_PARAM_NAME = "out";
     private static final String IN_PARAM_NAME = "in";
 
-    private JsonBinderImplementer(@Nonnull FqName fqName, @Nonnull CodeStream codeStream,
-                                  @Nonnull Map<GenDomainClass, JsonTarget> domainClassToJsonTarget) {
+    private JsonBinderImplementer(@Nonnull FqName fqName,
+                                  @Nonnull CodeStream codeStream,
+                                  @Nonnull Map<GenDomainClass, JsonTarget> domainClassToJsonTarget,
+                                  @Nonnull Map<JsonTarget, GenClass> typeAdapters) {
       this.fqName = fqName;
       this.codeStream = codeStream;
       this.domainClassToJsonTarget = ImmutableMap.copyOf(domainClassToJsonTarget);
+      this.typeAdapters = typeAdapters;
     }
 
     @Nonnull
@@ -182,21 +188,20 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
       s("// type adapter " + target.getDomainClass().getOrigin().getOriginClass()).eol();
 
       final Class<?> originDomainClass = target.getDomainAnalysisResult().getOriginClass();
-      final GenClass typeAdapterClass = target.getTypeAdapter();
       //final GenClass domainClass = target.getDomainClass();
       final String out = OUT_PARAM_NAME;
       final String in = IN_PARAM_NAME;
       final String value = Names.VALUE;
 
       // public static final {TypeAdapterClass}
-      publicStaticFinalClass().s(typeAdapterClass.getFqName().getName()).sp();
+      publicStaticFinalClass().s(nonNull(typeAdapters.get(target)).getFqName().getName()).sp();
       // extends TypeAdapter<{DomainClass}>
-      s("extends").sp().t(SynteticParameterizedType.from(G_TYPE_ADAPTER, originDomainClass)).sp();
+      s("extends").sp().t(SynteticParameterizedType.from(T_TYPE_ADAPTER, originDomainClass)).sp();
       c('{'); // TypeAdapter class body
 
       // @Override public void write(JsonWriter out, {DomainClass} value) throws IOException {...}
       annotate(Override.class).s("public").sp().t(void.class).sp().s("write").c('(');
-      var(G_JSON_WRITER, out).c(',').sp().var(originDomainClass, value);
+      var(T_JSON_WRITER, out).c(',').sp().var(originDomainClass, value);
       c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
       if (target.isWriterSupportRequested()) {
         s("writeObject").c('(').s(out).c(',').sp().s(value).c(')').c(';');
@@ -207,7 +212,7 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
 
       // public {DomainClass} read(JsonReader in) throws IOException {...}
       annotate(Override.class).s("public").sp().t(originDomainClass).sp().s("read").c('(');
-      var(G_JSON_READER, IN_PARAM_NAME);
+      var(T_JSON_READER, IN_PARAM_NAME);
       c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
       if (target.isReaderSupportRequested()) {
         s("return").sp().s("readObject").c('(').s(in).c(')').c(';');
@@ -219,7 +224,7 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
       if (target.isWriterSupportRequested()) {
         // public static void writeObject(JsonWriter out, {DomainClass} value) throws IOException {...}
         s("public").sp().s("static").sp().t(void.class).sp().s("writeObject").c('(');
-        var(G_JSON_WRITER, out).c(',').sp().var(originDomainClass, value);
+        var(T_JSON_WRITER, out).c(',').sp().var(originDomainClass, value);
         c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
         generateTypeAdapterWriteObjectBody(out, value, target);
         c('}').eol(); // End of writeObject(JsonWriter out, {DomainClass} value)
@@ -228,7 +233,7 @@ public final class DefaultGsonMarshallerImplementer extends FreezableSupport
       if (target.isReaderSupportRequested()) {
         // public static {DomainClass} readObject(JsonReader in) throws IOException {...}
         s("public").sp().s("static").sp().t(originDomainClass).sp().s("readObject").c('(');
-        var(G_JSON_READER, IN_PARAM_NAME);
+        var(T_JSON_READER, IN_PARAM_NAME);
         c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
         generateTypeAdapterReadObjectBody();
         c('}'); // End of readObject(JsonReader in)

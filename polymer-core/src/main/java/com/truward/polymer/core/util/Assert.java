@@ -13,9 +13,9 @@ import javax.annotation.Nullable;
 public final class Assert {
 
   @Nonnull
-  public static <T> T nonNull(@Nullable T instance, @Nonnull String reason) {
+  public static <T> T nonNull(@Nullable T instance, @Nonnull String exceptionMessage) {
     if (instance == null) {
-      throw new IllegalArgumentException(reason);
+      throw new IllegalArgumentException(exceptionMessage);
     }
     return instance;
   }

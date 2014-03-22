@@ -15,11 +15,11 @@ public abstract class TypeVisitor<R> {
     throw new UnsupportedOperationException("Unsupported type=" + sourceType);
   }
 
-  public R visitArray(@Nonnull Type sourceType, @Nonnull Class<?> elementType) {
+  public R visitArray(@Nonnull Type sourceType, @Nonnull Type elementType) {
     return visitType(sourceType);
   }
 
-  public R visitGenericType(@Nonnull Type sourceType, @Nonnull Type rawType, @Nonnull List<Type> args) {
+  public R visitGenericType(@Nonnull Type sourceType, @Nonnull Type rawType, @Nonnull List<? extends Type> args) {
     return visitType(sourceType);
   }
 
@@ -32,11 +32,11 @@ public abstract class TypeVisitor<R> {
   }
 
   public R visitGenArray(@Nonnull Type sourceType, @Nonnull GenArray genArray) {
-    return visitType(sourceType);
+    return visitArray(sourceType, genArray.getElementType());
   }
 
   public R visitGenParameterizedType(@Nonnull Type sourceType, @Nonnull GenParameterizedType genParameterizedType) {
-    return visitType(sourceType);
+    return visitGenericType(sourceType, genParameterizedType.getRawType(), genParameterizedType.getTypeParameters());
   }
 
   public static <R> R apply(@Nonnull TypeVisitor<R> visitor, @Nonnull Type sourceType) {
