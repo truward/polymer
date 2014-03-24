@@ -15,31 +15,10 @@ import java.util.List;
 /**
  * @author Alexander Shabanov
  */
-public final class RestExposureDriver implements SpecificationDriver, SpecificationParameterProvider, SpecificationStateAware {
+public final class RestExposureDriver implements SpecificationDriver {
 
   @Override
   public void join(@Nonnull InjectionContext context) {
     throw new IllegalStateException();
-  }
-
-  @Override
-  public <T extends Annotation, R> boolean canProvideParameter(@Nonnull List<T> annotations, @Nonnull Class<R> resultType) {
-    if (annotations.size() == 1 && Exposed.class.isAssignableFrom(annotations.get(0).getClass())) {
-      return true; // exposed service object
-    } else if (annotations.size() == 0 && resultType.equals(RestSpecifier.class)) {
-      return true; // associated rest service
-    }
-
-    return false;
-  }
-
-  @Override
-  public <T extends Annotation, R> R provideParameter(@Nonnull List<T> annotations, @Nonnull Class<R> resultType) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void setState(@Nonnull SpecificationState state) {
-    throw new UnsupportedOperationException();
   }
 }

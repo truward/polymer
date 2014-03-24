@@ -189,7 +189,7 @@ public class DefaultJacksonMarshallerImplementer extends FreezableSupport
         s("public").sp().s("static").sp().t(void.class).sp().s("write").c('(');
         var(T_JSON_GENERATOR, out).c(',').sp().var(originDomainClass, value);
         c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
-        generateWriteMethodBody(out, value, target);
+        generateWriteMethodBody(out, target);
         c('}').eol(); // End of write(JsonWriter out, {DomainClass} value)
       }
 
@@ -203,7 +203,7 @@ public class DefaultJacksonMarshallerImplementer extends FreezableSupport
       }
     }
 
-    private void generateWriteMethodBody(String out, String value, JsonTarget target) {
+    private void generateWriteMethodBody(String out, JsonTarget target) {
       dot(out, "writeStartObject").c('(', ')', ';');
       for (final DomainField field : target.getDomainAnalysisResult().getFields()) {
         final String getterName = FieldUtil.getMethodName(field, OriginMethodRole.GETTER);
@@ -230,7 +230,8 @@ public class DefaultJacksonMarshallerImplementer extends FreezableSupport
 
         @Override
         public Void visitArray(@Nonnull Type sourceType, @Nonnull Type elementType) {
-          throw new UnsupportedOperationException();
+          generateWriteFieldForCollection(field, getterName, elementType);
+          return null;
         }
 
         @Override
@@ -252,11 +253,11 @@ public class DefaultJacksonMarshallerImplementer extends FreezableSupport
       }, field.getFieldType());
     }
 
-    private void generateWriteFieldForCollection(DomainField field, String getterName, Class<?> elementClazz) {
+    private void generateWriteFieldForCollection(DomainField field, String getterName, Type elementClazz) {
       final String element = Names.ELEMENT;
       dot(out, "writeArrayFieldStart").c('(').val(getJsonName(field)).c(')', ';');
       s("for").sp().c('(').s(element).spc(':').callGetter(value, getterName).c(')').sp().c('{');
-      generateWriteForClass(getterName, elementClazz);
+      generateWriteForType(getterName, elementClazz);
       c('}'); // end of for
       dot(out, "writeEndArray").c('(').c(')', ';');
     }
@@ -280,40 +281,54 @@ public class DefaultJacksonMarshallerImplementer extends FreezableSupport
       dot(out, "writeObjectField").c('(').val(getJsonName(field)).c(',', ' ').callGetter(value, getterName).c(')', ';');
     }
 
-    private void generateWriteForClass(String getterName, Class<?> clazz) {
-      if (DefaultValues.NUMERIC_PRIMITIVES.contains(clazz)) {
-        dot(out, "writeNumber").c('(').callGetter(value, getterName).c(')', ';');
-        return;
-      }
-
-      if (clazz.isPrimitive()) {
-        throw new UnsupportedOperationException("Class " + clazz + " can't be written as JSON");
-      }
-
-      if (String.class.equals(clazz)) {
-        dot(out, "writeString").c('(').callGetter(value, getterName).c(')', ';');
-        return;
-      }
-
-      // write as object (assuming jackson can deal with it)
-      dot(out, "writeObject").c('(').callGetter(value, getterName).c(')', ';');
-    }
-
-    private boolean isDefaultValueSupportedForWrite(@Nonnull Type type) {
-      return TypeVisitor.apply(new TypeVisitor<Boolean>() {
+    private void generateWriteForType(final String getterName, Type type) {
+      TypeVisitor.apply(new TypeVisitor<Void>() {
         @Override
-        public Boolean visitType(@Nonnull Type sourceType) {
-          return false;
+        public Void visitArray(@Nonnull Type sourceType, @Nonnull Type elementType) {
+          // TODO: wrong: getter can't address current object!!!
+          final String element = Names.ELEMENT;
+          dot(out, "writeArrayStart").c('(', ')', ';');
+          s("for").sp().c('(').s(element).spc(':').callGetter(value, getterName).c(')').sp().c('{');
+          generateWriteForType(getterName, elementType);
+          c('}'); // end of for
+          dot(out, "writeEndArray").c('(').c(')', ';');
+
+          return null;
         }
 
         @Override
-        public Boolean visitClass(@Nonnull Type sourceType, @Nonnull Class<?> clazz) {
-          // JsonWriter.value() supports: boolean, double, long, String, Number
-          return Number.class.isAssignableFrom(clazz) || String.class.equals(clazz) ||
-              double.class.equals(clazz) || float.class.equals(clazz) ||
-              byte.class.equals(clazz) || char.class.equals(clazz) || short.class.equals(clazz) ||
-              int.class.equals(clazz) || long.class.equals(clazz) ||
-              boolean.class.equals(clazz);
+        public Void visitGenericType(@Nonnull Type sourceType, @Nonnull Type rawType, @Nonnull List<? extends Type> args) {
+          throw new UnsupportedOperationException();
+          //return null;
+        }
+
+        @Override
+        public Void visitClass(@Nonnull Type sourceType, @Nonnull Class<?> clazz) {
+          if (DefaultValues.NUMERIC_PRIMITIVES.contains(clazz)) {
+            dot(out, "writeNumber").c('(').callGetter(value, getterName).c(')', ';');
+            return null;
+          }
+
+          if (clazz.isPrimitive()) {
+            throw new UnsupportedOperationException("Class " + clazz + " can't be written as JSON");
+          }
+
+          if (String.class.equals(clazz)) {
+            dot(out, "writeString").c('(').callGetter(value, getterName).c(')', ';');
+            return null;
+          }
+
+          // write as object (assuming jackson can deal with it)
+          dot(out, "writeObject").c('(').callGetter(value, getterName).c(')', ';');
+          return null;
+        }
+
+        @Override
+        public Void visitGenClass(@Nonnull Type sourceType, @Nonnull GenClass genClass) {
+          // TODO: find static writer - avoid unnecessary dispatching by jackson
+          // write as object (assuming jackson can deal with it)
+          dot(out, "writeObject").c('(').callGetter(value, getterName).c(')', ';');
+          return null;
         }
       }, type);
     }
