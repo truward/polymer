@@ -77,7 +77,7 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
   @Nonnull
   @Override
   public CodeStream c(char ch) {
-    return obj(GenCharImpl.valueOf(ch));
+    return obj(newChar(ch));
   }
 
   @Nonnull
@@ -92,11 +92,7 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
   @Nonnull
   @Override
   public CodeStream s(@Nonnull String string) {
-    GenStringImpl gs = STRING_CACHE.get(string);
-    if (gs == null) {
-      gs = new GenStringImpl(string);
-    }
-    return obj(gs);
+    return obj(newString(string));
   }
 
   @Nonnull
@@ -144,6 +140,29 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
   @Override
   public List<GenObject> getChilds() {
     return childs;
+  }
+
+  @Nonnull
+  @Override
+  public GenInlineBlock newInlineBlock() {
+    // TODO: how to freeze?
+    return new DefaultInlineBlock(typeManager);
+  }
+
+  @Nonnull
+  @Override
+  public GenString newString(@Nonnull String string) {
+    GenStringImpl gs = STRING_CACHE.get(string);
+    if (gs == null) {
+      gs = new GenStringImpl(string);
+    }
+    return gs;
+  }
+
+  @Nonnull
+  @Override
+  public GenChar newChar(char c) {
+    return GenCharImpl.valueOf(c);
   }
 
   @Override

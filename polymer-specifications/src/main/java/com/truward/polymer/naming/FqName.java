@@ -20,7 +20,8 @@ public final class FqName implements Comparable<FqName>, Serializable {
   /** Precalculated hash code, optimized for immutable FqName, default to 0 */
   private transient int hash;
 
-  public static FqName parse(String fqName) {
+  @Nonnull
+  public static FqName parse(@Nonnull String fqName) {
     int dotIndex;
     int nextIndex = 0;
 
@@ -91,7 +92,7 @@ public final class FqName implements Comparable<FqName>, Serializable {
   }
 
   @Override
-  public int compareTo(FqName o) {
+  public int compareTo(@Nonnull FqName o) {
     int r = getName().compareTo(o.getName());
     if (r != 0) {
       return r;
@@ -185,11 +186,11 @@ public final class FqName implements Comparable<FqName>, Serializable {
     return symCount;
   }
 
-  public void appendTo(Appendable appendable) throws IOException {
+  public void appendTo(@Nonnull Appendable appendable) throws IOException {
     appendTo(appendable, '.');
   }
 
-  public void appendTo(Appendable appendable, char separator) throws IOException {
+  public void appendTo(@Nonnull Appendable appendable, char separator) throws IOException {
     if (!isRoot()) {
       getParent().appendTo(appendable, separator);
       appendable.append(separator);

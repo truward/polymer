@@ -8,7 +8,6 @@ import com.truward.polymer.domain.analysis.support.GenDomainClass;
 
 import javax.annotation.Nonnull;
 import javax.lang.model.element.Modifier;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 

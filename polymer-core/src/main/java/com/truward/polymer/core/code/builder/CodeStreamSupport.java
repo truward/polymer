@@ -2,6 +2,9 @@ package com.truward.polymer.core.code.builder;
 
 import com.google.common.collect.ImmutableMap;
 import com.truward.polymer.core.code.GenObject;
+import com.truward.polymer.core.code.untyped.GenChar;
+import com.truward.polymer.core.code.untyped.GenInlineBlock;
+import com.truward.polymer.core.code.untyped.GenString;
 import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
@@ -87,7 +90,7 @@ public abstract class CodeStreamSupport implements CodeStream {
   @Nonnull
   public final CodeStreamSupport val(char ch) {
     // TODO: escape char if needed!
-    return c('"').c(ch).c('"');
+    return c('\'').c(ch).c('\'');
   }
 
   //=> _{c}_ <== _ is a space
@@ -203,6 +206,24 @@ public abstract class CodeStreamSupport implements CodeStream {
   @Override
   public List<GenObject> getChilds() {
     return getRootCodeStream().getChilds();
+  }
+
+  @Nonnull
+  @Override
+  public GenInlineBlock newInlineBlock() {
+    return getRootCodeStream().newInlineBlock();
+  }
+
+  @Nonnull
+  @Override
+  public GenString newString(@Nonnull String s) {
+    return getRootCodeStream().newString(s);
+  }
+
+  @Nonnull
+  @Override
+  public GenChar newChar(char c) {
+    return getRootCodeStream().newChar(c);
   }
 
   @Override

@@ -12,7 +12,6 @@ import com.truward.polymer.core.support.driver.DefaultSpecificationHandler;
 import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.driver.support.DomainSpecificationDriver;
-import com.truward.polymer.marshal.gson.support.GsonMarshallingDriver;
 import com.truward.polymer.marshal.jackson.support.JacksonMarshallingDriver;
 import com.truward.polymer.marshal.json.JsonMarshallingSpecifier;
 import com.truward.polymer.marshal.json.analysis.JsonMarshallerImplementer;
@@ -77,6 +76,7 @@ public final class JacksonMarshallingTest {
     Long getId();
     int getAge();
     String getName();
+    List<String> getTags();
   }
 
   public static final class FooSpecification {

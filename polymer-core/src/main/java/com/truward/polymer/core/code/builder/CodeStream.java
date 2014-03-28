@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author Alexander Shabanov
  */
-public interface CodeStream extends Freezable {
+public interface CodeStream extends CodeFactory, Freezable {
 
   // char
   @Nonnull CodeStream c(char ch);
@@ -38,6 +38,7 @@ public interface CodeStream extends Freezable {
 
   // code object
   @Nonnull CodeStream obj(@Nonnull GenObject obj);
+
   /**
    * @return Returns list of childs added to this stream.
    */

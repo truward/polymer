@@ -10,27 +10,28 @@ import java.util.Set;
  * @author Alexander Shabanov
  */
 public final class DefaultValues {
-  public static final Set<Class<?>> NUMERIC_PRIMITIVES = ImmutableSet.<Class<?>>of(int.class, char.class, byte.class,
-      long.class, double.class, float.class);
+  public static final Set<Class<?>> NUMERIC_PRIMITIVES = ImmutableSet.<Class<?>>of(byte.class, char.class,
+      short.class, int.class, long.class, double.class, float.class);
 
   private DefaultValues() {}
 
+  @SuppressWarnings("UnnecessaryBoxing")
   public static Object getDefaultValueFor(Class<?> clazz) {
     if (clazz.isPrimitive()) {
       if (int.class.equals(clazz)) {
-        return 0;
+        return Integer.valueOf(0);
       } else if (byte.class.equals(clazz)) {
-        return (byte) 0;
+        return Byte.valueOf((byte) 0);
       } else if (char.class.equals(clazz)) {
-        return (char) 0;
+        return Character.valueOf('\u0000');
       } else if (short.class.equals(clazz)) {
-        return (short) 0;
+        return Short.valueOf((short) 0);
       } else if (long.class.equals(clazz)) {
-        return (long) 0;
+        return Long.valueOf(0L);
       } else if (float.class.equals(clazz)) {
-        return 0.0f;
+        return Float.valueOf(0.0f);
       } else if (double.class.equals(clazz)) {
-        return 0.0d;
+        return Double.valueOf(0.0d);
       }
 
       throw new UnsupportedOperationException("Unsupported primitive type: " + clazz + ", supported types: " +

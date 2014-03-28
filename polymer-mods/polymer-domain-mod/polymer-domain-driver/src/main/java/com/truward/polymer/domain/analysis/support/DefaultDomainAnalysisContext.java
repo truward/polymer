@@ -106,7 +106,7 @@ public final class DefaultDomainAnalysisContext implements DomainAnalysisContext
         throw new RuntimeException("Unsupported getter " + method + "with parameters in the domain object");
       }
 
-      final DomainField result = new DefaultDomainField(Names.asFieldName(method.getName()), method.getReturnType());
+      final DomainField result = new DefaultDomainField(Names.asFieldName(method.getName()), method.getGenericReturnType());
       result.putOriginMethod(OriginMethodRole.GETTER, method);
       return result;
     }

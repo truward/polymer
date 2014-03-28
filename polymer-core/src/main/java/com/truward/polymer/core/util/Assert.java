@@ -25,5 +25,11 @@ public final class Assert {
     return nonNull(instance, "Provided instance can not be null");
   }
 
+  public static void state(boolean condition, @Nonnull String exceptionMessage) {
+    if (!condition) {
+      throw new IllegalStateException(exceptionMessage);
+    }
+  }
+
   private Assert() {}
 }
