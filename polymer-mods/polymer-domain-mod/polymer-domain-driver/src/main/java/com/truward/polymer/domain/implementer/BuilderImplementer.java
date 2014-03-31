@@ -183,7 +183,7 @@ public final class BuilderImplementer extends AbstractDomainImplementer {
     TypeVisitor.apply(new TypeVisitor<Void>() {
       @Override
       public Void visitType(@Nonnull Type sourceType) {
-        generateBuilderSetter(getDomainClass(), sourceType, fieldName);
+        generateBuilderSetter(sourceType, fieldName);
         return null;
       }
 
@@ -193,21 +193,21 @@ public final class BuilderImplementer extends AbstractDomainImplementer {
         if (List.class.equals(rawType)) {
           assert args.size() == 1;
           // Special setters: add & addAll
-          generateBuilderAppender(getDomainClass(), args.get(0), fieldName);
-          generateBuilderBulkAppender(getDomainClass(), sourceType, fieldName);
+          generateBuilderAppender(args.get(0), fieldName);
+          generateBuilderBulkAppender(sourceType, fieldName);
           return null;
         } else if (Map.class.equals(rawType)) {
           assert args.size() == 2;
           final Type keyType = args.get(0);
           final Type valueType = args.get(1);
-          generateBuilderPut(getDomainClass(), keyType, valueType, fieldName);
-          generateBuilderPutAll(getDomainClass(), sourceType, fieldName);
+          generateBuilderPut(keyType, valueType, fieldName);
+          generateBuilderPutAll(sourceType, fieldName);
           return null;
         } else if (Set.class.equals(rawType)) {
           assert args.size() == 1;
           // Special setters: add & addAll
-          generateBuilderAppender(getDomainClass(), args.get(0), fieldName);
-          generateBuilderBulkAppender(getDomainClass(), sourceType, fieldName);
+          generateBuilderAppender(args.get(0), fieldName);
+          generateBuilderBulkAppender(sourceType, fieldName);
           return null;
         }
 
@@ -216,14 +216,14 @@ public final class BuilderImplementer extends AbstractDomainImplementer {
     }, field.getFieldType());
   }
 
-  private void generateBuilderSetter(Type builderClass, Type fieldType, String fieldName) {
+  private void generateBuilderSetter(Type fieldType, String fieldName) {
     // public Builder set{FieldName}({FieldType} {fieldName}) {
     //    this.{fieldName} = {fieldName};
     //    return this;
     // }
 
     c('\n')
-        .s("public").sp().t(builderClass).sp()
+        .s("public").sp().t(getBuilderClass()).sp()
         .s(Names.createPrefixedName(Names.SET_PREFIX, fieldName)).c('(');
     // arg - ({FieldType} {fieldName})
     var(fieldType, fieldName);
@@ -235,11 +235,11 @@ public final class BuilderImplementer extends AbstractDomainImplementer {
     c('}');
   }
 
-  private void generateBuilderAppender(Type builderClass, Type elementType, String fieldName) {
+  private void generateBuilderAppender(Type elementType, String fieldName) {
     final String elementParam = Names.ELEMENT;
 
     c('\n')
-        .s("public").sp().t(builderClass).sp()
+        .s("public").sp().t(getBuilderClass()).sp()
         .s(Names.createPrefixedName("addTo", fieldName)).c('(');
     // arg - ({ElementType} element)
     var(elementType, elementParam);
@@ -251,14 +251,38 @@ public final class BuilderImplementer extends AbstractDomainImplementer {
     c('}');
   }
 
-  private void generateBuilderBulkAppender(Type builderClass, Type fieldType, String fieldName) {
+  private void generateBuilderBulkAppender(Type fieldType, String fieldName) {
     final String paramName = Names.ELEMENTS;
 
+    // infer parameter type - normally a collection
+    final Type parameterType = TypeVisitor.apply(new TypeVisitor<Type>() {
+      @Override
+      public Type visitType(@Nonnull Type sourceType) {
+        return sourceType;
+      }
+
+      @Override
+      public Type visitClass(@Nonnull Type sourceType, @Nonnull Class<?> clazz) {
+        if (Collection.class.isAssignableFrom(clazz)) {
+          return Collection.class;
+        }
+        return sourceType;
+      }
+
+      @Override
+      public Type visitGenericType(@Nonnull Type sourceType, @Nonnull Type rawType, @Nonnull List<? extends Type> args) {
+        if (rawType instanceof Class && Collection.class.isAssignableFrom((Class) rawType)) {
+          return SynteticParameterizedType.from(Collection.class, args);
+        }
+        return sourceType;
+      }
+    }, fieldType);
+
     c('\n')
-        .s("public").sp().t(builderClass).sp()
+        .s("public").sp().t(getBuilderClass()).sp()
         .s(Names.createPrefixedName("addAllTo", fieldName)).c('(');
     // arg - ({FieldType} elements)
-    var(fieldType, paramName);
+    var(parameterType, paramName);
     c(')', ' ', '{');
     // this.{fieldName}.addAll(elements);
     thisDot(fieldName).dot("addAll").c('(').s(paramName).c(')', ';');
@@ -267,12 +291,12 @@ public final class BuilderImplementer extends AbstractDomainImplementer {
     c('}');
   }
 
-  private void generateBuilderPut(Type builderClass, Type keyType, Type valueType, String fieldName) {
+  private void generateBuilderPut(Type keyType, Type valueType, String fieldName) {
     final String keyParam = Names.KEY;
     final String valueParam = Names.VALUE;
 
     c('\n')
-        .s("public").sp().t(builderClass).sp()
+        .s("public").sp().t(getBuilderClass()).sp()
         .s(Names.createPrefixedName("putTo", fieldName)).c('(');
     // arg - ({KeyType} key, {ValueType} value)
     var(keyType, keyParam).c(',', ' ').var(valueType, valueParam);
@@ -284,16 +308,16 @@ public final class BuilderImplementer extends AbstractDomainImplementer {
     c('}');
   }
 
-  private void generateBuilderPutAll(Type builderClass, Type fieldType, String fieldName) {
+  private void generateBuilderPutAll(Type fieldType, String fieldName) {
     final String elementsName = Names.ELEMENTS;
 
     c('\n')
-        .s("public").sp().t(builderClass).sp()
+        .s("public").sp().t(getBuilderClass()).sp()
         .s(Names.createPrefixedName("putAllTo", fieldName)).c('(');
     // arg - ({FieldType} elements)
     var(fieldType, elementsName);
     c(')', ' ', '{');
-    // this.{fieldName}.addAll(elements);
+    // this.{fieldName}.putAll(elements);
     thisDot(fieldName).dot("putAll").c('(').s(elementsName).c(')', ';');
     // return this;
     s("return").sp().s("this").c(';');

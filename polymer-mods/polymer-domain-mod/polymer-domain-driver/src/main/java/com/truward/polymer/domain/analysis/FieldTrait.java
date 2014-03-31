@@ -60,7 +60,8 @@ public enum FieldTrait {
     @Override
     public void verifyCompatibility(@Nonnull DomainField field) {
       final Class<?> fieldClass = field.getFieldTypeAsClass();
-      if (fieldClass == null || !Number.class.isAssignableFrom(fieldClass) || !DefaultValues.NUMERIC_PRIMITIVES.contains(fieldClass)) {
+      if (fieldClass == null ||
+          (!Number.class.isAssignableFrom(fieldClass) && !DefaultValues.NUMERIC_PRIMITIVES.contains(fieldClass))) {
         throw new RuntimeException("Only numeric fields can be associated with NON_NEGATIVE trait");
       }
     }

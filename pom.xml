@@ -239,5 +239,17 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+
+    <!-- Profile, that enables integration tests -->
+    <profile>
+      <id>include-integration-tests</id>
+
+      <modules>
+        <module>polymer-integration-tests</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>
 

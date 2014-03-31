@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.truward.polymer.core.code.builder.CodeStream;
 import com.truward.polymer.core.code.typed.TypeVisitor;
+import com.truward.polymer.core.types.DefaultValues;
 import com.truward.polymer.domain.analysis.*;
 import com.truward.polymer.domain.analysis.support.GenDomainClass;
 
@@ -131,7 +132,7 @@ public final class ClassImplementer extends AbstractDomainImplementer {
 
     // verification of the input arguments
     for (final DomainField field : getAnalysisResult().getFields()) {
-      generateNullCheckIfNeeded(field);
+      generateChecks(field);
     }
 
     // body
@@ -365,18 +366,32 @@ public final class ClassImplementer extends AbstractDomainImplementer {
     c('}'); // end of function
   }
 
-  private void generateNullCheckIfNeeded(DomainField field) {
-    if (!FieldUtil.isNullCheckRequired(field)) {
-      return;
-    }
-
+  private void generateChecks(DomainField field) {
     // assuming param name equals to the field name
     final String paramName = field.getFieldName();
-    s("if").sp().c('(').s(paramName).sp().s("==").sp().s("null").c(')', ' ', '{');
-    s("throw").sp().newType(IllegalArgumentException.class).c('(', '\"')
-        .s("Parameter " + paramName + " is null")
-        .c('\"', ')', ';');
-    c('}');
+
+    // null check
+    if (FieldUtil.isNullCheckRequired(field)) {
+      s("if").sp().c('(').s(paramName).sp().s("==").sp().s("null").c(')', ' ', '{');
+      s("throw").sp().newType(IllegalArgumentException.class).c('(', '\"')
+          .s("Parameter '" + paramName + "' is null")
+          .c('\"', ')', ';');
+      c('}');
+    }
+
+    // negative field check
+    if (field.hasTrait(FieldTrait.NON_NEGATIVE)) {
+      if (!DefaultValues.NUMERIC_PRIMITIVES.contains(field.getFieldTypeAsClass())) {
+        // TODO: BigDecimal, BigInteger
+        throw new UnsupportedOperationException("Only primitive types supported");
+      }
+
+      s("if").sp().c('(').s(paramName).sp().s("<").sp().s("0").c(')', ' ', '{');
+      s("throw").sp().newType(IllegalArgumentException.class).c('(', '\"')
+          .s("Parameter '" + paramName + "' is null")
+          .c('\"', ')', ';');
+      c('}');
+    }
   }
 
   private void generateHashCodeAddition(DomainField field, String result, String temp) {

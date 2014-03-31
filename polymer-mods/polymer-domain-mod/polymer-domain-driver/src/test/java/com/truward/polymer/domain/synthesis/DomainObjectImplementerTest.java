@@ -10,6 +10,7 @@ import com.truward.polymer.core.driver.SpecificationUtil;
 import com.truward.polymer.core.output.MemOutputStreamProvider;
 import com.truward.polymer.domain.DefensiveCopyStyle;
 import com.truward.polymer.domain.DomainImplementerSettings;
+import com.truward.polymer.domain.DomainObjectSettings;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
@@ -93,7 +94,35 @@ public final class DomainObjectImplementerTest {
   public void shouldImplementEqualsAndHashCodeForPrimitiveType() {
     generateCode(Primitive.class);
     final String code = getOneContent(mosp);
-    assertTrue(code.contains("package")); // TODO: more complex verification
+    assertTrue(code.startsWith("package generated;\n"));
+  }
+
+  @Test
+  public void shouldGenerateBuilder() {
+    final String packageName = "com.mycompany.model";
+
+    // trigger beginning
+    SpecificationUtil.notifyState(specificationStateAwareBeans, SpecificationState.RECORDING);
+
+    // specify
+    domainObjectSpecifier.target(Employee.class);
+    final Employee employee = domainObjectSpecifier.domainObject(Employee.class);
+    domainObjectSpecifier.isNonNegative(employee.getAge());
+    final DomainObjectSettings employeeSettings = domainObjectSpecifier.getObjectSettings(Employee.class);
+    employeeSettings.assignBuilder();
+    employeeSettings.setTargetName(FqName.parse(packageName + ".DefaultEmployee"));
+
+    // trigger completion
+    SpecificationUtil.notifyState(specificationStateAwareBeans, SpecificationState.COMPLETED);
+    implementer.generateImplementations();
+
+    final String code = getOneContent(mosp);
+    System.out.println(code);
+    assertTrue(code.startsWith("package " + packageName + ";\n"));
+    assertTrue(code.contains("public final class DefaultEmployee"));
+    assertTrue(code.contains("public Builder setAge(int"));
+    assertTrue(code.contains("public Builder setName(String"));
+    assertTrue(code.contains("public Builder setBirthDate(Date"));
   }
 
   @Test
