@@ -129,7 +129,7 @@ public final class BuilderImplementer extends AbstractDomainImplementer {
   }
 
   private void generateBuildMethod(List<DomainField> fields) {
-    c('\n').s("public").sp().t(getOriginClass()).sp().s("build")
+    c('\n').s("public").sp().t(getDomainClass()).sp().s("build")
         .c('(', ')', ' ', '{').s("return").sp().newType(getDomainClass()).c('(');
     boolean next = false;
     for (final DomainField field : fields) {
