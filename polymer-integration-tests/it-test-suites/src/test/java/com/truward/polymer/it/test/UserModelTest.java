@@ -26,7 +26,8 @@ public class UserModelTest {
     //noinspection ObjectEqualsNull
     assertFalse(user.equals(null));
 
-    assertTrue(user.equals(user));
+    assertEquals(user, user);
+    assertEquals(user, UserImpl.newBuilder(user).build());
 
     // equals checks
     assertTrue(user.equals(UserImpl.newBuilder()

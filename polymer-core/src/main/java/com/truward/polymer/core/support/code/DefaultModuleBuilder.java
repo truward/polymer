@@ -22,9 +22,14 @@ public final class DefaultModuleBuilder extends FreezableSupport implements Modu
     this.targetClassName = targetClassName;
     this.typeManager = typeManager;
     this.codeStream = new DefaultInlineBlock(typeManager);
-
-    this.codeStream.s("package").sp().s(targetClassName).c(';').eol();
     this.imports = new DefaultInlineBlock();
+
+    // add package declaration at the very beginning
+    if (!targetClassName.isRoot()) {
+      this.codeStream.s("package").sp().s(targetClassName.getParent()).c(';').eol();
+    }
+
+    // add imports code marker
     this.codeStream.obj(this.imports);
   }
 

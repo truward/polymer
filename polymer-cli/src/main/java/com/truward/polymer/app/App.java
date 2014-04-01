@@ -31,9 +31,16 @@ public final class App {
     final CliOptionsParser parser = new CliOptionsParser(args);
     final CliOptionsParser.Result result = parser.parse();
     result.apply(new CliOptionsParser.ResultVisitor() {
+      @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
       @Override
       public void visitError(CliOptionsParser.ErrorResult result) {
-        System.err.println("Error: " + result.getError());
+        System.err.println("Error while running application");
+        if (result.getError() != null) {
+          System.out.println("Message: " + result.getError());
+        }
+        if (result.getException() != null) {
+          result.getException().printStackTrace(System.err);
+        }
         CliOptionsParser.showUsage();
         System.exit(-1);
       }
@@ -65,7 +72,11 @@ public final class App {
         try {
           generateCode(result);
         } catch (RuntimeException e) {
-          System.err.append("Error: ").println(e.getMessage());
+          System.err.println("Error while generating code");
+          if (e.getMessage() != null) {
+            System.err.println("Reason: " + e.getMessage());
+          }
+          e.printStackTrace(System.err);
           System.exit(-1);
         }
       }

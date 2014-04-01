@@ -2,7 +2,7 @@ package com.truward.polymer.marshal.gson.support;
 
 import com.truward.di.InjectionContext;
 import com.truward.polymer.core.driver.SpecificationDriver;
-import com.truward.polymer.marshal.json.support.DefaultJsonMarshallingSpecifier;
+import com.truward.polymer.marshal.json.support.BaseJsonMarshallingSpecifier;
 
 import javax.annotation.Nonnull;
 
@@ -15,7 +15,7 @@ import javax.annotation.Nonnull;
 public final class GsonMarshallingDriver implements SpecificationDriver {
   @Override
   public void join(@Nonnull InjectionContext context) {
-    context.registerBean(DefaultJsonMarshallingSpecifier.class);
+    context.registerBean(DefaultGsonMarshallingSpecifier.class);
     context.registerBean(DefaultGsonMarshallerImplementer.class);
   }
 }

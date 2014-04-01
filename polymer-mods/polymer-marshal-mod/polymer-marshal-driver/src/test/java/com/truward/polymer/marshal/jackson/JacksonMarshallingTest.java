@@ -13,7 +13,7 @@ import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.driver.support.DomainSpecificationDriver;
 import com.truward.polymer.marshal.jackson.support.JacksonMarshallingDriver;
-import com.truward.polymer.marshal.json.JsonMarshallingSpecifier;
+import com.truward.polymer.marshal.json.JacksonMarshallingSpecifier;
 import com.truward.polymer.marshal.json.analysis.JsonMarshallerImplementer;
 import com.truward.polymer.naming.FqName;
 import org.junit.Before;
@@ -63,7 +63,7 @@ public final class JacksonMarshallingTest {
 
     final String code = getOneContent();
     System.out.println(code);
-    assertTrue(code.contains("package"));
+    assertTrue(code.contains("package generated;"));
   }
 
 
@@ -84,7 +84,7 @@ public final class JacksonMarshallingTest {
     private DomainObjectSpecifier domainObjectSpecifier;
 
     @Resource
-    private JsonMarshallingSpecifier jsonMarshallingSpecifier;
+    private JacksonMarshallingSpecifier jsonMarshallingSpecifier;
 
     @Specification(ordinal = 1)
     public void specifyDomainObject() {

@@ -123,7 +123,7 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
     log.info("Generating file for {}", targetName);
 
     final TypeManager typeManager = new DefaultTypeManager();
-    final ModuleBuilder moduleBuilder = new DefaultModuleBuilder(targetName.getParent(), typeManager);
+    final ModuleBuilder moduleBuilder = new DefaultModuleBuilder(targetName, typeManager);
     generateCompilationUnit(moduleBuilder.getStream(), implementationTarget);
     moduleBuilder.freeze();
 

@@ -12,6 +12,10 @@
   <packaging>jar</packaging>
   <name>Polymer Integration Tests - Specifications</name>
 
+  <properties>
+    <jackson.version>2.3.0</jackson.version>
+  </properties>
+
   <dependencies>
     <!-- Polymer specifications -->
     <dependency>
@@ -26,6 +30,25 @@
       <artifactId>polymer-cli</artifactId>
       <version>${project.version}</version>
       <scope>test</scope> <!-- Test scope is used to not to include unnecessary dependencies for compiling -->
+    </dependency>
+    <!-- Marshalling module -->
+    <dependency>
+      <groupId>com.truward.polymer</groupId>
+      <artifactId>polymer-marshal-driver</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Jackson (Marshaller Module - Jackson Serializer) -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.version}</version>
     </dependency>
 
     <!-- test scope -->
@@ -57,7 +80,7 @@
                 <argument>-t</argument>
                 <argument>${project.build.directory}/generated-sources/java</argument>
                 <argument>-sc</argument>
-                <argument>com.truward.polymer.it.specification.ModelSpecification</argument>
+                <argument>com.truward.polymer.it.specification.ModelSpecification,com.truward.polymer.it.specification.JacksonSpecification</argument>
               </arguments>
             </configuration>
           </execution>

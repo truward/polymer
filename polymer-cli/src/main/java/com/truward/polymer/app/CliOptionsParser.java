@@ -28,7 +28,7 @@ public final class CliOptionsParser {
     try {
       return doParse();
     } catch (IllegalStateException e) {
-      return new ErrorResult(e.getMessage());
+      return new ErrorResult(e.getMessage(), e);
     }
   }
 
@@ -124,13 +124,19 @@ public final class CliOptionsParser {
 
   public static final class ErrorResult implements Result {
     private final String error;
+    private final Exception exception;
 
-    public ErrorResult(String error) {
+    public ErrorResult(String error, Exception e) {
       this.error = error;
+      this.exception = e;
     }
 
     public String getError() {
       return error;
+    }
+
+    public Exception getException() {
+      return exception;
     }
 
     @Override

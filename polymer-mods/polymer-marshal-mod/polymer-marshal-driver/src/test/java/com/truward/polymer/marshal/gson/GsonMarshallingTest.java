@@ -13,7 +13,7 @@ import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.driver.support.DomainSpecificationDriver;
 import com.truward.polymer.marshal.gson.support.GsonMarshallingDriver;
-import com.truward.polymer.marshal.json.JsonMarshallingSpecifier;
+import com.truward.polymer.marshal.json.GsonMarshallingSpecifier;
 import com.truward.polymer.marshal.json.analysis.JsonMarshallerImplementer;
 import com.truward.polymer.naming.FqName;
 import org.junit.Before;
@@ -83,7 +83,7 @@ public final class GsonMarshallingTest {
     private DomainObjectSpecifier domainObjectSpecifier;
 
     @Resource
-    private JsonMarshallingSpecifier jsonMarshallingSpecifier;
+    private GsonMarshallingSpecifier jsonMarshallingSpecifier;
 
     @Specification(ordinal = 1)
     public void specifyDomainObject() {

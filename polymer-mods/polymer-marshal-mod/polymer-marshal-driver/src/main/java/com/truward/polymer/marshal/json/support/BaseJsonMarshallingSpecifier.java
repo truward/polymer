@@ -13,7 +13,7 @@ import javax.annotation.Resource;
 /**
  * @author Alexander Shabanov
  */
-public final class DefaultJsonMarshallingSpecifier implements JsonMarshallingSpecifier {
+public abstract class BaseJsonMarshallingSpecifier implements JsonMarshallingSpecifier {
 
   @Resource
   private DomainImplementationTargetSink implementationTargetSink;
@@ -21,8 +21,7 @@ public final class DefaultJsonMarshallingSpecifier implements JsonMarshallingSpe
   @Resource
   private DomainAnalysisContext analysisContext;
 
-  @Resource
-  private JsonMarshallerImplementer implementer;
+  protected abstract JsonMarshallerImplementer getImplementer();
 
   @Override
   public JsonMarshallingSpecifier setGeneratorTarget(@Nonnull FqName targetMethod) {
@@ -37,7 +36,7 @@ public final class DefaultJsonMarshallingSpecifier implements JsonMarshallingSpe
       throw new IllegalStateException("Can't generate gson target for class that has no implementation target: " +
           entityClass);
     }
-    implementer.submit(domainClass);
+    getImplementer().submit(domainClass);
     return this;
   }
 }
