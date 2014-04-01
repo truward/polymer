@@ -23,6 +23,6 @@ public final class FieldUtil {
   }
 
   public static boolean isNullCheckRequired(@Nonnull DomainField field) {
-    return !field.isPrimitive() && (field.hasTrait(FieldTrait.IMMUTABLE) || !field.hasTrait(FieldTrait.MUTABLE));
+    return !field.isPrimitive() && (field.hasTrait(FieldTrait.NONNULL) || !field.hasTrait(FieldTrait.NULLABLE));
   }
 }

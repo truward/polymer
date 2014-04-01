@@ -437,7 +437,7 @@ public final class ClassImplementer extends AbstractDomainImplementer {
       }
     } else {
       // object case:
-      if (FieldUtil.isNullCheckRequired(field)) {
+      if (FieldUtil.isNullable(field)) {
         // ...=> (this.field != null ? this.field.hashCode() : null)
         c('(').thisDot(fieldName).sps("!=").s("null").spc('?')
             .thisDot(fieldName).dot("hashCode").c('(', ')')
@@ -479,7 +479,7 @@ public final class ClassImplementer extends AbstractDomainImplementer {
     }
 
     // generic class case, use equals
-    if (FieldUtil.isNullCheckRequired(field)) {
+    if (FieldUtil.isNullable(field)) {
       // this.field != null ? !this.field.equals(other.field) : other.field != null
       thisDot(fieldName).sps("!=").s("null").spc('?')
           .c('!').thisDot(fieldName).dot("equals").c('(').dot(other, fieldName).c(')')

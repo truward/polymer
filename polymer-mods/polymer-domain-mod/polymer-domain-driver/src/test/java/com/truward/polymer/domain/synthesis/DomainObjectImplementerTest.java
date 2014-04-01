@@ -108,6 +108,7 @@ public final class DomainObjectImplementerTest {
     domainObjectSpecifier.target(Employee.class);
     final Employee employee = domainObjectSpecifier.domainObject(Employee.class);
     domainObjectSpecifier.isNonNegative(employee.getAge());
+    domainObjectSpecifier.isNullable(domainObjectSpecifier.domainObject(User.class).getName());
     final DomainObjectSettings employeeSettings = domainObjectSpecifier.getObjectSettings(Employee.class);
     employeeSettings.assignBuilder();
     employeeSettings.setTargetName(FqName.parse(packageName + ".DefaultEmployee"));
@@ -119,6 +120,7 @@ public final class DomainObjectImplementerTest {
     final String code = getOneContent(mosp);
     System.out.println(code);
     assertTrue(code.startsWith("package " + packageName + ";\n"));
+    assertFalse(code.contains("if (name == null) {")); // name is nullable
     assertTrue(code.contains("public final class DefaultEmployee"));
     assertTrue(code.contains("public Builder setAge(int"));
     assertTrue(code.contains("public Builder setName(String"));
