@@ -3,18 +3,15 @@ package com.truward.polymer.marshal.gson;
 import com.truward.di.InjectionContext;
 import com.truward.di.support.DefaultInjectionContext;
 import com.truward.polymer.annotation.Specification;
-import com.truward.polymer.core.driver.SpecificationHandler;
-import com.truward.polymer.core.driver.SpecificationState;
-import com.truward.polymer.core.driver.SpecificationStateAware;
-import com.truward.polymer.core.driver.SpecificationUtil;
+import com.truward.polymer.core.driver.*;
 import com.truward.polymer.core.output.MemOutputStreamProvider;
 import com.truward.polymer.core.support.driver.DefaultSpecificationHandler;
 import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.driver.support.DomainSpecificationDriver;
+import com.truward.polymer.marshal.gson.support.DefaultGsonMarshallingSpecifier;
 import com.truward.polymer.marshal.gson.support.GsonMarshallingDriver;
 import com.truward.polymer.marshal.json.GsonMarshallingSpecifier;
-import com.truward.polymer.marshal.json.analysis.JsonMarshallerImplementer;
 import com.truward.polymer.naming.FqName;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 public final class GsonMarshallingTest {
 
   private MemOutputStreamProvider mosp;
-  private JsonMarshallerImplementer jsonMarshallerImplementer;
+  private Implementer jsonMarshallerImplementer;
   private SpecificationHandler specificationHandler;
   private List<SpecificationStateAware> specificationStateAwareBeans;
 
@@ -50,7 +47,7 @@ public final class GsonMarshallingTest {
 
     specificationHandler = injectionContext.getBean(SpecificationHandler.class);
     specificationStateAwareBeans = injectionContext.getBeans(SpecificationStateAware.class);
-    jsonMarshallerImplementer = injectionContext.getBean(JsonMarshallerImplementer.class);
+    jsonMarshallerImplementer = injectionContext.getBean(DefaultGsonMarshallingSpecifier.class);
   }
 
 

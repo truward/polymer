@@ -34,7 +34,7 @@ import java.util.Map;
  *
  * @author Alexander Shabanov
  */
-final class JacksonBinderImplementer extends CodeStreamSupport {
+final class JacksonBinderGenerator extends CodeStreamSupport {
   // jackson serializer classes
   private static final GenClass T_JSON_PARSER = GenClassReference.from("com.fasterxml.jackson.core.JsonParser");
   private static final GenClass T_JSON_GENERATOR = GenClassReference.from("com.fasterxml.jackson.core.JsonGenerator");
@@ -48,8 +48,8 @@ final class JacksonBinderImplementer extends CodeStreamSupport {
   private final String value = Names.VALUE;
   private final VarNameManager elementNameVarMgr = new VarNameManager(Names.ELEMENT, this);
 
-  public JacksonBinderImplementer(@Nonnull FqName fqName, @Nonnull CodeStream codeStream,
-                                  @Nonnull Map<GenDomainClass, JsonTarget> domainClassToJsonTarget) {
+  public JacksonBinderGenerator(@Nonnull FqName fqName, @Nonnull CodeStream codeStream,
+                                @Nonnull Map<GenDomainClass, JsonTarget> domainClassToJsonTarget) {
     this.fqName = fqName;
     this.codeStream = codeStream;
     this.domainClassToJsonTarget = domainClassToJsonTarget;

@@ -1,21 +1,23 @@
-package com.truward.polymer.marshal.jackson.support;
+package com.truward.polymer.marshal.json.support;
 
 import com.truward.polymer.core.code.builder.ModuleBuilder;
 import com.truward.polymer.core.code.builder.TypeManager;
 import com.truward.polymer.core.code.printer.CodePrinter;
-import com.truward.polymer.core.code.typed.GenClass;
-import com.truward.polymer.core.code.typed.GenClassReference;
+import com.truward.polymer.core.code.untyped.GenInlineBlock;
+import com.truward.polymer.core.driver.Implementer;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
+import com.truward.polymer.core.freezable.Freezable;
 import com.truward.polymer.core.freezable.FreezableSupport;
 import com.truward.polymer.core.output.DefaultFileTypes;
 import com.truward.polymer.core.output.OutputStreamProvider;
 import com.truward.polymer.core.support.code.DefaultModuleBuilder;
 import com.truward.polymer.core.support.code.DefaultTypeManager;
 import com.truward.polymer.core.support.code.printer.DefaultCodePrinter;
-import com.truward.polymer.core.util.Assert;
+import com.truward.polymer.domain.analysis.DomainAnalysisContext;
+import com.truward.polymer.domain.analysis.DomainImplementationTargetSink;
 import com.truward.polymer.domain.analysis.support.GenDomainClass;
-import com.truward.polymer.marshal.json.analysis.JsonMarshallerImplementer;
+import com.truward.polymer.marshal.json.JsonMarshallingSpecifier;
 import com.truward.polymer.marshal.json.analysis.JsonTarget;
 import com.truward.polymer.marshal.json.support.analysis.DefaultJsonTarget;
 import com.truward.polymer.naming.FqName;
@@ -34,39 +36,32 @@ import java.util.Map;
 /**
  * @author Alexander Shabanov
  */
-public final class DefaultJacksonMarshallerImplementer extends FreezableSupport
-    implements JsonMarshallerImplementer, SpecificationStateAware {
-  private final Logger log = LoggerFactory.getLogger(getClass());
+public abstract class AbstractJsonMarshallerSpecifier extends FreezableSupport
+    implements JsonMarshallingSpecifier, Implementer, SpecificationStateAware, Freezable {
+  protected final Logger log = LoggerFactory.getLogger(getClass());
 
-  private final Map<GenDomainClass, JsonTarget> domainClassToJsonTarget = new HashMap<>();
-  private final Map<JsonTarget, GenClass> serializerClasses = new HashMap<>();
-  private final Map<JsonTarget, GenClass> deserializerClasses = new HashMap<>();
+  @Resource
+  private DomainImplementationTargetSink implementationTargetSink;
+
+  @Resource
+  private DomainAnalysisContext analysisContext;
 
   @Resource
   private OutputStreamProvider outputStreamProvider;
 
+  private final Map<GenDomainClass, JsonTarget> domainClassToJsonTarget = new HashMap<>();
   private FqName targetClassName;
-  private boolean mappersRequired;
 
-  public DefaultJacksonMarshallerImplementer() {
-    // TODO: pick somewhere from the default settings?
-    this.mappersRequired = true;
+  public FqName getTargetClassName() {
+    return targetClassName;
+  }
+
+  public Map<GenDomainClass, JsonTarget> getDomainClassToJsonTarget() {
+    return domainClassToJsonTarget;
   }
 
   @Override
-  public void submit(@Nonnull GenDomainClass domainClass) {
-    checkNonFrozen();
-
-    if (domainClassToJsonTarget.containsKey(domainClass)) {
-      log.info("Duplicate submission of domain class {}", domainClass);
-      return;
-    }
-
-    domainClassToJsonTarget.put(domainClass, new DefaultJsonTarget(domainClass));
-  }
-
-  @Override
-  public void generateImplementations() {
+  public final void generateImplementations() {
     try {
       log.info("Generating file for {}", targetClassName);
 
@@ -75,9 +70,7 @@ public final class DefaultJacksonMarshallerImplementer extends FreezableSupport
       final ModuleBuilder moduleBuilder = new DefaultModuleBuilder(targetClassName, typeManager);
 
       // generate code
-      final JacksonBinderImplementer binderImplementer = new JacksonBinderImplementer(targetClassName,
-          moduleBuilder.getStream(), domainClassToJsonTarget);
-      binderImplementer.generate();
+      generateCode(moduleBuilder.getStream());
 
       // freeze generated code
       moduleBuilder.freeze();
@@ -97,6 +90,26 @@ public final class DefaultJacksonMarshallerImplementer extends FreezableSupport
   }
 
   @Override
+  public final JsonMarshallingSpecifier setGeneratorTarget(@Nonnull FqName targetClass) {
+    checkNonFrozen();
+    this.targetClassName = targetClass;
+    return this;
+  }
+
+  @Override
+  public final JsonMarshallingSpecifier addDomainEntity(@Nonnull Class<?> entityClass) {
+    checkNonFrozen();
+    // should be reentrant-safe
+    final GenDomainClass domainClass = implementationTargetSink.getTarget(analysisContext.analyze(entityClass));
+    if (domainClass == null) {
+      throw new IllegalStateException("Can't generate gson target for class that has no implementation target: " +
+          entityClass);
+    }
+    submit(domainClass);
+    return this;
+  }
+
+  @Override
   public void setState(@Nonnull SpecificationState state) {
     if (state == SpecificationState.COMPLETED) {
       if (targetClassName == null) {
@@ -111,27 +124,22 @@ public final class DefaultJacksonMarshallerImplementer extends FreezableSupport
     }
   }
 
+  protected abstract void finalizeAnalysis();
+
+  protected abstract void generateCode(GenInlineBlock bodyStream);
+
   //
   // Private
   //
 
-  private void finalizeAnalysis() {
-    Assert.nonNull(targetClassName, "Target class name expected to be non-null");
+  private void submit(GenDomainClass domainClass) {
+    checkNonFrozen();
 
-    if (mappersRequired) {
-      for (final JsonTarget target : domainClassToJsonTarget.values()) {
-        final String simpleName = target.getDomainClass().getOrigin().getOriginClass().getSimpleName();
-
-        if (target.isReaderSupportRequested() && !deserializerClasses.containsKey(target)) {
-          deserializerClasses.put(target, GenClassReference.from(new FqName(simpleName + "Deserializer", targetClassName)));
-        }
-
-        if (target.isWriterSupportRequested() && !serializerClasses.containsKey(target)) {
-          serializerClasses.put(target, GenClassReference.from(new FqName(simpleName + "Serializer", targetClassName)));
-        }
-      }
+    if (domainClassToJsonTarget.containsKey(domainClass)) {
+      log.info("Duplicate submission of domain class {}", domainClass);
+      return;
     }
 
-    log.info("Json marshaller analysis has been completed");
+    domainClassToJsonTarget.put(domainClass, new DefaultJsonTarget(domainClass));
   }
 }
