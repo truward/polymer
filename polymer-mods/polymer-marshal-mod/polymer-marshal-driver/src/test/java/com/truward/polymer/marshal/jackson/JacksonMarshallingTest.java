@@ -96,7 +96,7 @@ public final class JacksonMarshallingTest {
     @Specification(ordinal = 2)
     public void specifyJsonSerialization() {
       jsonMarshallingSpecifier
-          .setGeneratorTarget(FqName.parse("generated.JacksonMarshallers"))
+          .setTargetClassName(FqName.parse("generated.JacksonMarshallers"))
           .addDomainEntity(Foo.class);
     }
   }

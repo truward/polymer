@@ -56,20 +56,25 @@ public abstract class AbstractJsonMarshallerSpecifier extends FreezableSupport
   private final Map<GenDomainClass, JsonTarget> domainClassToJsonTarget = new HashMap<>();
   private FqName targetClassName;
 
-  public FqName getTargetClassName() {
+  protected final FqName getTargetClassName() {
     return targetClassName;
   }
 
-  public Map<GenDomainClass, JsonTarget> getDomainClassToJsonTarget() {
+  protected final Map<GenDomainClass, JsonTarget> getDomainClassToJsonTarget() {
     return domainClassToJsonTarget;
   }
 
-  public JsonFieldRegistry getFieldRegistry() {
+  protected final JsonFieldRegistry getFieldRegistry() {
     return fieldRegistry;
   }
 
   @Override
   public final void generateImplementations() {
+    if (domainClassToJsonTarget.isEmpty()) {
+      log.debug("Skipping generation: marshallers will not be generated, no input");
+      return;
+    }
+
     try {
       log.info("Generating file for {}", targetClassName);
 
@@ -94,14 +99,14 @@ public abstract class AbstractJsonMarshallerSpecifier extends FreezableSupport
       throw new RuntimeException(e);
     }
 
-    log.info("Done with Jackson marshallers generation");
+    log.debug("Done with Jackson marshallers generation");
   }
 
   @Nonnull
   @Override
-  public final JsonMarshallingSpecifier setGeneratorTarget(@Nonnull FqName targetClass) {
+  public final JsonMarshallingSpecifier setTargetClassName(@Nonnull FqName targetClassName) {
     checkNonFrozen();
-    this.targetClassName = targetClass;
+    this.targetClassName = targetClassName;
     return this;
   }
 
@@ -120,11 +125,11 @@ public abstract class AbstractJsonMarshallerSpecifier extends FreezableSupport
   }
 
   @Override
-  public void setState(@Nonnull SpecificationState state) {
+  public final void setState(@Nonnull SpecificationState state) {
     if (state == SpecificationState.COMPLETED) {
       if (targetClassName == null) {
         // TODO: exception?
-        targetClassName = FqName.parse("generated.JsonMarshaller");
+        targetClassName = getDefaultTargetClassName();
       }
 
       checkNonFrozen();
@@ -133,6 +138,8 @@ public abstract class AbstractJsonMarshallerSpecifier extends FreezableSupport
       freeze();
     }
   }
+
+  protected abstract FqName getDefaultTargetClassName();
 
   protected abstract void finalizeAnalysis();
 

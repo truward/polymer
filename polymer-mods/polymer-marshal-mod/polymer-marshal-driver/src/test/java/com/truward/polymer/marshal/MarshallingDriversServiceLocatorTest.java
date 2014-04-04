@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.truward.di.InjectionContext;
+import com.truward.polymer.core.driver.Implementer;
 import com.truward.polymer.core.driver.spi.SpecificationDriver;
 import com.truward.polymer.core.output.OutputStreamProvider;
 import com.truward.polymer.core.support.PolymerModule;
@@ -59,5 +60,8 @@ public final class MarshallingDriversServiceLocatorTest {
 
     assertNotNull(context.getBean(JacksonMarshallingSpecifier.class));
     assertNotNull(context.getBean(GsonMarshallingSpecifier.class));
+
+    // Verify implementers count
+    assertEquals(3, context.getBeans(Implementer.class).size());
   }
 }

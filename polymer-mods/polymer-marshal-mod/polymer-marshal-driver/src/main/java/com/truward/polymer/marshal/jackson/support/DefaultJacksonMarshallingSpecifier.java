@@ -6,6 +6,7 @@ import com.truward.polymer.core.util.Assert;
 import com.truward.polymer.marshal.json.JacksonMarshallingSpecifier;
 import com.truward.polymer.marshal.json.analysis.JsonTarget;
 import com.truward.polymer.marshal.json.support.AbstractJsonMarshallerSpecifier;
+import com.truward.polymer.naming.FqName;
 
 /**
  * @author Alexander Shabanov
@@ -18,24 +19,36 @@ public final class DefaultJacksonMarshallingSpecifier extends AbstractJsonMarsha
   }
 
   @Override
+  public FqName getDefaultTargetClassName() {
+    return FqName.parse("generated.JacksonMarshaller");
+  }
+
+  @Override
   protected void finalizeAnalysis() {
     Assert.nonNull(getTargetClassName(), "Target class name expected to be non-null");
 
     if (mappersRequired) {
       for (final JsonTarget target : getDomainClassToJsonTarget().values()) {
-        final String simpleName = target.getDomainClass().getOrigin().getOriginClass().getSimpleName();
+        final Class<?> originClass = target.getDomainClass().getOrigin().getOriginClass();
+        log.debug("Performing JSON analysis for class {}", originClass);
+
+        final String simpleName = originClass.getSimpleName();
 
         if (target.isReaderSupportRequested() && target.getTargetReaderClass() == null) {
-          target.setTargetReaderClass(GenClassReference.from(getTargetClassName().append(simpleName + "Deserializer")));
+          final FqName deserializerName = getTargetClassName().append(simpleName + "Deserializer");
+          log.debug("Adding deserializer {} for class {}", deserializerName, originClass);
+          target.setTargetReaderClass(GenClassReference.from(deserializerName));
         }
 
         if (target.isWriterSupportRequested() && target.getTargetWriterClass() == null) {
-          target.setTargetWriterClass(GenClassReference.from(getTargetClassName().append(simpleName + "Serializer")));
+          final FqName serializerName = getTargetClassName().append(simpleName + "Serializer");
+          log.debug("Adding serializer {} for class {}", serializerName, originClass);
+          target.setTargetWriterClass(GenClassReference.from(serializerName));
         }
       }
     }
 
-    log.info("Json marshaller analysis has been completed");
+    log.info("Jackson-json marshaller analysis has been completed");
   }
 
   @Override

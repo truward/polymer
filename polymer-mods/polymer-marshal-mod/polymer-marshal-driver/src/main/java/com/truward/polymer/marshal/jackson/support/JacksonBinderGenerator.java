@@ -39,9 +39,19 @@ import static com.truward.polymer.core.util.Assert.nonNull;
  */
 final class JacksonBinderGenerator extends CodeStreamSupport {
   // jackson serializer classes
-  private static final GenClass T_JSON_PARSER = GenClassReference.from("com.fasterxml.jackson.core.JsonParser");
   private static final GenClass T_JSON_GENERATOR = GenClassReference.from("com.fasterxml.jackson.core.JsonGenerator");
   private static final GenClass T_JSON_SERIALIZER = GenClassReference.from("com.fasterxml.jackson.databind.JsonSerializer");
+  private static final GenClass T_SERIALIZER_PROVIDER = GenClassReference.from("com.fasterxml.jackson.databind.SerializerProvider");
+
+  // jackson deserializer classes
+  private static final GenClass T_JSON_PARSER = GenClassReference.from("com.fasterxml.jackson.core.JsonParser");
+  private static final GenClass T_JSON_DESERIALIZER = GenClassReference.from("com.fasterxml.jackson.databind.JsonDeserializer");
+  private static final GenClass T_DESERIALIZATION_CONTEXT = GenClassReference.from(
+      "com.fasterxml.jackson.databind.DeserializationContext");
+
+  // jackson object mapper
+  private static final GenClass T_OBJECT_MAPPER = GenClassReference.from("com.fasterxml.jackson.databind.ObjectMapper");
+  private static final GenClass T_SIMPLE_MODULE = GenClassReference.from("com.fasterxml.jackson.databind.module.SimpleModule");
 
   private final Map<GenDomainClass, JsonTarget> domainClassToJsonTarget;
   private final CodeStream codeStream;
@@ -51,6 +61,9 @@ final class JacksonBinderGenerator extends CodeStreamSupport {
   private final String in;
   private final String value = Names.VALUE;
   private final String writeBody; // writeBody method name
+  private final String attachMarshallersTo;
+  private final String mapper;
+  private final String module;
   private final VarNameManager elementNameVarMgr = new VarNameManager(Names.ELEMENT, this);
 
   private final JsonFieldRegistry fieldRegistry;
@@ -66,6 +79,9 @@ final class JacksonBinderGenerator extends CodeStreamSupport {
     this.out = "jg"; // jg = json generator
     this.in = "jp"; // jp = json parser
     this.writeBody = "writeBody";
+    this.attachMarshallersTo = "attachMarshallersTo";
+    this.mapper = "mapper";
+    this.module = "module";
   }
 
   @Nonnull
@@ -82,7 +98,14 @@ final class JacksonBinderGenerator extends CodeStreamSupport {
   public void generate() {
     publicFinalClass().s(fqName.getName()).sp().c('{');
 
+    // private constructor (Utility class)
+    s("/** Hidden constructor */").eol();
+    s("public").sp().s(fqName.getName()).c('(', ')').sp().c('{').c('}').eol();
+
+    generateAttachMethod();
+
     for (final JsonTarget target : getTargets()) {
+      eol();
       generateStaticMarshallers(target);
     }
 
@@ -90,8 +113,8 @@ final class JacksonBinderGenerator extends CodeStreamSupport {
   }
 
   private void generateStaticMarshallers(@Nonnull JsonTarget target) {
-    generateWriterSupport(target);
-    generateReaderSupport(target);
+    generateSerializerSupport(target);
+    generateDeserializerSupport(target);
   }
 
   @Nonnull
@@ -99,42 +122,84 @@ final class JacksonBinderGenerator extends CodeStreamSupport {
     return fieldRegistry.getJsonName(field);
   }
 
+  //
+  // Attach Method (Binds Models to Marshallers)
+  //
+
+  private void generateAttachMethod() {
+    final String moduleNameVal = fqName.getName();
+
+    // public static void attachMarshallersTo(ObjectMapper mapper)
+    s("public").sp().s("static").sp().t(void.class).sp().s(attachMarshallersTo).c('(');
+    t(T_OBJECT_MAPPER).sp().s(mapper).c(')', '{');
+
+    // final SimpleModule module = new SimpleModule("JacksonMarshaller");
+    s("final").sp().t(T_SIMPLE_MODULE).sp().s(module).sp().c('=').sp();
+    newType(T_SIMPLE_MODULE).c('(').val(moduleNameVal).c(')', ';');
+
+    // add respective serializer and deserializer
+    for (final JsonTarget jsonTarget : getTargets()) {
+      final Class<?> domainClass = jsonTarget.getDomainClass().getOrigin().getOriginClass();
+
+      if (jsonTarget.isWriterSupportRequested()) {
+        // module.addSerializer({DomainClass}.class, new {Serializer}());
+        dot(module, "addSerializer").c('(').t(domainClass).c('.').s("class").c(',').sp();
+        newType(nonNull(jsonTarget.getTargetWriterClass(), "No writer")).c('(', ')');
+        c(')', ';');
+      }
+
+      if (jsonTarget.isReaderSupportRequested()) {
+        // module.addDeserializer({DomainClass}.class, new {Serializer}());
+        dot(module, "addDeserializer").c('(').t(domainClass).c('.').s("class").c(',').sp();
+        newType(nonNull(jsonTarget.getTargetReaderClass(), "No reader")).c('(', ')');
+        c(')', ';');
+      }
+    }
+
+    dot(mapper, "registerModule").c('(').s(module).c(')', ';');
+    c('}');
+  }
+
 
   //
   // Serializer (Writer)
   //
 
-  private void generateWriterSupport(@Nonnull JsonTarget target) {
+  private void generateSerializerSupport(@Nonnull JsonTarget target) {
     if (!target.isWriterSupportRequested()) {
       return;
     }
 
-    s("// Writer for class " + target.getDomainClass().getOrigin().getOriginClass()).eol();
+    s("// Serializer for class " + target.getDomainClass().getOrigin().getOriginClass()).eol();
 
     final Class<?> originDomainClass = target.getDomainAnalysisResult().getOriginClass();
     final GenClass writerClass = nonNull(target.getTargetWriterClass(), "Writer class is null");
 
-    // public static final class {Writer} extends JsonSerializer<Memo> {}
+    // public static final class {Serializer} extends JsonSerializer<{DomainClass}> {}
     s("public").sp().s("static").sp().s("final").sp();
     s("class").sp().s(writerClass.getFqName().getName()).sp();
     s("extends").sp().t(SynteticParameterizedType.from(T_JSON_SERIALIZER, originDomainClass)).sp();
     // class body
     c('{');
 
-    // @Override public void serialize({DomainType} value, JsonGenerator out, SerializerProvider provider) throws IOException
+    // @Override public void serialize({DomainClass} value, JsonGenerator out, SerializerProvider provider) throws IOException
     annotate(Override.class).s("public").sp().t(void.class).sp().s("serialize");
-    c('(').c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
+    c('(').t(originDomainClass).sp().s(value).c(',').sp().t(T_JSON_GENERATOR).sp().s(out).c(',').sp();
+    t(T_SERIALIZER_PROVIDER).sp().s("provider").c(')').sp().s("throws").sp().t(IOException.class).sp();
+    c('{'); // start body
     dot(out, "writeStartObject").c('(', ')', ';');
     s("writeBody").c('(').s(out).c(',').sp().s(value).c(')', ';');
     dot(out, "writeEndObject").c('(', ')', ';');
     c('}'); // end of serialize method
+
+    eol(); // separator between methods
 
     // public static void writeBody(JsonGenerator out, {DomainClass} value) throws IOException {...}
     s("public").sp().s("static").sp().t(void.class).sp().s(writeBody).c('(');
     var(T_JSON_GENERATOR, out).c(',').sp().var(originDomainClass, value);
     c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
     generateWriteMethodBody(target);
-    c('}').eol(); // End of writeBody(JsonWriter out, {DomainClass} value)
+    c('}'); // End of writeBody(JsonWriter out, {DomainClass} value)
 
     c('}').eol(); // end of Serializer class body
   }
@@ -305,22 +370,31 @@ final class JacksonBinderGenerator extends CodeStreamSupport {
   // Deserializer (Reader)
   //
 
-  private void generateReaderSupport(@Nonnull JsonTarget target) {
+  private void generateDeserializerSupport(@Nonnull JsonTarget target) {
     if (!target.isReaderSupportRequested()) {
       return;
     }
 
-    s("// Reader for class " + target.getDomainClass().getOrigin().getOriginClass()).eol();
+    s("// Deserializer for class " + target.getDomainClass().getOrigin().getOriginClass()).eol();
 
     final Class<?> originDomainClass = target.getDomainAnalysisResult().getOriginClass();
     final GenClass readerClass = nonNull(target.getTargetReaderClass(), "Reader class is null");
 
-    // public static {DomainClass} read(JsonReader in, Class<{DomainClass}> dummy) throws IOException {...}
-    s("public").sp().s("static").sp().t(originDomainClass).sp().s("read").c('(');
-    var(T_JSON_PARSER, in).c(',').sp().var(SynteticParameterizedType.from(Class.class, originDomainClass), "dummy");
-    c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
+    // public static final class {Deserializer} extends JsonDeserializer<{DomainClass}> {}
+    s("public").sp().s("static").sp().s("final").sp();
+    s("class").sp().s(readerClass.getFqName().getName()).sp();
+    s("extends").sp().t(SynteticParameterizedType.from(T_JSON_DESERIALIZER, originDomainClass)).sp();
+    c('{'); // class body begins
+
+    // @Override public {DomainClass} deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException
+    annotate(Override.class).s("public").sp().t(originDomainClass).sp().s("deserialize");
+    c('(').t(T_JSON_PARSER).sp().s(in).c(',').sp().t(T_DESERIALIZATION_CONTEXT).sp().s("ctxt").c(')').sp();
+    s("throws").sp().t(IOException.class).sp();
+    c('{'); // start body
     generateReadMethodBody();
-    c('}'); // End of read(JsonParser in, Class<{DomainClass}> dummy)
+    c('}'); // end of deserialize method
+
+    c('}'); // end of class body
   }
 
   private void generateReadMethodBody() {

@@ -35,6 +35,24 @@ public final class FqNameTest {
   }
 
   @Test
+  public void shouldLongNameBeEqualToItsEquivalent() {
+    final String name = "com.mysite.demo.sample.MyClass";
+    final FqName fqName1 = FqName.parse(name);
+    final FqName fqName2 = FqName.parse(new String(name.toCharArray()));
+    final FqName fqName3 = FqName.parse(fqName1.toString());
+
+    // equals test
+    assertEquals(fqName1, fqName2);
+    assertEquals(fqName2, fqName3);
+    assertEquals(fqName3, fqName1);
+
+    // hashCode test
+    assertEquals(fqName1.hashCode(), fqName2.hashCode());
+    assertEquals(fqName2.hashCode(), fqName3.hashCode());
+    assertEquals(fqName3.hashCode(), fqName1.hashCode());
+  }
+
+  @Test
   public void shouldBeEqualAndHaveSameHashCode() {
     final FqName foo = FqName.parse("Foo");
     final FqName[][] nameArrs = {
@@ -128,5 +146,22 @@ public final class FqNameTest {
     final FqName com = FqName.parse("com");
     assertEquals(FqName.parse("com.mysite"), com.append("mysite"));
     assertEquals(FqName.parse("com.mysite.demo"), com.append("mysite").append("demo"));
+  }
+
+  @Test
+  public void shouldCalculateCount() {
+    assertEquals(1, FqName.parse("com").count());
+    assertEquals(2, FqName.parse("com.mysite").count());
+    assertEquals(3, FqName.parse("com.mysite.demo").count());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldThrowIAEOnEmptyString() {
+    FqName.parse("");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldThrowIAEOnMalformedName() {
+    FqName.parse("com..mysite");
   }
 }

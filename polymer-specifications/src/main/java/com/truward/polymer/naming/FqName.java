@@ -35,11 +35,18 @@ public final class FqName implements Comparable<FqName>, Serializable {
         part = fqName.substring(nextIndex, dotIndex);
         nextIndex = dotIndex + 1;
       }
+      if (part.isEmpty()) {
+        throw new IllegalArgumentException("Empty name part in the qualified name: " + fqName);
+      }
       next = new FqName(part, next);
 
       if (dotIndex < 0) {
         break;
       }
+    }
+
+    if (next == null) {
+      throw new IllegalArgumentException("Empty fully qualified name: " + fqName);
     }
 
     return next;
@@ -65,7 +72,7 @@ public final class FqName implements Comparable<FqName>, Serializable {
 
   @Nonnull
   public List<String> toList() {
-    final List<String> names = new ArrayList<>(length());
+    final List<String> names = new ArrayList<>(count());
     for (FqName fqn = this;; fqn = fqn.getParent()) {
       names.add(0, fqn.getName());
       if (fqn.isRoot()) {
@@ -189,6 +196,21 @@ public final class FqName implements Comparable<FqName>, Serializable {
       }
     }
     return symCount;
+  }
+
+  /**
+   * @return Count of parts in this name
+   */
+  public int count() {
+    int partCount = 0;
+    FqName i = this;
+    for (;; i = i.getParent()) {
+      ++partCount;
+      if (i.isRoot()) {
+        break;
+      }
+    }
+    return partCount;
   }
 
   public void appendTo(@Nonnull Appendable appendable) throws IOException {

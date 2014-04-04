@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 public interface JsonMarshallingSpecifier {
 
   @Nonnull
-  JsonMarshallingSpecifier setGeneratorTarget(@Nonnull FqName targetClass);
+  JsonMarshallingSpecifier setTargetClassName(@Nonnull FqName targetClassName);
 
   @Nonnull
   JsonMarshallingSpecifier addDomainEntity(@Nonnull Class<?> entityClass);

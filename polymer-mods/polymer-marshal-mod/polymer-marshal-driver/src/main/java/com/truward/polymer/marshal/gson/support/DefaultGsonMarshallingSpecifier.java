@@ -58,6 +58,11 @@ public final class DefaultGsonMarshallingSpecifier extends AbstractJsonMarshalle
     binderImplementer.generate();
   }
 
+  @Override
+  protected FqName getDefaultTargetClassName() {
+    return FqName.parse("generated.GsonMarshaller");
+  }
+
   //
   // Private
   //
@@ -71,8 +76,8 @@ public final class DefaultGsonMarshallingSpecifier extends AbstractJsonMarshalle
     private static final GenClass T_TYPE_ADAPTER = GenClassReference.from("com.google.gson.TypeAdapter");
     private static final GenClass T_JSON_READER = GenClassReference.from("com.google.gson.stream.JsonReader");
     private static final GenClass T_JSON_WRITER = GenClassReference.from("com.google.gson.stream.JsonWriter");
-    //private static final GenClass G_JSON_TOKEN = GenClassReference.from("com.google.gson.stream.JsonToken");
-    //private static final GenClass G_PARSE_EXCEPTION = GenClassReference.from("com.google.gson.JsonParseException");
+    //private static final GenClass T_JSON_TOKEN = GenClassReference.from("com.google.gson.stream.JsonToken");
+    //private static final GenClass T_PARSE_EXCEPTION = GenClassReference.from("com.google.gson.JsonParseException");
 
     private static final String OUT_PARAM_NAME = "out";
     private static final String IN_PARAM_NAME = "in";
