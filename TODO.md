@@ -1,13 +1,17 @@
 TODOs
 =====
 
+* Compiler Friendly CLI option - don't overwrite existing identical files (so compiler won't recompile them)
+* Compiler Friendly CLI option - remove non-generated (older) files from generated sources dir
+* Freeze analysis settings after specification phase
+
+# Done
 * Implement builder support
-* Implement optional Guava support
 * Make it possible to opt-out from the ImmutableList support
+* Implement optional Guava support
 * Implement target name specifier:
    implementationTargets.add(new DomainImplementationTarget(currentAnalysisResult,
         FqName.parse("com.mysite." + currentAnalysisResult.getOriginClass().getName() + "Impl")));
-* Freeze analysis settings after specification phase
 
 ## Minor
 

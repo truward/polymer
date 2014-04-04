@@ -10,7 +10,7 @@
 
   <artifactId>polymer-domain-driver</artifactId>
   <packaging>jar</packaging>
-  <name>Polymer Generator Driver: Domain Model Support</name>
+  <name>Polymer Domain Module - Driver</name>
 
   <dependencies>
     <dependency>

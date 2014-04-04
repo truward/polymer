@@ -10,7 +10,7 @@
 
   <artifactId>polymer-domain-specifications</artifactId>
   <packaging>jar</packaging>
-  <name>Polymer Domain Model Specifications</name>
+  <name>Polymer Domain Module - Specifications</name>
 
   <dependencies>
     <dependency>

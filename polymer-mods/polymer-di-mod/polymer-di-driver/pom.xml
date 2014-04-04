@@ -10,7 +10,7 @@
 
   <artifactId>polymer-di-driver</artifactId>
   <packaging>jar</packaging>
-  <name>Polymer Generator: Dependency Injection</name>
+  <name>Polymer DI Module - Driver</name>
 
   <dependencies>
 

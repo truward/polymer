@@ -10,7 +10,7 @@
 
   <artifactId>polymer-marshal-specifications</artifactId>
   <packaging>jar</packaging>
-  <name>Polymer Marshal Specifications</name>
+  <name>Polymer Marshal Module - Specifications</name>
 
   <dependencies>
     <dependency>

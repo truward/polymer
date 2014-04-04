@@ -10,7 +10,7 @@
 
   <artifactId>polymer-di-mod</artifactId>
   <packaging>pom</packaging>
-  <name>Polymer Marshal Module</name>
+  <name>Polymer DI Module</name>
 
   <modules>
     <module>polymer-di-driver</module>

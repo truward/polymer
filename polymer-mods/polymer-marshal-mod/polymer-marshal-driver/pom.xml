@@ -10,7 +10,7 @@
 
   <artifactId>polymer-marshal-driver</artifactId>
   <packaging>jar</packaging>
-  <name>Polymer Generator Driver for Marshallers</name>
+  <name>Polymer Marshal Module - Driver</name>
 
   <dependencies>
     <dependency>
