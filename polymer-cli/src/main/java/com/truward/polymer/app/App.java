@@ -8,6 +8,8 @@ import com.truward.polymer.core.driver.SpecificationHandler;
 import com.truward.polymer.core.output.FSOutputStreamProvider;
 import com.truward.polymer.core.output.OutputStreamProvider;
 import com.truward.polymer.core.support.PolymerModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -117,6 +119,7 @@ public final class App {
   @VisibleForTesting
   public static void runCodeGenerator(@Nonnull OutputStreamProvider outputStreamProvider,
                                       @Nonnull List<Class<?>> specificationClasses) {
+    final Logger log = LoggerFactory.getLogger(App.class);
     final PolymerModule module = new PolymerModule();
     final InjectionContext injectionContext = module.addDefaults().getInjectionContext();
     injectionContext.registerBean(outputStreamProvider);
@@ -128,6 +131,7 @@ public final class App {
     handler.done();
 
     final List<Implementer> implementers = injectionContext.getBeans(Implementer.class);
+    log.debug("Using implementers {} to generate code", implementers);
     for (final Implementer implementer : implementers) {
       implementer.generateImplementations();
     }

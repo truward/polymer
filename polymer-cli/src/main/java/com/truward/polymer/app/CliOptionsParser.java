@@ -1,6 +1,9 @@
 package com.truward.polymer.app;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +18,7 @@ import java.util.List;
  * @author Alexander Shabanov
  */
 public final class CliOptionsParser {
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final String[] args;
   private int pos;
 
@@ -36,6 +40,7 @@ public final class CliOptionsParser {
     System.out.println("Usage:\n" +
         " -h,--help               Shows help\n" +
         " --version               Shows version\n" +
+        " -v,--verbose            Produce verbose output\n" +
         " -t,--target {Path}      Specifies path to the target directory\n" +
         " -sp,--specification-package {Package Name}\n" +
         "                         Qualified name of the specification package\n" +
@@ -54,6 +59,7 @@ public final class CliOptionsParser {
     String specificationPackage = null;
     String targetDir = null;
     List<String> specificationClasses = new ArrayList<>();
+    boolean verbose = false;
 
     for (pos = 0; pos < args.length; ++pos) {
       if (argEquals("-h", "--help")) {
@@ -62,6 +68,8 @@ public final class CliOptionsParser {
         return new ShowVersionResult();
       } else if (argEquals("--target", "-t")) {
         targetDir = fetchNextArg();
+      } else if (argEquals("--verbose", "-v")) {
+        verbose = true;
       } else if (argEquals("--specification-package", "-sp")) {
         specificationPackage = fetchNextArg();
       } else if (argEquals("--specification-classes", "-sc")) {
@@ -69,6 +77,15 @@ public final class CliOptionsParser {
       } else {
         throw new IllegalStateException("Unknown argument: " + args[pos]);
       }
+    }
+
+    if (verbose) {
+      System.out.println("Increasing verbosity");
+      // enable highest verbosity for the logger
+      final Logger rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+      ((ch.qos.logback.classic.Logger) rootLogger).setLevel(Level.ALL); // hacky: assuming we're operating w/logback
+
+      log.debug("Starting with verbose output turned on");
     }
 
     if (specificationPackage == null && specificationClasses.isEmpty()) {

@@ -19,17 +19,16 @@ public final class UserSpecification {
   @Specification
   public void spec(@DomainObject UserRole userRole) {
     specifier
-        .target(UserRole.class)
+        .target(userRole)
         .isNonNull(userRole.getName());
   }
 
   @Specification
   public void spec(@DomainObject User user) {
     specifier
-        .target(User.class)
+        .target(user)
+        .setTargetName(user, FqName.parse("com.target.User"))
         .isNullable(user.getId())
         .getObjectSettings(User.class).assignBuilder();
-
-    specifier.getObjectSettings(User.class).setTargetName(FqName.parse("com.target.User"));
   }
 }

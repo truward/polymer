@@ -84,7 +84,7 @@ public final class GsonMarshallingTest {
 
     @Specification(ordinal = 1)
     public void specifyDomainObject() {
-      domainObjectSpecifier.target(Foo.class);
+      domainObjectSpecifier.targets(Foo.class);
     }
 
     @Specification

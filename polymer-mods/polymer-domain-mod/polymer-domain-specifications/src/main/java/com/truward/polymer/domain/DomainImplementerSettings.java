@@ -12,9 +12,9 @@ import javax.annotation.Nonnull;
 public interface DomainImplementerSettings {
   void setDefensiveCopyStyle(@Nonnull DefensiveCopyStyle defensiveCopyStyle);
 
-  void setDefaultTargetPackageName(@Nonnull FqName defaultTargetPackageName);
+  void setTargetPackageName(@Nonnull FqName defaultTargetPackageName);
 
-  void setDefaultImplClassPrefix(@Nonnull String prefix);
+  void setImplClassPrefix(@Nonnull String prefix);
 
-  void setDefaultImplClassSuffix(@Nonnull String suffix);
+  void setImplClassSuffix(@Nonnull String suffix);
 }

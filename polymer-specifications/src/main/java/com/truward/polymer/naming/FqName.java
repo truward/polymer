@@ -76,6 +76,11 @@ public final class FqName implements Comparable<FqName>, Serializable {
   }
 
   @Nonnull
+  public FqName append(@Nonnull String name) {
+    return new FqName(name, this);
+  }
+
+  @Nonnull
   public FqName join(@Nonnull FqName rightNamePart) {
     FqName result = this;
 

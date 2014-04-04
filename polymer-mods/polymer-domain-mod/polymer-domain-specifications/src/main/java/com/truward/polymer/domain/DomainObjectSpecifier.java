@@ -1,6 +1,7 @@
 package com.truward.polymer.domain;
 
 import com.truward.polymer.annotation.SpecificatorInvocation;
+import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
 
@@ -17,22 +18,36 @@ public interface DomainObjectSpecifier {
    * @param classes Source interface classes
    * @return Current object specifier instance.
    */
-  DomainObjectSpecifier target(@Nonnull Class<?>... classes);
+  DomainObjectSpecifier targets(@Nonnull Class<?>... classes);
+
+  DomainObjectSpecifier target(@Nonnull Object domainObjectInstance);
 
   /**
-   * Instantiates provided class, the instantiated target should be used then to provide specificator
+   * Assigns builder to the given domain object instance, previously created by
+   * {@link #targets(Class[])} call.
+   *
+   * @param domainObjectInstance Instance of the domain object.
+   */
+  @Nonnull
+  DomainObjectSpecifier assignBuilder(@Nonnull Object domainObjectInstance);
+
+  @Nonnull
+  DomainObjectSpecifier setTargetName(@Nonnull Object domainObjectInstance, @Nonnull FqName targetName);
+
+  /**
+   * Instantiates provided class, the instantiated targets should be used then to provide specificator
    * invocations.
    * <code>
    *   final UserAccount account = specifier.domainObject(UserAccount.class);
    *   specifier.isNullable(account.getName()); // specificator invocation
    * </code>
    *
-   * @param clazz Interface class.
+   * @param domainClass Interface class.
    * @param <T> Interface typed.
    * @return Specificator instance.
    */
   @Nonnull
-  <T> T domainObject(@Nonnull Class<T> clazz);
+  <T> T domainObject(@Nonnull Class<T> domainClass);
 
   /**
    * Specifies, that the given field is nullable.

@@ -41,9 +41,8 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   private DomainAnalysisResult currentAnalysisResult;
   private DomainField currentField;
 
-
   @Override
-  public DomainObjectSpecifier target(@Nonnull Class<?>... classes) {
+  public DomainObjectSpecifier targets(@Nonnull Class<?>... classes) {
     for (final Class<?> targetClass : classes) {
       targetSink.submit(analysisContext.analyze(targetClass));
     }
@@ -52,19 +51,39 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   }
 
   @Override
+  public DomainObjectSpecifier target(@Nonnull Object domainObjectInstance) {
+    return targets(getOriginClass(domainObjectInstance));
+  }
+
   @Nonnull
-  public <T> T domainObject(@Nonnull Class<T> clazz) {
-    if (!clazz.isInterface()) {
+  @Override
+  public DomainObjectSpecifier assignBuilder(@Nonnull Object domainObjectInstance) {
+    final DomainObjectSettings settings = getObjectSettings(getOriginClass(domainObjectInstance));
+    settings.assignBuilder();
+    return this;
+  }
+
+  @Nonnull
+  @Override
+  public DomainObjectSpecifier setTargetName(@Nonnull Object domainObjectInstance, @Nonnull FqName targetName) {
+    getObjectSettings(getOriginClass(domainObjectInstance)).setTargetName(targetName);
+    return this;
+  }
+
+  @Override
+  @Nonnull
+  public <T> T domainObject(@Nonnull Class<T> domainClass) {
+    if (!domainClass.isInterface()) {
       throw new RuntimeException("Domain class expected to be an interface");
     }
 
-    final T instance = clazz.cast(Proxy.newProxyInstance(
+    final T instance = domainClass.cast(Proxy.newProxyInstance(
         Thread.currentThread().getContextClassLoader(),
-        new Class[] { clazz },
-        new StateAwareInvocationHandler()));
-    log.debug("Returned proxy instance for class {}", clazz);
+        new Class[] { domainClass, OriginClassHolder.class },
+        new StateAwareInvocationHandler(domainClass)));
+    log.debug("Returned proxy instance for class {}", domainClass);
 
-    currentAnalysisResult = analysisContext.analyze(clazz);
+    currentAnalysisResult = analysisContext.analyze(domainClass);
 
     return instance;
   }
@@ -129,6 +148,16 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   // Private
   //
 
+  @Nonnull
+  private Class<?> getOriginClass(@Nonnull Object domainObjectInstance) {
+    if (!(domainObjectInstance instanceof OriginClassHolder)) {
+      throw new IllegalStateException("Domain object was not originated by DomainObjectSpecifier");
+    }
+
+    final OriginClassHolder originClassHolder = (OriginClassHolder) domainObjectInstance;
+    return originClassHolder.getOriginClass(this);
+  }
+
   private DomainObjectSpecifier putFieldTrait(@Nonnull FieldTrait fieldTrait) {
     checkRecordingStateAndField();
     try {
@@ -189,9 +218,20 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
   }
 
   private final class StateAwareInvocationHandler implements InvocationHandler {
+    final Class<?> originClass;
+
+    private StateAwareInvocationHandler(@Nonnull Class<?> originClass) {
+      this.originClass = originClass;
+    }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+      final Object specialResult = tryInvokeSpecial(this, method, args);
+      if (specialResult != null) {
+        return specialResult; // special case
+      }
+
+      // all the other methods assumed to require recording
       checkRecordingState();
       log.debug("Invocation of {}", method);
       final String methodName = method.getName();
@@ -210,6 +250,27 @@ public final class DefaultDomainObjectSpecifier implements DomainObjectSpecifier
 
       return DefaultValues.getDefaultValueFor(method.getReturnType());
     }
+  }
+
+  // handler for methods with special roles
+  private Object tryInvokeSpecial(StateAwareInvocationHandler invocationHandler, Method method, Object[] args) throws Exception {
+    final Class<?>[] parameterTypes = method.getParameterTypes();
+    if ("getOriginClass".equals(method.getName()) && parameterTypes.length == 1 &&
+        DefaultDomainObjectSpecifier.class.equals(parameterTypes[0])) {
+      if (this != args[0]) {
+        throw new IllegalStateException("Error while invoking special " + method +
+            ": object is not originated by this specifier");
+      }
+
+      return invocationHandler.originClass;
+    }
+
+    // fallback: special invocation is not applicable for this method
+    return null;
+  }
+
+  public interface OriginClassHolder {
+    Class<?> getOriginClass(DefaultDomainObjectSpecifier self);
   }
 
   // TODO: reusable

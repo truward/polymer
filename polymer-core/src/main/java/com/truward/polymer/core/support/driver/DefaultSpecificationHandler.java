@@ -2,6 +2,7 @@ package com.truward.polymer.core.support.driver;
 
 import com.google.common.collect.ImmutableList;
 import com.truward.di.InjectionContext;
+import com.truward.di.InjectionException;
 import com.truward.polymer.annotation.Specification;
 import com.truward.polymer.core.driver.*;
 import org.slf4j.Logger;
@@ -32,6 +33,8 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
   @Override
   @Nullable
   public <T> T parseClass(@Nonnull Class<T> clazz) {
+    log.debug("Parsing class {}", clazz);
+
     if (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) {
       log.warn("Skipping interface or abstract class: {}", clazz);
       return null;
@@ -65,6 +68,7 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
       // invoke in the given order
       invokeSpecificationMethods(specificationMethods, instance, stateAwareBeans);
 
+      log.debug("Class {} has been successfully processed", clazz);
       return instance;
     } catch (InstantiationException | IllegalAccessException e) {
       throw new RuntimeException("Uninstantiable class: no public default constructor", e);
@@ -100,14 +104,16 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
   private void invokeSpecificationMethods(@Nonnull List<Method> specificationMethods,
                                           @Nonnull Object instance,
                                           @Nonnull List<SpecificationStateAware> stateAwareBeans) {
-    try {
-      for (final Method method : specificationMethods) {
-        SpecificationUtil.notifyState(stateAwareBeans, SpecificationState.RECORDING);
+    for (final Method method : specificationMethods) {
+      log.debug("Invoking specification method {}", method);
+
+      SpecificationUtil.notifyState(stateAwareBeans, SpecificationState.RECORDING);
+      try {
         invokeMethod(instance, method);
-        SpecificationUtil.notifyState(stateAwareBeans, SpecificationState.SUBMITTED);
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        throw new RuntimeException("Error while invoking " + method, e);
       }
-    } catch (IllegalAccessException | InvocationTargetException e) {
-      throw new RuntimeException("Unable to invoke method", e);
+      SpecificationUtil.notifyState(stateAwareBeans, SpecificationState.SUBMITTED);
     }
   }
 
@@ -144,7 +150,8 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
               parameters[i] = parameterProvider.provideParameter(paramAnnotations, parameterType);
               provided = true;
             } else {
-              log.warn("Multiple specifiers can provide same parameter"); // TODO: error?
+              log.error("Multiple specifiers can provide the same parameter annotated with {} for method {}",
+                  paramAnnotations, method);
             }
           }
         }
@@ -189,7 +196,7 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
     }
 
     if (resource.mappedName().length() > 0) {
-      log.warn("Resource name ignored: '" + resource.mappedName() + "' for " + clazz);
+      log.warn("Resource name ignored: {} for class {} in field {}", resource.mappedName(), clazz, field);
     }
 
     boolean wasAccessible = field.isAccessible();
@@ -197,12 +204,16 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
 
     assert field.get(instance) == null : "Unexpected assigned value";
 
-    // TODO: handle injection exception
-    final Object injectedBean = injectionContext.getBean(field.getType());
+    final Object injectedBean;
+    try {
+      injectedBean = injectionContext.getBean(field.getType());
+    } catch (InjectionException e) {
+      throw new RuntimeException(String.format("Can't inject bean into field %s in class %s", field, clazz), e);
+    }
     field.set(instance, injectedBean);
 
     if (!wasAccessible) {
-      field.setAccessible(wasAccessible);
+      field.setAccessible(false);
     }
 
     return injectedBean;

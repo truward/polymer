@@ -1,0 +1,36 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.truward.polymer</groupId>
+    <artifactId>polymer</artifactId>
+    <version>0.0.8-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>polymer-code-dom</artifactId>
+  <packaging>jar</packaging>
+  <name>Polymer Code DOM</name>
+
+  <dependencies>
+    <!-- Specifications package (FqName is the only needed) -->
+    <dependency>
+      <groupId>com.truward.polymer</groupId>
+      <artifactId>polymer-specifications</artifactId>
+    </dependency>
+
+    <!-- JSR Non-Null annotation -->
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+    </dependency>
+
+    <!-- Guava -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
+    <!-- test scope -->
+  </dependencies>
+</project>

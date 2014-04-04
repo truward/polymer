@@ -23,7 +23,6 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import static com.truward.polymer.core.util.Assert.nonNull;
@@ -34,21 +33,18 @@ import static com.truward.polymer.core.util.Assert.nonNull;
 
 public final class DefaultGsonMarshallingSpecifier extends AbstractJsonMarshallerSpecifier implements GsonMarshallingSpecifier {
 
-  private final Map<JsonTarget, GenClass> typeAdapters = new HashMap<>();
-
   @Override
   protected void finalizeAnalysis() {
     Assert.nonNull(getTargetClassName(), "Target class name expected to be non-null");
 
     for (final JsonTarget target : getDomainClassToJsonTarget().values()) {
-      final GenClass emergentClass = typeAdapters.get(target);
-      if (emergentClass != null) {
+      if (target.getTargetMarshallerClass() != null) {
         continue;
       }
 
       final String typeAdapterClassName = target.getDomainClass().getOrigin().getOriginClass().getSimpleName() +
           "TypeAdapter";
-      typeAdapters.put(target, GenClassReference.from(new FqName(typeAdapterClassName, getTargetClassName())));
+      target.setTargetMarshallerClass(GenClassReference.from(getTargetClassName().append(typeAdapterClassName)));
     }
 
     log.info("Json marshaller analysis has been completed");
@@ -58,7 +54,7 @@ public final class DefaultGsonMarshallingSpecifier extends AbstractJsonMarshalle
   protected void generateCode(GenInlineBlock bodyStream) {
     // generate code
     final JsonBinderImplementer binderImplementer = new JsonBinderImplementer(getTargetClassName(),
-        bodyStream, getDomainClassToJsonTarget(), typeAdapters);
+        bodyStream, getDomainClassToJsonTarget());
     binderImplementer.generate();
   }
 
@@ -71,7 +67,6 @@ public final class DefaultGsonMarshallingSpecifier extends AbstractJsonMarshalle
     private final CodeStream codeStream;
     private final Map<GenDomainClass, JsonTarget> domainClassToJsonTarget;
     private final FqName fqName;
-    private final Map<JsonTarget, GenClass> typeAdapters;
 
     private static final GenClass T_TYPE_ADAPTER = GenClassReference.from("com.google.gson.TypeAdapter");
     private static final GenClass T_JSON_READER = GenClassReference.from("com.google.gson.stream.JsonReader");
@@ -84,12 +79,10 @@ public final class DefaultGsonMarshallingSpecifier extends AbstractJsonMarshalle
 
     private JsonBinderImplementer(@Nonnull FqName fqName,
                                   @Nonnull CodeStream codeStream,
-                                  @Nonnull Map<GenDomainClass, JsonTarget> domainClassToJsonTarget,
-                                  @Nonnull Map<JsonTarget, GenClass> typeAdapters) {
+                                  @Nonnull Map<GenDomainClass, JsonTarget> domainClassToJsonTarget) {
       this.fqName = fqName;
       this.codeStream = codeStream;
       this.domainClassToJsonTarget = ImmutableMap.copyOf(domainClassToJsonTarget);
-      this.typeAdapters = typeAdapters;
     }
 
     @Nonnull
@@ -117,13 +110,14 @@ public final class DefaultGsonMarshallingSpecifier extends AbstractJsonMarshalle
       s("// type adapter " + target.getDomainClass().getOrigin().getOriginClass()).eol();
 
       final Class<?> originDomainClass = target.getDomainAnalysisResult().getOriginClass();
-      //final GenClass domainClass = target.getDomainClass();
+      //final GenClass domainClass = targets.getDomainClass();
       final String out = OUT_PARAM_NAME;
       final String in = IN_PARAM_NAME;
       final String value = Names.VALUE;
 
       // public static final {TypeAdapterClass}
-      publicStaticFinalClass().s(nonNull(typeAdapters.get(target)).getFqName().getName()).sp();
+      final GenClass typeAdapterClass = nonNull(target.getTargetMarshallerClass(), "No type adapter");
+      publicStaticFinalClass().s(typeAdapterClass.getFqName().getName()).sp();
       // extends TypeAdapter<{DomainClass}>
       s("extends").sp().t(SynteticParameterizedType.from(T_TYPE_ADAPTER, originDomainClass)).sp();
       c('{'); // TypeAdapter class body

@@ -122,4 +122,11 @@ public final class FqNameTest {
       }
     }
   }
+
+  @Test
+  public void shouldAppend() {
+    final FqName com = FqName.parse("com");
+    assertEquals(FqName.parse("com.mysite"), com.append("mysite"));
+    assertEquals(FqName.parse("com.mysite.demo"), com.append("mysite").append("demo"));
+  }
 }

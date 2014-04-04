@@ -10,7 +10,6 @@ import com.truward.polymer.core.driver.SpecificationUtil;
 import com.truward.polymer.core.output.MemOutputStreamProvider;
 import com.truward.polymer.domain.DefensiveCopyStyle;
 import com.truward.polymer.domain.DomainImplementerSettings;
-import com.truward.polymer.domain.DomainObjectSettings;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
@@ -105,13 +104,13 @@ public final class DomainObjectImplementerTest {
     SpecificationUtil.notifyState(specificationStateAwareBeans, SpecificationState.RECORDING);
 
     // specify
-    domainObjectSpecifier.target(Employee.class);
     final Employee employee = domainObjectSpecifier.domainObject(Employee.class);
-    domainObjectSpecifier.isNonNegative(employee.getAge());
-    domainObjectSpecifier.isNullable(domainObjectSpecifier.domainObject(User.class).getName());
-    final DomainObjectSettings employeeSettings = domainObjectSpecifier.getObjectSettings(Employee.class);
-    employeeSettings.assignBuilder();
-    employeeSettings.setTargetName(FqName.parse(packageName + ".DefaultEmployee"));
+    domainObjectSpecifier
+        .target(employee)
+        .isNonNegative(employee.getAge())
+        .isNullable(domainObjectSpecifier.domainObject(User.class).getName())
+        .setTargetName(employee, FqName.parse(packageName + ".DefaultEmployee"))
+        .assignBuilder(employee);
 
     // trigger completion
     SpecificationUtil.notifyState(specificationStateAwareBeans, SpecificationState.COMPLETED);
@@ -130,9 +129,9 @@ public final class DomainObjectImplementerTest {
   @Test
   public void shouldGenerateCustomPackage() {
     final String packageName = "com.mysite.generated";
-    settings.setDefaultTargetPackageName(FqName.parse(packageName));
-    settings.setDefaultImplClassPrefix("Default");
-    settings.setDefaultImplClassSuffix("Implementation");
+    settings.setTargetPackageName(FqName.parse(packageName));
+    settings.setImplClassPrefix("Default");
+    settings.setImplClassSuffix("Implementation");
     settings.setDefensiveCopyStyle(DefensiveCopyStyle.JDK);
 
     generateCode(Primitive.class);
@@ -146,7 +145,7 @@ public final class DomainObjectImplementerTest {
   //
 
   private void generateCode(Class<?> domainClass) {
-    domainObjectSpecifier.target(domainClass);
+    domainObjectSpecifier.targets(domainClass);
     SpecificationUtil.notifyState(specificationStateAwareBeans, SpecificationState.COMPLETED);
     implementer.generateImplementations();
   }

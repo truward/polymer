@@ -3,6 +3,8 @@ package com.truward.polymer.marshal.json.support.analysis;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.marshal.json.analysis.JsonField;
 import com.truward.polymer.marshal.json.analysis.JsonFieldRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -13,7 +15,24 @@ import java.util.Map;
  * @author Alexander Shabanov
  */
 public final class DefaultJsonFieldRegistry implements JsonFieldRegistry {
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final Map<DomainField, JsonField> fieldMap = new HashMap<>();
+
+  @Nonnull
+  @Override
+  public String getJsonName(@Nonnull DomainField domainField) {
+    final JsonField field = getField(domainField);
+    if (field != null) {
+      if (field.hasJsonName()) {
+        return field.getJsonName();
+      } else {
+        log.error("Domain field {} has associated JSON field with empty name", domainField);
+      }
+    }
+
+    // fallback: default field name
+    return domainField.getFieldName();
+  }
 
   @Nullable
   @Override
@@ -29,18 +48,6 @@ public final class DefaultJsonFieldRegistry implements JsonFieldRegistry {
     }
 
     fieldMap.put(domainField, gsonField);
-  }
-
-  @Nonnull
-  @Override
-  public JsonField adapt(@Nonnull DomainField domainField) {
-    JsonField gsonField = fieldMap.get(domainField);
-    if (gsonField == null) {
-      gsonField = new DefaultJsonField(domainField.getFieldName());
-      fieldMap.put(domainField, gsonField);
-    }
-
-    return gsonField;
   }
 
   //
@@ -63,10 +70,18 @@ public final class DefaultJsonFieldRegistry implements JsonFieldRegistry {
       this.jsonName = name;
     }
 
-    @Nullable
+    @Nonnull
     @Override
     public String getJsonName() {
+      if (!hasJsonName()) {
+        throw new IllegalStateException("No json name associated with this field");
+      }
       return jsonName;
+    }
+
+    @Override
+    public boolean hasJsonName() {
+      return jsonName != null;
     }
   }
 }

@@ -10,6 +10,7 @@
 
   <modules>
     <module>polymer-specifications</module>
+    <module>polymer-code-dom</module>
     <module>polymer-core</module>
     <module>polymer-mods</module>
     <module>polymer-cli</module>
@@ -23,7 +24,7 @@
 
   <properties>
     <!-- logging -->
-    <slf4j.version>1.6.1</slf4j.version>
+    <slf4j.version>1.7.6</slf4j.version>
     <commons-logging.version>1.1.1</commons-logging.version>
 
     <!--  compiler settings -->
@@ -73,6 +74,18 @@
         <groupId>org.slf4j</groupId>
         <artifactId>jcl-over-slf4j</artifactId>
         <version>${slf4j.version}</version>
+      </dependency>
+      <!-- JUL redirection to slf4j -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jul-over-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <!-- logback -->
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>1.1.2</version>
       </dependency>
 
       <!-- Guava -->
@@ -152,22 +165,13 @@
 
   <dependencies>
     <!--
-    Common dependencies - slf4j frontend, exclusion of commons logging and junit+easymock in test scope
+    Common dependencies - slf4j frontend and junit+mockito in test scope
     -->
 
     <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-    </dependency>
-    <!-- No commons logging -->
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
     </dependency>
 
     <!-- test scope -->

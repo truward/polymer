@@ -18,7 +18,9 @@ import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainImplementationTargetSink;
 import com.truward.polymer.domain.analysis.support.GenDomainClass;
 import com.truward.polymer.marshal.json.JsonMarshallingSpecifier;
+import com.truward.polymer.marshal.json.analysis.JsonFieldRegistry;
 import com.truward.polymer.marshal.json.analysis.JsonTarget;
+import com.truward.polymer.marshal.json.support.analysis.DefaultJsonFieldRegistry;
 import com.truward.polymer.marshal.json.support.analysis.DefaultJsonTarget;
 import com.truward.polymer.naming.FqName;
 import org.slf4j.Logger;
@@ -49,6 +51,8 @@ public abstract class AbstractJsonMarshallerSpecifier extends FreezableSupport
   @Resource
   private OutputStreamProvider outputStreamProvider;
 
+  private final JsonFieldRegistry fieldRegistry = new DefaultJsonFieldRegistry();
+
   private final Map<GenDomainClass, JsonTarget> domainClassToJsonTarget = new HashMap<>();
   private FqName targetClassName;
 
@@ -58,6 +62,10 @@ public abstract class AbstractJsonMarshallerSpecifier extends FreezableSupport
 
   public Map<GenDomainClass, JsonTarget> getDomainClassToJsonTarget() {
     return domainClassToJsonTarget;
+  }
+
+  public JsonFieldRegistry getFieldRegistry() {
+    return fieldRegistry;
   }
 
   @Override
@@ -89,6 +97,7 @@ public abstract class AbstractJsonMarshallerSpecifier extends FreezableSupport
     log.info("Done with Jackson marshallers generation");
   }
 
+  @Nonnull
   @Override
   public final JsonMarshallingSpecifier setGeneratorTarget(@Nonnull FqName targetClass) {
     checkNonFrozen();
@@ -96,6 +105,7 @@ public abstract class AbstractJsonMarshallerSpecifier extends FreezableSupport
     return this;
   }
 
+  @Nonnull
   @Override
   public final JsonMarshallingSpecifier addDomainEntity(@Nonnull Class<?> entityClass) {
     checkNonFrozen();
@@ -132,7 +142,7 @@ public abstract class AbstractJsonMarshallerSpecifier extends FreezableSupport
   // Private
   //
 
-  private void submit(GenDomainClass domainClass) {
+  private void submit(@Nonnull GenDomainClass domainClass) {
     checkNonFrozen();
 
     if (domainClassToJsonTarget.containsKey(domainClass)) {

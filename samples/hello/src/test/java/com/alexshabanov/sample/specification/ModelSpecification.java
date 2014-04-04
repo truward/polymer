@@ -15,12 +15,10 @@ public final class ModelSpecification {
   private DomainObjectSpecifier specifier;
 
   @Specification
-  public void assignBuilder() {
-    specifier.getObjectSettings(UserAccount.class).assignBuilder();
-  }
-
-  @Specification
   public void domainObject(@DomainObject UserAccount u) {
-    specifier.target(UserAccount.class).isNonNull(u.getNickname());
+    specifier
+        .target(u)
+        .assignBuilder(u)
+        .isNonNull(u.getNickname());
   }
 }

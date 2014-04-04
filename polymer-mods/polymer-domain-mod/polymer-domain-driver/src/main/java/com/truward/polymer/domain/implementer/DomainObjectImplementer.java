@@ -95,7 +95,7 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
       if (builderClass.isSupported() && !builderClass.hasFqName()) {
         builderClass.setFqName(new FqName("Builder", implementationTarget.getFqName()));
       }
-      // freeze target class
+      // freeze targets class
       implementationTarget.freeze();
     }
   }

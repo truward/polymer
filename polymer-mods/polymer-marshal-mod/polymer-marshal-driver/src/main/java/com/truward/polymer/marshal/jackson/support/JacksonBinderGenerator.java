@@ -17,6 +17,7 @@ import com.truward.polymer.domain.analysis.FieldUtil;
 import com.truward.polymer.domain.analysis.OriginMethodRole;
 import com.truward.polymer.domain.analysis.support.GenDomainClass;
 import com.truward.polymer.domain.analysis.support.Names;
+import com.truward.polymer.marshal.json.analysis.JsonFieldRegistry;
 import com.truward.polymer.marshal.json.analysis.JsonTarget;
 import com.truward.polymer.naming.FqName;
 
@@ -29,6 +30,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static com.truward.polymer.core.util.Assert.nonNull;
+
 /**
  * Contains implementer of the jackson serialization/deserialization code.
  *
@@ -38,6 +41,7 @@ final class JacksonBinderGenerator extends CodeStreamSupport {
   // jackson serializer classes
   private static final GenClass T_JSON_PARSER = GenClassReference.from("com.fasterxml.jackson.core.JsonParser");
   private static final GenClass T_JSON_GENERATOR = GenClassReference.from("com.fasterxml.jackson.core.JsonGenerator");
+  private static final GenClass T_JSON_SERIALIZER = GenClassReference.from("com.fasterxml.jackson.databind.JsonSerializer");
 
   private final Map<GenDomainClass, JsonTarget> domainClassToJsonTarget;
   private final CodeStream codeStream;
@@ -46,16 +50,22 @@ final class JacksonBinderGenerator extends CodeStreamSupport {
   private final String out;
   private final String in;
   private final String value = Names.VALUE;
+  private final String writeBody; // writeBody method name
   private final VarNameManager elementNameVarMgr = new VarNameManager(Names.ELEMENT, this);
 
+  private final JsonFieldRegistry fieldRegistry;
+
   public JacksonBinderGenerator(@Nonnull FqName fqName, @Nonnull CodeStream codeStream,
-                                @Nonnull Map<GenDomainClass, JsonTarget> domainClassToJsonTarget) {
+                                @Nonnull Map<GenDomainClass, JsonTarget> domainClassToJsonTarget,
+                                @Nonnull JsonFieldRegistry fieldRegistry) {
     this.fqName = fqName;
     this.codeStream = codeStream;
     this.domainClassToJsonTarget = domainClassToJsonTarget;
+    this.fieldRegistry = fieldRegistry;
 
     this.out = "jg"; // jg = json generator
     this.in = "jp"; // jp = json parser
+    this.writeBody = "writeBody";
   }
 
   @Nonnull
@@ -80,32 +90,13 @@ final class JacksonBinderGenerator extends CodeStreamSupport {
   }
 
   private void generateStaticMarshallers(@Nonnull JsonTarget target) {
-    s("// type adapter " + target.getDomainClass().getOrigin().getOriginClass()).eol();
-
-    final Class<?> originDomainClass = target.getDomainAnalysisResult().getOriginClass();
-    //final GenClass domainClass = target.getDomainClass();
-
-    if (target.isWriterSupportRequested()) {
-      // public static void write(JsonGenerator out, {DomainClass} value) throws IOException {...}
-      s("public").sp().s("static").sp().t(void.class).sp().s("write").c('(');
-      var(T_JSON_GENERATOR, out).c(',').sp().var(originDomainClass, value);
-      c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
-      generateWriteMethodBody(out, target);
-      c('}').eol(); // End of write(JsonWriter out, {DomainClass} value)
-    }
-
-    if (target.isReaderSupportRequested()) {
-      // public static {DomainClass} read(JsonReader in, Class<{DomainClass}> dummy) throws IOException {...}
-      s("public").sp().s("static").sp().t(originDomainClass).sp().s("read").c('(');
-      var(T_JSON_PARSER, in).c(',').sp().var(SynteticParameterizedType.from(Class.class, originDomainClass), "dummy");
-      c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
-      generateReadMethodBody();
-      c('}'); // End of read(JsonParser in, Class<{DomainClass}> dummy)
-    }
+    generateWriterSupport(target);
+    generateReaderSupport(target);
   }
 
-  private String getJsonName(DomainField field) {
-    return field.getFieldName();
+  @Nonnull
+  private String getJsonName(@Nonnull DomainField field) {
+    return fieldRegistry.getJsonName(field);
   }
 
 
@@ -113,12 +104,45 @@ final class JacksonBinderGenerator extends CodeStreamSupport {
   // Serializer (Writer)
   //
 
-  private void generateWriteMethodBody(String out, JsonTarget target) {
+  private void generateWriterSupport(@Nonnull JsonTarget target) {
+    if (!target.isWriterSupportRequested()) {
+      return;
+    }
+
+    s("// Writer for class " + target.getDomainClass().getOrigin().getOriginClass()).eol();
+
+    final Class<?> originDomainClass = target.getDomainAnalysisResult().getOriginClass();
+    final GenClass writerClass = nonNull(target.getTargetWriterClass(), "Writer class is null");
+
+    // public static final class {Writer} extends JsonSerializer<Memo> {}
+    s("public").sp().s("static").sp().s("final").sp();
+    s("class").sp().s(writerClass.getFqName().getName()).sp();
+    s("extends").sp().t(SynteticParameterizedType.from(T_JSON_SERIALIZER, originDomainClass)).sp();
+    // class body
+    c('{');
+
+    // @Override public void serialize({DomainType} value, JsonGenerator out, SerializerProvider provider) throws IOException
+    annotate(Override.class).s("public").sp().t(void.class).sp().s("serialize");
+    c('(').c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
     dot(out, "writeStartObject").c('(', ')', ';');
+    s("writeBody").c('(').s(out).c(',').sp().s(value).c(')', ';');
+    dot(out, "writeEndObject").c('(', ')', ';');
+    c('}'); // end of serialize method
+
+    // public static void writeBody(JsonGenerator out, {DomainClass} value) throws IOException {...}
+    s("public").sp().s("static").sp().t(void.class).sp().s(writeBody).c('(');
+    var(T_JSON_GENERATOR, out).c(',').sp().var(originDomainClass, value);
+    c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
+    generateWriteMethodBody(target);
+    c('}').eol(); // End of writeBody(JsonWriter out, {DomainClass} value)
+
+    c('}').eol(); // end of Serializer class body
+  }
+
+  private void generateWriteMethodBody(JsonTarget target) {
     for (final DomainField field : target.getDomainAnalysisResult().getFields()) {
       generateFieldEntry(field);
     }
-    dot(out, "writeEndObject").c('(', ')', ';');
   }
 
   private GenInlineBlock newGetterCall(DomainField field) {
@@ -280,6 +304,24 @@ final class JacksonBinderGenerator extends CodeStreamSupport {
   //
   // Deserializer (Reader)
   //
+
+  private void generateReaderSupport(@Nonnull JsonTarget target) {
+    if (!target.isReaderSupportRequested()) {
+      return;
+    }
+
+    s("// Reader for class " + target.getDomainClass().getOrigin().getOriginClass()).eol();
+
+    final Class<?> originDomainClass = target.getDomainAnalysisResult().getOriginClass();
+    final GenClass readerClass = nonNull(target.getTargetReaderClass(), "Reader class is null");
+
+    // public static {DomainClass} read(JsonReader in, Class<{DomainClass}> dummy) throws IOException {...}
+    s("public").sp().s("static").sp().t(originDomainClass).sp().s("read").c('(');
+    var(T_JSON_PARSER, in).c(',').sp().var(SynteticParameterizedType.from(Class.class, originDomainClass), "dummy");
+    c(')').sp().s("throws").sp().t(IOException.class).sp().c('{');
+    generateReadMethodBody();
+    c('}'); // End of read(JsonParser in, Class<{DomainClass}> dummy)
+  }
 
   private void generateReadMethodBody() {
     throwUnsupportedOperationException();

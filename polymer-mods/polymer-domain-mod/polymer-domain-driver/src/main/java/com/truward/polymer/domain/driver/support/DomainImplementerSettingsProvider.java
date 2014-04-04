@@ -25,13 +25,13 @@ public final class DomainImplementerSettingsProvider extends FreezableSupport
   }
 
   @Override
-  public void setDefaultTargetPackageName(@Nonnull FqName defaultTargetPackageName) {
+  public void setTargetPackageName(@Nonnull FqName defaultTargetPackageName) {
     checkNonFrozen();
     this.defaultTargetPackageName = defaultTargetPackageName;
   }
 
   @Override
-  public void setDefaultImplClassPrefix(@Nonnull String prefix) {
+  public void setImplClassPrefix(@Nonnull String prefix) {
     checkNonFrozen();
     this.defaultImplClassPrefix = prefix;
   }
@@ -43,7 +43,7 @@ public final class DomainImplementerSettingsProvider extends FreezableSupport
   }
 
   @Override
-  public void setDefaultImplClassSuffix(@Nonnull String suffix) {
+  public void setImplClassSuffix(@Nonnull String suffix) {
     checkNonFrozen();
     this.defaultImplClassSuffix = suffix;
   }

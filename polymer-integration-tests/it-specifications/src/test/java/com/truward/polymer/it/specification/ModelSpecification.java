@@ -18,16 +18,18 @@ public final class ModelSpecification {
   private final FqName targetPackage = FqName.parse("com.truward.polymer.generated.model");
 
   @Specification
-  public void domainObjects() {
-    specifier.target(User.class);
-    specifier.getImplementerSettings().setDefaultTargetPackageName(targetPackage);
+  public void globalSettings() {
+    specifier.getImplementerSettings().setTargetPackageName(targetPackage);
   }
 
   @Specification
   public void userModel(@DomainObject User user) {
-    specifier.isNonNull(user.getName());
-    specifier.isNullable(user.getId());
-    specifier.isNonNegative(user.getAge());
-    specifier.getObjectSettings(User.class).assignBuilder();
+    specifier
+        .target(user)
+        .assignBuilder(user)
+        .isNonNull(user.getName())
+        .isNullable(user.getId())
+        .isNonNegative(user.getAge())
+    ;
   }
 }
