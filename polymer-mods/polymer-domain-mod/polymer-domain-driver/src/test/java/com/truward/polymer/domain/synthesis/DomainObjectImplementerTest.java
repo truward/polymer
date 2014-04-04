@@ -14,7 +14,7 @@ import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
-import com.truward.polymer.domain.driver.support.DomainSpecificationDriver;
+import com.truward.polymer.domain.driver.spi.DomainSpecificationDriver;
 import com.truward.polymer.naming.FqName;
 import org.junit.Before;
 import org.junit.Test;

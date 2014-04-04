@@ -1,7 +1,7 @@
-package com.truward.polymer.marshal.rest.support;
+package com.truward.polymer.marshal.rest.spi;
 
 import com.truward.di.InjectionContext;
-import com.truward.polymer.core.driver.SpecificationDriver;
+import com.truward.polymer.core.driver.spi.SpecificationDriver;
 
 import javax.annotation.Nonnull;
 

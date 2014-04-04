@@ -1,8 +1,10 @@
-package com.truward.polymer.domain.driver.support;
+package com.truward.polymer.domain.driver.spi;
 
 import com.truward.di.InjectionContext;
-import com.truward.polymer.core.driver.SpecificationDriver;
+import com.truward.polymer.core.driver.spi.SpecificationDriver;
 import com.truward.polymer.domain.analysis.support.DefaultDomainAnalysisContext;
+import com.truward.polymer.domain.driver.support.DefaultDomainObjectSpecifier;
+import com.truward.polymer.domain.driver.support.DomainImplementerSettingsProvider;
 import com.truward.polymer.domain.implementer.DomainObjectImplementer;
 
 import javax.annotation.Nonnull;

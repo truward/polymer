@@ -1,8 +1,8 @@
 package com.truward.polymer.domain.synthesis;
 
 import com.google.common.collect.ImmutableList;
-import com.truward.polymer.core.driver.SpecificationDriver;
-import com.truward.polymer.domain.driver.support.DomainSpecificationDriver;
+import com.truward.polymer.core.driver.spi.SpecificationDriver;
+import com.truward.polymer.domain.driver.spi.DomainSpecificationDriver;
 import org.junit.Test;
 
 import java.util.List;

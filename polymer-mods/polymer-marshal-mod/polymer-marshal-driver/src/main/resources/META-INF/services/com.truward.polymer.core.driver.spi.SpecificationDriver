@@ -1,0 +1,3 @@
+com.truward.polymer.marshal.gson.spi.GsonMarshallingDriver
+com.truward.polymer.marshal.jackson.spi.JacksonMarshallingDriver
+com.truward.polymer.marshal.rest.spi.RestExposureDriver

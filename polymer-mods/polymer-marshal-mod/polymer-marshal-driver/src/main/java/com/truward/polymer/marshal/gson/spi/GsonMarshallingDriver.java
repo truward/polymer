@@ -1,7 +1,8 @@
-package com.truward.polymer.marshal.gson.support;
+package com.truward.polymer.marshal.gson.spi;
 
 import com.truward.di.InjectionContext;
-import com.truward.polymer.core.driver.SpecificationDriver;
+import com.truward.polymer.core.driver.spi.SpecificationDriver;
+import com.truward.polymer.marshal.gson.support.DefaultGsonMarshallingSpecifier;
 
 import javax.annotation.Nonnull;
 
