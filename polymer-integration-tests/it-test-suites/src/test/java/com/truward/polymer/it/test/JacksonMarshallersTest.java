@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.truward.polymer.generated.jackson.JacksonMarshallers;
 import com.truward.polymer.generated.model.UserImpl;
+import com.truward.polymer.it.model.User;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,6 +20,13 @@ import static org.junit.Assert.assertEquals;
 public final class JacksonMarshallersTest {
   private final ObjectMapper mapper = new ObjectMapper();
 
+  private final String userJson = "{ \"id\": 1, \"name\": \"bob\", \"age\": 10 }";
+  private final User user = UserImpl.newBuilder()
+      .setId(1L)
+      .setName("bob")
+      .setAge(10)
+      .build();
+
   @Before
   public void initMapper() {
     JacksonMarshallers.attachMarshallersTo(mapper);
@@ -26,11 +34,12 @@ public final class JacksonMarshallersTest {
 
   @Test
   public void shouldSerializeUser() {
-    assertEquivalentJson("{ \"id\": 1, \"name\": \"bob\", \"age\": 10 }", UserImpl.newBuilder()
-        .setId(1L)
-        .setName("bob")
-        .setAge(10)
-        .build());
+    assertEquivalentJson(userJson, user);
+  }
+
+  @Test
+  public void shouldDeserializeUser() throws IOException {
+    assertEquals(user, mapper.readValue(userJson, User.class));
   }
 
   //

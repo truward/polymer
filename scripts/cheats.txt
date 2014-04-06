@@ -1,0 +1,10 @@
+
+
+## Build project and its dependencies
+mvn clean install –projects B –also-make
+
+## Build selected projects
+mvn install -pl myproj-domain,myproj-service -DskipTests=true
+
+## Install specific artifact
+mvn dependency:get -DgroupId=org.clojure -DartifactId=clojure -Dversion=1.6.0

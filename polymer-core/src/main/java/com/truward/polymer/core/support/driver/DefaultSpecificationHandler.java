@@ -33,10 +33,10 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
   @Override
   @Nullable
   public <T> T parseClass(@Nonnull Class<T> clazz) {
-    log.debug("Parsing class {}", clazz);
+    log.debug("Parsing {}", clazz);
 
     if (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) {
-      log.warn("Skipping interface or abstract class: {}", clazz);
+      log.warn("Skipping {}: interface or abstract class can't be processed", clazz);
       return null;
     }
 
@@ -48,7 +48,7 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
     }
 
     if (specificationMethods.isEmpty()) {
-      log.warn("No specification methods in class {}", clazz);
+      log.warn("No specification methods in {}", clazz);
       return null;
     }
 
@@ -68,10 +68,10 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
       // invoke in the given order
       invokeSpecificationMethods(specificationMethods, instance, stateAwareBeans);
 
-      log.debug("Class {} has been successfully processed", clazz);
+      log.debug("{} has been successfully processed", clazz);
       return instance;
     } catch (InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException("Uninstantiable class: no public default constructor", e);
+      throw new RuntimeException("Uninstantiable " + clazz + ": no public default constructor", e);
     }
   }
 
@@ -166,7 +166,7 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
 
     // unexpected result
     if (!void.class.equals(method.getReturnType())) {
-      log.warn("Result of the specification method " + method + " will be ignored");
+      log.warn("Result of the specification method {} will be ignored", method);
     }
 
     method.invoke(instance, parameters);
@@ -196,7 +196,7 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
     }
 
     if (resource.mappedName().length() > 0) {
-      log.warn("Resource name ignored: {} for class {} in field {}", resource.mappedName(), clazz, field);
+      log.warn("Resource name ignored: {} for {} in {}", resource.mappedName(), clazz, field);
     }
 
     boolean wasAccessible = field.isAccessible();
@@ -208,7 +208,7 @@ public final class DefaultSpecificationHandler implements SpecificationHandler {
     try {
       injectedBean = injectionContext.getBean(field.getType());
     } catch (InjectionException e) {
-      throw new RuntimeException(String.format("Can't inject bean into field %s in class %s", field, clazz), e);
+      throw new RuntimeException(String.format("Can't inject bean into %s in %s", field, clazz), e);
     }
     field.set(instance, injectedBean);
 

@@ -30,19 +30,19 @@ public final class DefaultJacksonMarshallingSpecifier extends AbstractJsonMarsha
     if (mappersRequired) {
       for (final JsonTarget target : getDomainClassToJsonTarget().values()) {
         final Class<?> originClass = target.getDomainClass().getOrigin().getOriginClass();
-        log.debug("Performing JSON analysis for class {}", originClass);
+        log.debug("Performing JSON analysis for {}", originClass);
 
         final String simpleName = originClass.getSimpleName();
 
         if (target.isReaderSupportRequested() && target.getTargetReaderClass() == null) {
           final FqName deserializerName = getTargetClassName().append(simpleName + "Deserializer");
-          log.debug("Adding deserializer {} for class {}", deserializerName, originClass);
+          log.debug("Adding deserializer {} for {}", deserializerName, originClass);
           target.setTargetReaderClass(GenClassReference.from(deserializerName));
         }
 
         if (target.isWriterSupportRequested() && target.getTargetWriterClass() == null) {
           final FqName serializerName = getTargetClassName().append(simpleName + "Serializer");
-          log.debug("Adding serializer {} for class {}", serializerName, originClass);
+          log.debug("Adding serializer {} for {}", serializerName, originClass);
           target.setTargetWriterClass(GenClassReference.from(serializerName));
         }
       }

@@ -75,6 +75,16 @@ public abstract class CodeStreamSupport implements CodeStream {
     return s("new").sp().t(type);
   }
 
+  // => ,_ - comma, followed by space
+  public final CodeStreamSupport commaSp() {
+    return c(',').sp();
+  }
+
+  // => ,_{paramName}
+  public final CodeStreamSupport nextParam(@Nonnull String paramName) {
+    return c(',').sp().s(paramName);
+  }
+
   //=> ({type})
   @Nonnull
   public final CodeStreamSupport cast(@Nonnull Type type) {
@@ -91,6 +101,16 @@ public abstract class CodeStreamSupport implements CodeStream {
   public final CodeStreamSupport val(char ch) {
     // TODO: escape char if needed!
     return c('\'').c(ch).c('\'');
+  }
+
+  @Nonnull
+  public final CodeStreamSupport val(int val) {
+    return s(Integer.toString(val));
+  }
+
+  @Nonnull
+  public final CodeStreamSupport val(boolean val) {
+    return s(Boolean.toString(val));
   }
 
   //=> _{c}_ <== _ is a space

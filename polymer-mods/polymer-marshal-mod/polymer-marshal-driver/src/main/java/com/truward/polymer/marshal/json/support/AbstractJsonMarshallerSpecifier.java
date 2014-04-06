@@ -1,5 +1,7 @@
 package com.truward.polymer.marshal.json.support;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.truward.polymer.core.code.builder.ModuleBuilder;
 import com.truward.polymer.core.code.builder.TypeManager;
 import com.truward.polymer.core.code.printer.CodePrinter;
@@ -32,8 +34,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Alexander Shabanov
@@ -53,14 +53,14 @@ public abstract class AbstractJsonMarshallerSpecifier extends FreezableSupport
 
   private final JsonFieldRegistry fieldRegistry = new DefaultJsonFieldRegistry();
 
-  private final Map<GenDomainClass, JsonTarget> domainClassToJsonTarget = new HashMap<>();
+  private final BiMap<GenDomainClass, JsonTarget> domainClassToJsonTarget = HashBiMap.create();
   private FqName targetClassName;
 
   protected final FqName getTargetClassName() {
     return targetClassName;
   }
 
-  protected final Map<GenDomainClass, JsonTarget> getDomainClassToJsonTarget() {
+  protected final BiMap<GenDomainClass, JsonTarget> getDomainClassToJsonTarget() {
     return domainClassToJsonTarget;
   }
 
