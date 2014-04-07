@@ -3,5 +3,5 @@ package com.truward.polymer.code;
 /**
  * @author Alexander Shabanov
  */
-public class NodeVisitor {
+public class AstVisitor {
 }
