@@ -1,4 +1,6 @@
-package com.truward.polymer.code;
+package com.truward.polymer.code.visitor;
+
+import com.truward.polymer.code.Ast;
 
 import javax.annotation.Nonnull;
 

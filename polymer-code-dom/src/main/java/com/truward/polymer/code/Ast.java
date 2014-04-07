@@ -1,5 +1,7 @@
 package com.truward.polymer.code;
 
+import com.google.common.collect.ImmutableList;
+import com.truward.polymer.code.visitor.AstVoidVisitor;
 import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
@@ -31,10 +33,13 @@ public final class Ast {
      * @return True, if this is a nil, 'sentinel' object
      */
     boolean isNil();
-  }
 
-  /** Represents certain named node */
-  public interface Named extends Node {
+    //
+    // Methods for named elements
+    //
+
+    boolean hasName();
+
     @Nonnull String getName();
   }
 
@@ -50,6 +55,12 @@ public final class Ast {
    */
   public interface Stmt extends Node {}
 
+  public interface StmtBlock extends Stmt {
+    void addStatement(@Nonnull Stmt statement);
+
+    @Nonnull List<Stmt> getStatements();
+  }
+
   /**
    * Represents a type expression, i.e. any usage of type, except for the class declaration
    */
@@ -62,6 +73,14 @@ public final class Ast {
   /** Base abstract class for all the nodes */
   public static abstract class AbstractNode implements Node {
     @Override public final boolean isNil() {
+      return false;
+    }
+
+    @Nonnull @Override public String getName() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override public boolean hasName() {
       return false;
     }
   }
@@ -78,18 +97,32 @@ public final class Ast {
   //
 
   /** Special sentinel class, represents a 'null object pattern' */
-  public static final class Nil implements Expr, Stmt, TypeExpr {
+  public static final class Nil implements Expr, TypeExpr, StmtBlock {
     private Nil() {} // hidden
 
     public static final Nil INSTANCE = new Nil(); // singleton
 
-    @Override
-    public boolean isNil() {
+    @Override public boolean isNil() {
       return true;
     }
 
-    @Override
-    public String toString() {
+    @Nonnull @Override public String getName() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override public boolean hasName() {
+      return false;
+    }
+
+    @Override public void addStatement(@Nonnull Stmt statement) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull @Override public List<Stmt> getStatements() {
+      return ImmutableList.of();
+    }
+
+    @Override public String toString() {
       return "<nil>";
     }
   }
@@ -115,15 +148,14 @@ public final class Ast {
    * NB: static initializer block should be represented as a separate entity
    * @see "JLS 3, section 14.2"
    */
-  public static final class Block extends AbstractStmt {
+  public static final class Block extends AbstractStmt implements StmtBlock {
     private final List<Stmt> statements = new ArrayList<>();
 
-    @Nonnull public Block addStatement(@Nonnull Stmt statement) {
+    @Override public void addStatement(@Nonnull Stmt statement) {
       statements.add(statement);
-      return this;
     }
 
-    @Nonnull public List<Stmt> getStatements() {
+    @Nonnull @Override public List<Stmt> getStatements() {
       return statements;
     }
   }
@@ -172,23 +204,59 @@ public final class Ast {
     }
   }
 
-  public static final class Modifiers extends AbstractNode {
+  /**
+   * Variable, Class Declaration or Method
+   */
+  public static abstract class NamedStmt<TSelf extends NamedStmt> extends AbstractStmt {
     private final Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
     private final List<Annotation> annotations = new ArrayList<>();
+    private String name;
 
-    @Nonnull public Set<Modifier> getModifiers() {
+    protected abstract @Nonnull TSelf getSelf();
+
+    public final TSelf makePublic() {
+      modifiers.add(Modifier.PUBLIC);
+      return getSelf();
+    }
+
+    public final TSelf makeFinal() {
+      modifiers.add(Modifier.FINAL);
+      return getSelf();
+    }
+
+    public final TSelf makePublicFinal() {
+      makeFinal().makePublic();
+      return getSelf();
+    }
+
+    @Nonnull public final Set<Modifier> getModifiers() {
       return modifiers;
     }
 
-    @Nonnull public List<Annotation> getAnnotations() {
+    @Nonnull public final List<Annotation> getAnnotations() {
       return annotations;
+    }
+
+    @Nonnull @Override public final String getName() {
+      if (name == null) {
+        throw new IllegalStateException("Name is null");
+      }
+      return name;
+    }
+
+    @Override public final boolean hasName() {
+      return name != null;
+    }
+
+    public void setName(@Nonnull String name) {
+      this.name = name;
     }
   }
 
-  public static final class Package extends AbstractNode implements Named {
+  public static final class Package extends AbstractNode {
     private final Package parent; // TODO: nil object?
     private final String name;
-    private final Map<String, Named> childs = new HashMap<>();
+    private final Map<String, Node> childs = new HashMap<>();
 
     public Package(@Nullable Package parent, @Nonnull String name) {
       if (parent != null) {
@@ -198,7 +266,11 @@ public final class Ast {
       this.name = name;
     }
 
-    @Nonnull Package addChild(@Nonnull Named node) {
+    @Nonnull Package addChild(@Nonnull Node node) {
+      if (!node.hasName()) {
+        throw new UnsupportedOperationException("Only named nodes can be added to the package");
+      }
+
       final String childName = node.getName();
       if (childs.containsKey(childName)) {
         throw new IllegalStateException("Duplicate entry: " + childName);
@@ -207,13 +279,17 @@ public final class Ast {
       return this;
     }
 
-    @Nonnull public Map<String, Named> getChilds() {
+    @Nonnull public Map<String, Node> getChilds() {
       return childs;
     }
 
     // TODO: Nil object?
     @Nullable public Package getParent() {
       return parent;
+    }
+
+    @Override public boolean hasName() {
+      return true;
     }
 
     @Override @Nonnull public String getName() {
@@ -302,20 +378,17 @@ public final class Ast {
    * Class, Interface, Enum or Annotation Declaration.
    * @see "JLS 3, sections 8.1, 8.9, 9.1, and 9.6"
    */
-  public static final class ClassDecl extends AbstractStmt implements SynteticClass, Named {
-    private final Modifiers modifiers = new Modifiers();
+  public static final class ClassDecl extends NamedStmt<ClassDecl> implements SynteticClass {
     private TypeExpr superclass = Nil.INSTANCE;
     private final List<TypeExpr> interfaces = new ArrayList<>();
     private final List<Stmt> bodyStmts = new ArrayList<>();
     private final List<TypeParameter> typeParameters = new ArrayList<>();
-    private String name;
     private Node parent;
 
-    @Nonnull public ClassDecl makePublicFinal() {
-      final Set<Modifier> mods = this.modifiers.getModifiers();
-      mods.add(Modifier.PUBLIC);
-      mods.add(Modifier.FINAL);
-      return this;
+    @Nonnull public MethodDecl addMethodDecl(@Nonnull String name) {
+      final MethodDecl methodDecl = new MethodDecl(name);
+      bodyStmts.add(methodDecl);
+      return methodDecl;
     }
 
     @Nonnull public ClassDecl setSuperclass(@Nonnull TypeExpr superclass) {
@@ -331,10 +404,6 @@ public final class Ast {
     @Nonnull public ClassDecl addStmt(@Nonnull Stmt stmt) {
       this.bodyStmts.add(stmt);
       return this;
-    }
-
-    @Nonnull public Modifiers getModifiers() {
-      return modifiers;
     }
 
     @Nonnull public TypeExpr getSuperclass() {
@@ -353,18 +422,6 @@ public final class Ast {
       return typeParameters;
     }
 
-    @Override @Nonnull public String getName() {
-      if (name == null) {
-        throw new IllegalStateException("Name can't be accessed for anonymous class");
-      }
-      return name;
-    }
-
-    public void setName(@Nonnull String name) {
-      assert !isAnonymousClass();
-      this.name = name;
-    }
-
     public Node getParent() {
       return parent;
     }
@@ -376,7 +433,7 @@ public final class Ast {
     @Nonnull
     @Override
     public FqName getFqName() {
-      if (isAnonymousClass()) {
+      if (hasName()) {
         throw new IllegalStateException("Anonymous class has no fully qualified name");
       }
 
@@ -386,8 +443,13 @@ public final class Ast {
       return nameVisitor.fqName;
     }
 
-    public boolean isAnonymousClass() {
-      return name == null;
+    //
+    // Private
+    //
+
+
+    @Override @Nonnull protected ClassDecl getSelf() {
+      return this;
     }
 
     private static final class NameVisitor extends AstVoidVisitor {
@@ -449,25 +511,15 @@ public final class Ast {
    * Represents a method declaration.
    * @see "JLS 3, sections 8.4, 8.6, 8.7, 9.4, and 9.6"
    */
-  public static final class MethodDecl extends AbstractStmt implements Named {
-    private final Modifiers modifiers = new Modifiers();
-    private final String name;
+  public static final class MethodDecl extends NamedStmt<MethodDecl> {
     private final List<TypeParameter> typeParameters = new ArrayList<>();
     private final List<Expr> thrown = new ArrayList<>();
     private TypeExpr returnType = Nil.INSTANCE;
     private Expr defaultValue = Nil.INSTANCE; // for annotation types
-    private Block body; // null for interface/abstract methods
+    private StmtBlock body = Nil.INSTANCE; // nil for interface/abstract methods
 
-    public MethodDecl(String name) {
-      this.name = name;
-    }
-
-    @Nonnull public Modifiers getModifiers() {
-      return modifiers;
-    }
-
-    @Override @Nonnull public String getName() {
-      return name;
+    public MethodDecl(@Nonnull String name) {
+      setName(name);
     }
 
     @Nonnull public List<TypeParameter> getTypeParameters() {
@@ -486,8 +538,34 @@ public final class Ast {
       return defaultValue;
     }
 
-    @Nullable public Block getBody() {
+    @Nullable public StmtBlock getBody() {
       return body;
+    }
+
+    @Nonnull public MethodDecl addBodyStmt(@Nonnull Stmt stmt) {
+      if (body.isNil()) {
+        body = new Block();
+      }
+      body.addStatement(stmt);
+      return this;
+    }
+
+    @Nonnull public MethodDecl setReturnType(@Nonnull TypeExpr returnType) {
+      this.returnType = returnType;
+      return this;
+    }
+
+    @Nonnull public MethodDecl setDefaultValue(@Nonnull Expr defaultValue) {
+      this.defaultValue = defaultValue;
+      return this;
+    }
+
+    //
+    // Private
+    //
+
+    @Nonnull @Override protected MethodDecl getSelf() {
+      return this;
     }
   }
 }
