@@ -85,8 +85,8 @@ public final class FqNameTest {
 
   @Test
   public void shouldJoinNames() {
-    assertEquals("com.mysite.domain", FqName.parse("com.mysite").join(FqName.parse("domain")).toString());
-    assertEquals("com.mysite.domain", FqName.parse("com").join(FqName.parse("mysite.domain")).toString());
+    assertEquals("com.mysite.domain", FqName.parse("com.mysite").append(FqName.parse("domain")).toString());
+    assertEquals("com.mysite.domain", FqName.parse("com").append(FqName.parse("mysite.domain")).toString());
   }
 
   @Test

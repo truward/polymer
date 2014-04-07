@@ -88,12 +88,12 @@ public final class FqName implements Comparable<FqName>, Serializable {
   }
 
   @Nonnull
-  public FqName join(@Nonnull FqName rightNamePart) {
+  public FqName append(@Nonnull FqName fqName) {
     FqName result = this;
 
     // get unfolded methods
-    for (final String name : rightNamePart.toList()) {
-      result = new FqName(name, result);
+    for (final String name : fqName.toList()) {
+      result = result.append(name);
     }
 
     return result;
