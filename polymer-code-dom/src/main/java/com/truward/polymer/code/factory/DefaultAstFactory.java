@@ -1,7 +1,8 @@
-package com.truward.polymer.code;
+package com.truward.polymer.code.factory;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.truward.polymer.code.Ast;
 import com.truward.polymer.code.visitor.AstVoidVisitor;
 import com.truward.polymer.naming.FqName;
 
@@ -13,10 +14,10 @@ import javax.annotation.Nullable;
  *
  * @author Alexander Shabanov
  */
-public class AstFactory {
+public final class DefaultAstFactory implements AstFactory {
   private BiMap<FqName, Ast.Node> entities = HashBiMap.create(); // Node ::= Package||Class
 
-  @Nonnull public Ast.ClassDecl classDecl(@Nonnull Ast.Node parent, @Nullable String name) {
+  @Nonnull @Override public Ast.ClassDecl classDecl(@Nonnull Ast.Node parent, @Nullable String name) {
     final Ast.ClassDecl node = new Ast.ClassDecl();
 
     AstVoidVisitor.apply(parent, new AstVoidVisitor() {
@@ -54,7 +55,7 @@ public class AstFactory {
     return node;
   }
 
-  @Nonnull public Ast.ClassDecl classDecl(@Nonnull FqName className) {
+  @Nonnull @Override public Ast.ClassDecl classDecl(@Nonnull FqName className) {
     Ast.Node parent = Ast.Nil.INSTANCE;
 
     if (!className.isRoot()) {
@@ -64,15 +65,15 @@ public class AstFactory {
     return classDecl(parent, className.getName());
   }
 
-  @Nonnull public Ast.TypeExpr classRef(@Nonnull Class<?> classRef) {
+  @Nonnull @Override public Ast.TypeExpr classRef(@Nonnull Class<?> classRef) {
     return new Ast.ClassRef(classRef);
   }
 
-  @Nonnull public Ast.TypeExpr voidType() {
+  @Nonnull @Override public Ast.TypeExpr voidType() {
     return classRef(void.class);
   }
 
-  @Nonnull public Ast.Package pkg(@Nonnull FqName fqName) {
+  @Nonnull @Override public Ast.Package pkg(@Nonnull FqName fqName) {
     final Ast.Package result = AsPackageVisitor.asPackage(getParentOrCreatePackage(fqName));
     if (result == null) {
       throw new IllegalStateException("Non-package entity has been created for " + fqName);
