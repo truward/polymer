@@ -9,7 +9,7 @@ import com.truward.polymer.core.code.untyped.GenChar;
 import com.truward.polymer.core.code.untyped.GenFqNamed;
 import com.truward.polymer.core.code.untyped.GenInlineBlock;
 import com.truward.polymer.core.code.untyped.GenString;
-import com.truward.polymer.core.freezable.FreezableSupport;
+import com.truward.polymer.freezable.FreezableSupport;
 import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;

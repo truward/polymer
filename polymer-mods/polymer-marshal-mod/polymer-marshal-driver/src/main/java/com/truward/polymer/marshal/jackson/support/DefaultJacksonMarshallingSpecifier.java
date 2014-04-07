@@ -2,11 +2,11 @@ package com.truward.polymer.marshal.jackson.support;
 
 import com.truward.polymer.core.code.typed.GenClassReference;
 import com.truward.polymer.core.code.untyped.GenInlineBlock;
-import com.truward.polymer.core.util.Assert;
 import com.truward.polymer.marshal.json.JacksonMarshallingSpecifier;
 import com.truward.polymer.marshal.json.analysis.JsonTarget;
 import com.truward.polymer.marshal.json.support.AbstractJsonMarshallerSpecifier;
 import com.truward.polymer.naming.FqName;
+import com.truward.polymer.util.Assert;
 
 /**
  * @author Alexander Shabanov

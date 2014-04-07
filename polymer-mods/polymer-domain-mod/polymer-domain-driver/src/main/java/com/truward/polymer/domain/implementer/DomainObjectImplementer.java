@@ -7,7 +7,6 @@ import com.truward.polymer.core.code.printer.CodePrinter;
 import com.truward.polymer.core.driver.Implementer;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
-import com.truward.polymer.core.freezable.FreezableSupport;
 import com.truward.polymer.core.output.DefaultFileTypes;
 import com.truward.polymer.core.output.OutputStreamProvider;
 import com.truward.polymer.core.support.code.DefaultModuleBuilder;
@@ -17,6 +16,7 @@ import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainImplementationTargetSink;
 import com.truward.polymer.domain.analysis.DomainImplementerSettingsReader;
 import com.truward.polymer.domain.analysis.support.GenDomainClass;
+import com.truward.polymer.freezable.FreezableSupport;
 import com.truward.polymer.naming.FqName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Alexander Shabanov

@@ -3,7 +3,7 @@ package com.truward.polymer.core.support.code;
 import com.truward.polymer.core.code.builder.ModuleBuilder;
 import com.truward.polymer.core.code.builder.TypeManager;
 import com.truward.polymer.core.code.untyped.GenInlineBlock;
-import com.truward.polymer.core.freezable.FreezableSupport;
+import com.truward.polymer.freezable.FreezableSupport;
 import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;

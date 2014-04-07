@@ -1,7 +1,7 @@
 package com.truward.polymer.core.code.builder;
 
 import com.truward.polymer.core.code.GenObject;
-import com.truward.polymer.core.freezable.Freezable;
+import com.truward.polymer.freezable.Freezable;
 import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;

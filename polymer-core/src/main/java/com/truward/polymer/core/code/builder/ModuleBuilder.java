@@ -1,10 +1,7 @@
 package com.truward.polymer.core.code.builder;
 
 import com.truward.polymer.core.code.untyped.GenInlineBlock;
-import com.truward.polymer.core.freezable.Freezable;
-import com.truward.polymer.naming.FqName;
-
-import java.util.List;
+import com.truward.polymer.freezable.Freezable;
 
 /**
  * @author Alexander Shabanov

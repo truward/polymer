@@ -1,4 +1,4 @@
-package com.truward.polymer.core.util;
+package com.truward.polymer.util;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

@@ -9,6 +9,7 @@
   <name>Polymer Parent</name>
 
   <modules>
+    <module>polymer-common</module>
     <module>polymer-specifications</module>
     <module>polymer-code-dom</module>
     <module>polymer-core</module>
@@ -42,10 +43,14 @@
       <!-- Project dependencies -->
       <dependency>
         <groupId>com.truward.polymer</groupId>
+        <artifactId>polymer-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.truward.polymer</groupId>
         <artifactId>polymer-specifications</artifactId>
         <version>${project.version}</version>
       </dependency>
-
       <dependency>
         <groupId>com.truward.polymer</groupId>
         <artifactId>polymer-core</artifactId>

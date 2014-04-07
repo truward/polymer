@@ -8,30 +8,17 @@
     <version>0.0.8-SNAPSHOT</version>
   </parent>
 
-  <artifactId>polymer-code-dom</artifactId>
+  <artifactId>polymer-common</artifactId>
   <packaging>jar</packaging>
-  <name>Polymer Code DOM</name>
+  <name>Polymer Common Library</name>
 
   <dependencies>
-    <!-- Common library -->
-    <dependency>
-      <groupId>com.truward.polymer</groupId>
-      <artifactId>polymer-common</artifactId>
-    </dependency>
 
     <!-- JSR Non-Null annotation -->
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
     </dependency>
-
-    <!-- Guava -->
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>
-
-    <!-- test scope -->
 
     <!-- Logging for test -->
     <dependency>

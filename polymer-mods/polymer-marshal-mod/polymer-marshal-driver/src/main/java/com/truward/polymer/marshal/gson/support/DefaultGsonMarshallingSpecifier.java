@@ -8,7 +8,6 @@ import com.truward.polymer.core.code.typed.GenClassReference;
 import com.truward.polymer.core.code.typed.TypeVisitor;
 import com.truward.polymer.core.code.untyped.GenInlineBlock;
 import com.truward.polymer.core.types.SynteticParameterizedType;
-import com.truward.polymer.core.util.Assert;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.FieldUtil;
 import com.truward.polymer.domain.analysis.OriginMethodRole;
@@ -18,6 +17,7 @@ import com.truward.polymer.marshal.json.GsonMarshallingSpecifier;
 import com.truward.polymer.marshal.json.analysis.JsonTarget;
 import com.truward.polymer.marshal.json.support.AbstractJsonMarshallerSpecifier;
 import com.truward.polymer.naming.FqName;
+import com.truward.polymer.util.Assert;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -25,7 +25,7 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
 
-import static com.truward.polymer.core.util.Assert.nonNull;
+import static com.truward.polymer.util.Assert.nonNull;
 
 /**
  * @author Alexander Shabanov

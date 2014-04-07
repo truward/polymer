@@ -11,7 +11,6 @@ import com.truward.polymer.core.code.typed.TypeVisitor;
 import com.truward.polymer.core.code.untyped.GenInlineBlock;
 import com.truward.polymer.core.types.DefaultValues;
 import com.truward.polymer.core.types.SynteticParameterizedType;
-import com.truward.polymer.core.util.Assert;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.FieldUtil;
@@ -20,6 +19,7 @@ import com.truward.polymer.domain.analysis.support.GenDomainClass;
 import com.truward.polymer.marshal.json.analysis.JsonFieldRegistry;
 import com.truward.polymer.marshal.json.analysis.JsonTarget;
 import com.truward.polymer.naming.FqName;
+import com.truward.polymer.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +31,7 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
 
-import static com.truward.polymer.core.util.Assert.nonNull;
+import static com.truward.polymer.util.Assert.nonNull;
 
 /**
  * Contains implementer of the jackson serialization/deserialization code.

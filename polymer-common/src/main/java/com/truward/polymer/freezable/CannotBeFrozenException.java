@@ -1,4 +1,4 @@
-package com.truward.polymer.core.freezable;
+package com.truward.polymer.freezable;
 
 /**
  * An exception that should be thrown when the half-constructed object is attempted to be frozen.

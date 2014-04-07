@@ -1,4 +1,4 @@
-package com.truward.polymer.core.freezable;
+package com.truward.polymer.freezable;
 
 /**
  * Indicates that the objects of the implemented class can be made unmodifiable by

@@ -1,9 +1,9 @@
 package com.truward.polymer.marshal.json.support.analysis;
 
 import com.truward.polymer.core.code.typed.GenClass;
-import com.truward.polymer.core.freezable.FreezableSupport;
 import com.truward.polymer.domain.analysis.DomainAnalysisResult;
 import com.truward.polymer.domain.analysis.support.GenDomainClass;
+import com.truward.polymer.freezable.FreezableSupport;
 import com.truward.polymer.marshal.json.analysis.JsonTarget;
 
 import javax.annotation.Nonnull;

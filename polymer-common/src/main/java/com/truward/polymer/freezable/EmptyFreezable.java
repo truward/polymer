@@ -1,8 +1,8 @@
-package com.truward.polymer.core.freezable;
+package com.truward.polymer.freezable;
 
 /**
  * Freezable support for those classes that don't want to have an empty 'dummy' implementation
- * of {@link com.truward.polymer.core.freezable.Freezable#freeze()} method.
+ * of {@link Freezable#freeze()} method.
  *
  * @author Alexander Shabanov
  */

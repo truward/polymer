@@ -1,10 +1,10 @@
 package com.truward.polymer.domain.analysis.support;
 
 import com.google.common.collect.ImmutableMap;
-import com.truward.polymer.core.freezable.FreezableSupport;
 import com.truward.polymer.domain.analysis.DomainField;
 import com.truward.polymer.domain.analysis.FieldTrait;
 import com.truward.polymer.domain.analysis.OriginMethodRole;
+import com.truward.polymer.freezable.FreezableSupport;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

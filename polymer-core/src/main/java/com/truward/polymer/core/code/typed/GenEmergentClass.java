@@ -1,6 +1,6 @@
 package com.truward.polymer.core.code.typed;
 
-import com.truward.polymer.core.freezable.FreezableSupport;
+import com.truward.polymer.freezable.FreezableSupport;
 import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;

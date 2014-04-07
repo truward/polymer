@@ -13,6 +13,10 @@
   <name>Polymer Specifications</name>
 
   <dependencies>
+    <dependency>
+      <groupId>com.truward.polymer</groupId>
+      <artifactId>polymer-common</artifactId>
+    </dependency>
 
     <!-- JSR Non-Null annotation -->
     <dependency>

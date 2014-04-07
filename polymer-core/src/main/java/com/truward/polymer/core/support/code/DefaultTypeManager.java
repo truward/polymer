@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.truward.polymer.core.code.builder.TypeManager;
 import com.truward.polymer.core.code.typed.*;
-import com.truward.polymer.core.freezable.FreezableSupport;
+import com.truward.polymer.freezable.FreezableSupport;
 import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;

@@ -2,8 +2,6 @@ package com.truward.polymer.core.code.printer;
 
 import com.truward.polymer.core.code.builder.ModuleBuilder;
 import com.truward.polymer.core.code.builder.TypeManager;
-import com.truward.polymer.core.code.untyped.GenInlineBlock;
-import com.truward.polymer.core.support.code.DefaultInlineBlock;
 import com.truward.polymer.core.support.code.DefaultModuleBuilder;
 import com.truward.polymer.core.support.code.DefaultTypeManager;
 import com.truward.polymer.core.support.code.printer.DefaultCodePrinter;

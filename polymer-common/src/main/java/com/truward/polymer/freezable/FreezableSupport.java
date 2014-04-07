@@ -1,4 +1,4 @@
-package com.truward.polymer.core.freezable;
+package com.truward.polymer.freezable;
 
 /**
  * Basic support for {@link Freezable} interface for classes with nullable fields and complex 'can't be frozen' checks.
