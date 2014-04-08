@@ -1,4 +1,4 @@
-package com.truward.polymer.core.output;
+package com.truward.polymer.output;
 
 import javax.annotation.Nonnull;
 
@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
  *
  * @author Alexander Shabanov
  */
-public enum DefaultFileTypes implements FileType {
+public enum StandardFileTypes implements FileType {
   NONE(""),
   JAVA("java"),
   PROPERTIES("properties"),
@@ -27,7 +27,7 @@ public enum DefaultFileTypes implements FileType {
     return extension;
   }
 
-  private DefaultFileTypes(@Nonnull String extension) {
+  private StandardFileTypes(@Nonnull String extension) {
     this.extension = extension;
   }
 }

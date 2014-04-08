@@ -7,7 +7,7 @@ import com.google.common.collect.Lists;
 import com.truward.di.InjectionContext;
 import com.truward.polymer.core.driver.Implementer;
 import com.truward.polymer.core.driver.spi.SpecificationDriver;
-import com.truward.polymer.core.output.OutputStreamProvider;
+import com.truward.polymer.output.OutputStreamProvider;
 import com.truward.polymer.core.support.PolymerModule;
 import com.truward.polymer.domain.driver.spi.DomainSpecificationDriver;
 import com.truward.polymer.marshal.gson.spi.GsonMarshallingDriver;

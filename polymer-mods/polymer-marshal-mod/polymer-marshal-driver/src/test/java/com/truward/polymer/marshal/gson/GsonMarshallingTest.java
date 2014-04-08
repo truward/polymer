@@ -4,7 +4,7 @@ import com.truward.di.InjectionContext;
 import com.truward.di.support.DefaultInjectionContext;
 import com.truward.polymer.annotation.Specification;
 import com.truward.polymer.core.driver.*;
-import com.truward.polymer.core.output.MemOutputStreamProvider;
+import com.truward.polymer.output.MemOutputStreamProvider;
 import com.truward.polymer.core.support.driver.DefaultSpecificationHandler;
 import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSpecifier;

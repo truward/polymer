@@ -1,0 +1,41 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.truward.polymer</groupId>
+    <artifactId>polymer</artifactId>
+    <version>0.0.8-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>polymer-output</artifactId>
+  <packaging>jar</packaging>
+  <name>Polymer Output Library</name>
+
+  <dependencies>
+    <!-- Common library -->
+    <dependency>
+      <groupId>com.truward.polymer</groupId>
+      <artifactId>polymer-common</artifactId>
+    </dependency>
+
+    <!-- Guava -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
+    <!-- JSR Non-Null annotation -->
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+    </dependency>
+
+    <!-- Logging for test -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

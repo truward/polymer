@@ -1,4 +1,4 @@
-package com.truward.polymer.core.output;
+package com.truward.polymer.output;
 
 import javax.annotation.Nonnull;
 

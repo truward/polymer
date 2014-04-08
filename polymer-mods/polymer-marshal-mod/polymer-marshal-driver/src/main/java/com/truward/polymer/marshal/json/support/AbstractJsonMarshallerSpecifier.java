@@ -9,8 +9,6 @@ import com.truward.polymer.core.code.untyped.GenInlineBlock;
 import com.truward.polymer.core.driver.Implementer;
 import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
-import com.truward.polymer.core.output.DefaultFileTypes;
-import com.truward.polymer.core.output.OutputStreamProvider;
 import com.truward.polymer.core.support.code.DefaultModuleBuilder;
 import com.truward.polymer.core.support.code.DefaultTypeManager;
 import com.truward.polymer.core.support.code.printer.DefaultCodePrinter;
@@ -25,6 +23,8 @@ import com.truward.polymer.marshal.json.analysis.JsonTarget;
 import com.truward.polymer.marshal.json.support.analysis.DefaultJsonFieldRegistry;
 import com.truward.polymer.marshal.json.support.analysis.DefaultJsonTarget;
 import com.truward.polymer.naming.FqName;
+import com.truward.polymer.output.OutputStreamProvider;
+import com.truward.polymer.output.StandardFileTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,6 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 
 /**
  * @author Alexander Shabanov
@@ -89,8 +88,8 @@ public abstract class AbstractJsonMarshallerSpecifier extends FreezableSupport
       moduleBuilder.freeze();
 
       // dump code to the file
-      try (final OutputStream stream = outputStreamProvider.createStreamForFile(targetClassName, DefaultFileTypes.JAVA)) {
-        try (final OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8)) {
+      try (final OutputStream stream = outputStreamProvider.createStreamForFile(targetClassName, StandardFileTypes.JAVA)) {
+        try (final OutputStreamWriter writer = new OutputStreamWriter(stream, OutputStreamProvider.DEFAULT_CHARSET)) {
           final CodePrinter codePrinter = new DefaultCodePrinter(writer, typeManager);
           codePrinter.print(moduleBuilder.getStream());
         }

@@ -1,4 +1,4 @@
-package com.truward.polymer.core.output;
+package com.truward.polymer.output;
 
 import com.truward.polymer.naming.FqName;
 
@@ -35,7 +35,10 @@ public final class FSOutputStreamProvider implements OutputStreamProvider {
       throw new IOException("Unable to create/access to the parent directory");
     }
 
-    fileNameBuilder.append(separator).append(name.getName()).append('.').append(fileType.getExtension());
+    fileNameBuilder.append(separator).append(name.getName());
+    if (!fileType.getExtension().isEmpty()) {
+      fileNameBuilder.append('.').append(fileType.getExtension());
+    }
     final String fileName = fileNameBuilder.toString();
     return new FileOutputStream(fileName);
   }

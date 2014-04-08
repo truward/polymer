@@ -1,4 +1,4 @@
-package com.truward.polymer.core.output;
+package com.truward.polymer.output;
 
 import com.google.common.collect.ImmutableMap;
 import com.truward.polymer.naming.FqName;
@@ -33,13 +33,22 @@ public final class MemOutputStreamProvider implements OutputStreamProvider {
 
       @Override
       public void close() throws IOException {
-        result.put(toUnifiedName(name, fileType), bos.toString("UTF-8"));
+        result.put(toUnifiedName(name, fileType), bos.toString(DEFAULT_CHARSET.name()));
         bos.close();
       }
     };
   }
 
   public static String toUnifiedName(@Nonnull FqName name, @Nonnull FileType fileType) {
-    return name.toString() + '.' + fileType.getExtension();
+    final StringBuilder builder = new StringBuilder(100);
+    try {
+      name.appendTo(builder, '/');
+    } catch (IOException e) {
+      throw new RuntimeException(e); // shouldn't happen
+    }
+    if (!fileType.getExtension().isEmpty()) {
+      builder.append('.').append(fileType.getExtension());
+    }
+    return builder.toString();
   }
 }

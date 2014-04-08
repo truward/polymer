@@ -2,7 +2,7 @@ package com.truward.polymer.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
-import com.truward.polymer.core.output.MemOutputStreamProvider;
+import com.truward.polymer.output.MemOutputStreamProvider;
 import com.truward.polymer.testspec.p1.UserRoleSpecification;
 import com.truward.polymer.testspec.p2.UserSpecification;
 import org.junit.Test;

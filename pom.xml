@@ -10,6 +10,7 @@
 
   <modules>
     <module>polymer-common</module>
+    <module>polymer-output</module>
     <module>polymer-specifications</module>
     <module>polymer-code-dom</module>
     <module>polymer-core</module>
@@ -44,6 +45,11 @@
       <dependency>
         <groupId>com.truward.polymer</groupId>
         <artifactId>polymer-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.truward.polymer</groupId>
+        <artifactId>polymer-output</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
