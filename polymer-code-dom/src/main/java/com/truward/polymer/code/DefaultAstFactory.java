@@ -1,8 +1,9 @@
-package com.truward.polymer.code.factory;
+package com.truward.polymer.code;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.truward.polymer.code.Ast;
+import com.truward.polymer.code.factory.AstFactory;
 import com.truward.polymer.code.visitor.AstVoidVisitor;
 import com.truward.polymer.naming.FqName;
 
@@ -18,7 +19,7 @@ public final class DefaultAstFactory implements AstFactory {
   private BiMap<FqName, Ast.Node> entities = HashBiMap.create(); // Node ::= Package||Class
 
   @Nonnull @Override public Ast.ClassDecl classDecl(@Nonnull Ast.Node parent, @Nullable String name) {
-    final Ast.ClassDecl node = new Ast.ClassDecl();
+    final Ast.ClassDecl classDecl = new Ast.ClassDecl();
 
     AstVoidVisitor.apply(parent, new AstVoidVisitor() {
       @Override
@@ -44,15 +45,17 @@ public final class DefaultAstFactory implements AstFactory {
       @Override
       public void visitPackage(@Nonnull Ast.Package node) {
         checkHavePackage(node);
+        // package-level nodes should be associated with the corresponding instances of compilation units
+        classDecl.setCompilationUnit(new Ast.CompilationUnit());
       }
     });
-    node.setParent(parent);
+    classDecl.setParent(parent);
 
     if (name != null) {
-      node.setName(name);
+      classDecl.setName(name);
     }
 
-    return node;
+    return classDecl;
   }
 
   @Nonnull @Override public Ast.ClassDecl classDecl(@Nonnull FqName className) {

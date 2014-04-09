@@ -50,6 +50,14 @@ public final class Ast {
   public interface Expr extends Node {}
 
   /**
+   * Represents a compilation unit, which corresponds to the particular class
+   */
+  public interface Unit extends Node {
+    @Nonnull List<Import> getImports();
+    void setImports(@Nonnull List<Import> imports);
+  }
+
+  /**
    * Represents different types of statements
    * @see "JLS 3, chapter 14"
    */
@@ -97,7 +105,7 @@ public final class Ast {
   //
 
   /** Special sentinel class, represents a 'null object pattern' */
-  public static final class Nil implements Expr, TypeExpr, StmtBlock {
+  public static final class Nil implements Expr, TypeExpr, StmtBlock, Unit {
     private Nil() {} // hidden
 
     public static final Nil INSTANCE = new Nil(); // singleton
@@ -122,24 +130,50 @@ public final class Ast {
       return ImmutableList.of();
     }
 
+    @Nonnull @Override public List<Import> getImports() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override public void setImports(@Nonnull List<Import> imports) {
+      throw new UnsupportedOperationException();
+    }
+
     @Override public String toString() {
       return "<nil>";
     }
   }
 
   /**
-   * Represents identifier, e.g. variable name.
+   * Represents identifier, e.g. variable importName.
    * @see "JLS 3, section 6.5.6.1"
    */
   public static final class Ident extends AbstractExpr {
     private final String name;
 
-    public Ident(@Nonnull String name) {
+    Ident(@Nonnull String name) {
       this.name = name;
     }
 
     @Nonnull public String getName() {
       return name;
+    }
+  }
+
+  public static final class Import extends AbstractNode {
+    private final boolean isStatic;
+    private final FqName importName;
+
+    Import(boolean isStatic, @Nonnull FqName importName) {
+      this.isStatic = isStatic;
+      this.importName = importName;
+    }
+
+    public boolean isStatic() {
+      return isStatic;
+    }
+
+    @Nonnull public FqName getImportName() {
+      return importName;
     }
   }
 
@@ -179,7 +213,7 @@ public final class Ast {
   public static final class ClassRef extends AbstractTypeExpr {
     private final Class<?> classRef;
 
-    public ClassRef(@Nonnull Class<?> classRef) {
+    ClassRef(@Nonnull Class<?> classRef) {
       if (classRef.isArray() || classRef.isSynthetic()) {
         throw new IllegalArgumentException("Non-array (plain) class expected");
       }
@@ -258,7 +292,7 @@ public final class Ast {
     private final String name;
     private final Map<String, Node> childs = new HashMap<>();
 
-    public Package(@Nullable Package parent, @Nonnull String name) {
+    Package(@Nullable Package parent, @Nonnull String name) {
       if (parent != null) {
         parent.addChild(this);
       }
@@ -316,7 +350,7 @@ public final class Ast {
     private final String name;
     private List<TypeExpr> typeBounds = new ArrayList<>();
 
-    public TypeParameter(@Nonnull String name) {
+    TypeParameter(@Nonnull String name) {
       this.name = name;
     }
 
@@ -336,11 +370,11 @@ public final class Ast {
   public static final class Wildcard extends AbstractTypeExpr {
     private final TypeBoundExpr boundExpr;
 
-    public Wildcard(@Nonnull TypeBoundExpr boundExpr) {
+    Wildcard(@Nonnull TypeBoundExpr boundExpr) {
       this.boundExpr = boundExpr;
     }
 
-    public Wildcard() {
+    Wildcard() {
       this(new TypeBoundExpr());
     }
 
@@ -356,12 +390,12 @@ public final class Ast {
     private final TypeBoundKind boundKind;
     private final Expr boundExpr;
 
-    public TypeBoundExpr(TypeBoundKind boundKind, Expr boundExpr) {
+    TypeBoundExpr(TypeBoundKind boundKind, Expr boundExpr) {
       this.boundKind = boundKind;
       this.boundExpr = boundExpr;
     }
 
-    public TypeBoundExpr() {
+    TypeBoundExpr() {
       this(TypeBoundKind.UNBOUND, Nil.INSTANCE);
     }
 
@@ -371,6 +405,24 @@ public final class Ast {
 
     @Nonnull public Expr getBoundExpr() {
       return boundExpr;
+    }
+  }
+
+  public static final class CompilationUnit extends AbstractNode implements Unit {
+    private List<Import> imports = ImmutableList.of();
+
+    CompilationUnit() {
+    }
+
+    @Nonnull
+    @Override
+    public List<Import> getImports() {
+      return imports;
+    }
+
+    @Override
+    public void setImports(@Nonnull List<Import> imports) {
+      this.imports = ImmutableList.copyOf(imports);
     }
   }
 
@@ -384,6 +436,19 @@ public final class Ast {
     private final List<Stmt> bodyStmts = new ArrayList<>();
     private final List<TypeParameter> typeParameters = new ArrayList<>();
     private Node parent;
+    private Unit compilationUnit = Nil.INSTANCE;
+
+    ClassDecl() {
+    }
+
+    @Nonnull public ClassDecl setCompilationUnit(@Nonnull Unit unit) {
+      this.compilationUnit = unit;
+      return this;
+    }
+
+    @Nonnull public Unit getCompilationUnit() {
+      return compilationUnit;
+    }
 
     @Nonnull public MethodDecl addMethodDecl(@Nonnull String name) {
       final MethodDecl methodDecl = new MethodDecl(name);
@@ -433,12 +498,12 @@ public final class Ast {
     @Nonnull
     @Override
     public FqName getFqName() {
-      if (hasName()) {
+      if (!hasName()) {
         throw new IllegalStateException("Anonymous class has no fully qualified name");
       }
 
       final NameVisitor nameVisitor = new NameVisitor();
-      AstVoidVisitor.apply(this, nameVisitor);
+      AstVoidVisitor.apply(getParent(), nameVisitor);
       nameVisitor.appendName(FqName.parse(getName()));
       return nameVisitor.fqName;
     }
@@ -482,7 +547,7 @@ public final class Ast {
   public static final class Literal extends AbstractExpr {
     private final Object value;
 
-    public Literal(@Nullable Object value) {
+    Literal(@Nullable Object value) {
       this.value = value;
     }
 
@@ -518,7 +583,7 @@ public final class Ast {
     private Expr defaultValue = Nil.INSTANCE; // for annotation types
     private StmtBlock body = Nil.INSTANCE; // nil for interface/abstract methods
 
-    public MethodDecl(@Nonnull String name) {
+    MethodDecl(@Nonnull String name) {
       setName(name);
     }
 

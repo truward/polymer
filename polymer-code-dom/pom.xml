@@ -18,6 +18,10 @@
       <groupId>com.truward.polymer</groupId>
       <artifactId>polymer-common</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.truward.polymer</groupId>
+      <artifactId>polymer-output</artifactId>
+    </dependency>
 
     <!-- JSR Non-Null annotation -->
     <dependency>

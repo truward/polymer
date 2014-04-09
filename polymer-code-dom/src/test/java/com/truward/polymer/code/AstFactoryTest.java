@@ -1,7 +1,6 @@
 package com.truward.polymer.code;
 
 import com.truward.polymer.code.factory.AstFactory;
-import com.truward.polymer.code.factory.DefaultAstFactory;
 import com.truward.polymer.code.factory.DelegatingAstFactory;
 import com.truward.polymer.naming.FqName;
 import org.junit.Before;
