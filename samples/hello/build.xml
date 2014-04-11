@@ -11,7 +11,7 @@
   <property name="test.classes" value="target/test/classes" />
   <property name="test.report" value="target/test/report" />
 
-  <property name="polymer.version" value="0.0.8-SNAPSHOT" />
+  <property name="polymer.version" value="0.1.0" />
 
   <target name="prepare"/>
 
@@ -56,7 +56,7 @@
   <!--
   Generating sources
 
-  java -cp "./target/hello-polymer-app.jar:~/proj/free/polymer/polymer-cli/target/polymer-cli-0.0.8-SNAPSHOT-jar-with-dependencies.jar" com.truward.polymer.app.App -t  ./target/generated/java -sc com.alexshabanov.sample.specification.ModelSpecification
+  java -cp "./target/hello-polymer-app.jar:~/proj/free/polymer/polymer-cli/target/polymer-cli-0.1.0-jar-with-dependencies.jar" com.truward.polymer.app.App -t  ./target/generated/java -sc com.alexshabanov.sample.specification.ModelSpecification
    -->
   <property name="generated.classes" value="target/generated/classes" />
 

@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.truward.polymer</groupId>
     <artifactId>polymer-di-mod</artifactId>
-    <version>0.0.8-SNAPSHOT</version>
+    <version>0.1.0</version>
   </parent>
 
   <artifactId>polymer-di-driver</artifactId>

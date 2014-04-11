@@ -9,7 +9,7 @@
   <name>Hello Polymer Application</name>
 
   <properties>
-    <polymer.version>0.0.8-SNAPSHOT</polymer.version>
+    <polymer.version>0.1.0</polymer.version>
 
     <!--  compiler settings -->
     <maven.compiler.source>1.7</maven.compiler.source>
