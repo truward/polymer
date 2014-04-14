@@ -2,7 +2,6 @@ package com.truward.polymer.code;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.truward.polymer.code.Ast;
 import com.truward.polymer.code.factory.AstFactory;
 import com.truward.polymer.code.visitor.AstVoidVisitor;
 import com.truward.polymer.naming.FqName;
@@ -21,7 +20,7 @@ public final class DefaultAstFactory implements AstFactory {
   @Nonnull @Override public Ast.ClassDecl classDecl(@Nonnull Ast.Node parent, @Nullable String name) {
     final Ast.ClassDecl classDecl = new Ast.ClassDecl();
 
-    AstVoidVisitor.apply(parent, new AstVoidVisitor() {
+    AstVoidVisitor.apply(parent, new AstVoidVisitor<RuntimeException>() {
       @Override
       protected void visitNode(@Nonnull Ast.Node node) {
         throw new UnsupportedOperationException("Class may not be a parent of " + node);
@@ -118,7 +117,7 @@ public final class DefaultAstFactory implements AstFactory {
     return result;
   }
 
-  private static final class AsPackageVisitor extends AstVoidVisitor {
+  private static final class AsPackageVisitor extends AstVoidVisitor<RuntimeException> {
     private Ast.Package result;
     @Override protected void visitNode(@Nonnull Ast.Node node) {
       // do nothing

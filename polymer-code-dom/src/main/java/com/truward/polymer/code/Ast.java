@@ -212,6 +212,7 @@ public final class Ast {
 
   public static final class ClassRef extends AbstractTypeExpr {
     private final Class<?> classRef;
+    private transient FqName fqName = null;
 
     ClassRef(@Nonnull Class<?> classRef) {
       if (classRef.isArray() || classRef.isSynthetic()) {
@@ -219,6 +220,22 @@ public final class Ast {
       }
 
       this.classRef = classRef;
+    }
+
+    @Nonnull @Override public String getName() {
+      return getFqName().getName();
+    }
+
+    @Nonnull public FqName getFqName() {
+      if (fqName == null) {
+        if (classRef.isPrimitive()) {
+          fqName = new FqName(classRef.getName(), null);
+        } else {
+          assert !classRef.isArray(); // should never trigger
+          fqName = FqName.valueOf(classRef.getName());
+        }
+      }
+      return fqName;
     }
 
     @Nonnull public Class<?> getClassRef() {
@@ -245,6 +262,7 @@ public final class Ast {
     private final Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
     private final List<Annotation> annotations = new ArrayList<>();
     private String name;
+    private Node parent;
 
     protected abstract @Nonnull TSelf getSelf();
 
@@ -282,8 +300,18 @@ public final class Ast {
       return name != null;
     }
 
-    public void setName(@Nonnull String name) {
+    public final TSelf setName(@Nonnull String name) {
       this.name = name;
+      return getSelf();
+    }
+
+    @Nonnull public Node getParent() {
+      return parent;
+    }
+
+    public TSelf setParent(@Nonnull Node parent) {
+      this.parent = parent;
+      return getSelf();
     }
   }
 
@@ -414,15 +442,68 @@ public final class Ast {
     CompilationUnit() {
     }
 
-    @Nonnull
-    @Override
-    public List<Import> getImports() {
+    @Nonnull @Override public List<Import> getImports() {
       return imports;
     }
 
     @Override
     public void setImports(@Nonnull List<Import> imports) {
       this.imports = ImmutableList.copyOf(imports);
+    }
+  }
+
+  /**
+   * Field, Variable or Method Parameter.
+   */
+  public static final class VarDecl extends NamedStmt<VarDecl> {
+    private TypeExpr typeExpr = Nil.INSTANCE;
+
+    public VarDecl() {
+      super();
+    }
+
+    public VarDecl(@Nonnull String name) {
+      setName(name);
+    }
+
+    @Nonnull public TypeExpr getTypeExpr() {
+      return typeExpr;
+    }
+
+    @Nonnull public VarDecl setTypeExpr(@Nonnull TypeExpr typeExpr) {
+      this.typeExpr = typeExpr;
+      return this;
+    }
+
+    @Nonnull @Override protected VarDecl getSelf() {
+      return this;
+    }
+
+    @Nonnull public Kind getFieldKind() {
+      if (getParent().isNil()) {
+        return Kind.UNDEFINED;
+      }
+
+      if (getParent() instanceof ClassDecl) {
+        return Kind.FIELD;
+      }
+
+      if (getParent() instanceof MethodDecl) {
+        return Kind.PARAMETER;
+      }
+
+      if (getParent() instanceof Stmt) {
+        return Kind.VAR;
+      }
+
+      throw new IllegalStateException("Can't determine field kind based on parent=" + getParent());
+    }
+
+    public static enum Kind {
+      UNDEFINED,
+      FIELD,
+      VAR,
+      PARAMETER
     }
   }
 
@@ -435,7 +516,6 @@ public final class Ast {
     private final List<TypeExpr> interfaces = new ArrayList<>();
     private final List<Stmt> bodyStmts = new ArrayList<>();
     private final List<TypeParameter> typeParameters = new ArrayList<>();
-    private Node parent;
     private Unit compilationUnit = Nil.INSTANCE;
 
     ClassDecl() {
@@ -452,8 +532,19 @@ public final class Ast {
 
     @Nonnull public MethodDecl addMethodDecl(@Nonnull String name) {
       final MethodDecl methodDecl = new MethodDecl(name);
-      bodyStmts.add(methodDecl);
+      addStmt(methodDecl).setParent(this);
       return methodDecl;
+    }
+
+    @Nonnull public VarDecl addField(@Nonnull String name, @Nonnull TypeExpr typeExpr) {
+      final VarDecl varDecl = new VarDecl(name);
+      varDecl.setTypeExpr(typeExpr).setParent(this);
+      addStmt(varDecl);
+      return varDecl;
+    }
+
+    @Nonnull public VarDecl addField(@Nonnull String name) {
+      return addField(name, Nil.INSTANCE);
     }
 
     @Nonnull public ClassDecl setSuperclass(@Nonnull TypeExpr superclass) {
@@ -487,14 +578,6 @@ public final class Ast {
       return typeParameters;
     }
 
-    public Node getParent() {
-      return parent;
-    }
-
-    public void setParent(@Nonnull Node parent) {
-      this.parent = parent;
-    }
-
     @Nonnull
     @Override
     public FqName getFqName() {
@@ -517,7 +600,7 @@ public final class Ast {
       return this;
     }
 
-    private static final class NameVisitor extends AstVoidVisitor {
+    private static final class NameVisitor extends AstVoidVisitor<RuntimeException> {
       public FqName fqName;
 
       @Override

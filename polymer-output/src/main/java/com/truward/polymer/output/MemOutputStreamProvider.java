@@ -11,11 +11,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Output stream provider, that operates with in-memory streams only.
+ *
  * @author Alexander Shabanov
  */
 public final class MemOutputStreamProvider implements OutputStreamProvider {
   private final Map<String, String> result = new HashMap<>();
 
+  @Nonnull
   public Map<String, String> getContentMap() {
     return ImmutableMap.copyOf(result);
   }
@@ -39,6 +42,7 @@ public final class MemOutputStreamProvider implements OutputStreamProvider {
     };
   }
 
+  @Nonnull
   public static String toUnifiedName(@Nonnull FqName name, @Nonnull FileType fileType) {
     final StringBuilder builder = new StringBuilder(100);
     try {
