@@ -32,7 +32,7 @@ public final class CodePrinterTest {
 
   @Test
   public void shouldWritePackage() throws IOException {
-    codeStream.s("package").sp().s(FqName.parse("com.test")).c(';');
+    codeStream.s("package").sp().s(FqName.valueOf("com.test")).c(';');
     codePrinter.print(codeStream);
     assertEquals("package com.test;\n", stringWriter.toString());
   }

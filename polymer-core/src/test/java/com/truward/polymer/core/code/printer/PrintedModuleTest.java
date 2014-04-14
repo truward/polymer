@@ -25,7 +25,7 @@ public final class PrintedModuleTest {
   private CodePrinter codePrinter;
   private TypeManager typeManager;
 
-  private final FqName packageName = FqName.parse("com.company.product");
+  private final FqName packageName = FqName.valueOf("com.company.product");
 
   @Before
   public void init() {

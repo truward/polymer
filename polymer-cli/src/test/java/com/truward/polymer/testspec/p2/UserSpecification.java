@@ -27,7 +27,7 @@ public final class UserSpecification {
   public void spec(@DomainObject User user) {
     specifier
         .target(user)
-        .setTargetName(user, FqName.parse("com.target.User"))
+        .setTargetName(user, FqName.valueOf("com.target.User"))
         .isNullable(user.getId())
         .getObjectSettings(User.class).assignBuilder();
   }

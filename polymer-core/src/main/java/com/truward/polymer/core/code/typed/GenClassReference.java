@@ -24,7 +24,7 @@ public final class GenClassReference implements GenClass {
 
   @Nonnull
   public static GenClassReference from(@Nonnull String fqName) {
-    return from(FqName.parse(fqName));
+    return from(FqName.valueOf(fqName));
   }
 
   @Override

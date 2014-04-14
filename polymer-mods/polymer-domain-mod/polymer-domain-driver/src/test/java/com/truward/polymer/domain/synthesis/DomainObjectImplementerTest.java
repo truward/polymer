@@ -109,7 +109,7 @@ public final class DomainObjectImplementerTest {
         .target(employee)
         .isNonNegative(employee.getAge())
         .isNullable(domainObjectSpecifier.domainObject(User.class).getName())
-        .setTargetName(employee, FqName.parse(packageName + ".DefaultEmployee"))
+        .setTargetName(employee, FqName.valueOf(packageName + ".DefaultEmployee"))
         .assignBuilder(employee);
 
     // trigger completion
@@ -129,7 +129,7 @@ public final class DomainObjectImplementerTest {
   @Test
   public void shouldGenerateCustomPackage() {
     final String packageName = "com.mysite.generated";
-    settings.setTargetPackageName(FqName.parse(packageName));
+    settings.setTargetPackageName(FqName.valueOf(packageName));
     settings.setImplClassPrefix("Default");
     settings.setImplClassSuffix("Implementation");
     settings.setDefensiveCopyStyle(DefensiveCopyStyle.JDK);

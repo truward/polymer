@@ -504,7 +504,7 @@ public final class Ast {
 
       final NameVisitor nameVisitor = new NameVisitor();
       AstVoidVisitor.apply(getParent(), nameVisitor);
-      nameVisitor.appendName(FqName.parse(getName()));
+      nameVisitor.appendName(FqName.valueOf(getName()));
       return nameVisitor.fqName;
     }
 

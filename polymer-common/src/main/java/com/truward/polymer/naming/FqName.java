@@ -21,7 +21,7 @@ public final class FqName implements Comparable<FqName>, Serializable {
   private transient int hash;
 
   @Nonnull
-  public static FqName parse(@Nonnull String fqName) {
+  public static FqName valueOf(@Nonnull String fqName) {
     int dotIndex;
     int nextIndex = 0;
 

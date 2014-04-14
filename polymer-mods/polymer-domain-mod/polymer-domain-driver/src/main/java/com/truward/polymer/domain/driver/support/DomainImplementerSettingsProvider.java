@@ -14,7 +14,7 @@ import javax.annotation.Nonnull;
 public final class DomainImplementerSettingsProvider extends FreezableSupport
     implements DomainImplementerSettings, DomainImplementerSettingsReader {
   private DefensiveCopyStyle defensiveCopyStyle = DefensiveCopyStyle.JDK;
-  private FqName defaultTargetPackageName = FqName.parse("generated");
+  private FqName defaultTargetPackageName = FqName.valueOf("generated");
   private String defaultImplClassPrefix = "";
   private String defaultImplClassSuffix = "Impl";
 

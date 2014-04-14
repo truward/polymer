@@ -20,7 +20,7 @@ public final class DefaultJacksonMarshallingSpecifier extends AbstractJsonMarsha
 
   @Override
   public FqName getDefaultTargetClassName() {
-    return FqName.parse("generated.JacksonMarshaller");
+    return FqName.valueOf("generated.JacksonMarshaller");
   }
 
   @Override

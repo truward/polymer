@@ -15,7 +15,7 @@ import java.util.*;
  * @author Alexander Shabanov
  */
 public final class DefaultTypeManager extends FreezableSupport implements TypeManager {
-  private static final FqName JAVA_LANG = FqName.parse("java.lang");
+  private static final FqName JAVA_LANG = FqName.valueOf("java.lang");
 
   private static final int DEFAULT_INITIAL_SIZE = 50;
 
@@ -232,7 +232,7 @@ public final class DefaultTypeManager extends FreezableSupport implements TypeMa
         // inner class
         className = className.replace('$', '.');
       }
-      this.targetName = FqName.parse(className);
+      this.targetName = FqName.valueOf(className);
     }
 
     @Override

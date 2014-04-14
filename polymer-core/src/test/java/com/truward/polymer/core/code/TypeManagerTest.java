@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
  */
 public final class TypeManagerTest {
 
-  private final FqName currentPackage = FqName.parse("com.company.product");
+  private final FqName currentPackage = FqName.valueOf("com.company.product");
 
   private TypeManager typeManager;
 
@@ -69,7 +69,7 @@ public final class TypeManagerTest {
     assertEquals(1, ImmutableSet.copyOf(genTypes).size()); // duplicates must fold
 
     typeManager.freeze();
-    assertEquals(ImmutableList.of(FqName.parse("java.util.List")), typeManager.getImportNames());
+    assertEquals(ImmutableList.of(FqName.valueOf("java.util.List")), typeManager.getImportNames());
   }
 
   @Test
@@ -82,8 +82,8 @@ public final class TypeManagerTest {
     assertEquals(genTypes.length, ImmutableSet.copyOf(genTypes).size()); // there should be no duplicates
 
     typeManager.freeze();
-    assertEquals(ImmutableSet.of(FqName.parse("java.util.Map"), FqName.parse("java.util.List"),
-        FqName.parse("java.io.Serializable")), ImmutableSet.copyOf(typeManager.getImportNames()));
+    assertEquals(ImmutableSet.of(FqName.valueOf("java.util.Map"), FqName.valueOf("java.util.List"),
+        FqName.valueOf("java.io.Serializable")), ImmutableSet.copyOf(typeManager.getImportNames()));
     assertAllVisible(genTypes[0]);
   }
 
@@ -124,7 +124,7 @@ public final class TypeManagerTest {
 
   private static GenClass mockGenClass(String fqName) {
     final GenClass result = mock(GenClass.class);
-    when(result.getFqName()).thenReturn(FqName.parse(fqName));
+    when(result.getFqName()).thenReturn(FqName.valueOf(fqName));
     when(result.isPrimitive()).thenReturn(false);
     return result;
   }

@@ -20,7 +20,7 @@ public class AstFactoryTest extends DelegatingAstFactory {
 
   @Test
   public void shouldCreateClassWithMethod() {
-    final Ast.ClassDecl myClass = classDecl(FqName.parse("com.mysite.MyClass"));
+    final Ast.ClassDecl myClass = classDecl(FqName.valueOf("com.mysite.MyClass"));
     myClass.makePublicFinal();
     final Ast.MethodDecl fooMethod = myClass.addMethodDecl("foo");
     fooMethod.setReturnType(voidType());
@@ -29,7 +29,6 @@ public class AstFactoryTest extends DelegatingAstFactory {
   //
   // Private
   //
-
 
   @Nonnull @Override protected AstFactory getDelegate() {
     assertNotNull(factory);

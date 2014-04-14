@@ -14,7 +14,7 @@ public final class FqNameTest {
 
   @Test
   public void shouldParseNestedName() {
-    final FqName fqName = FqName.parse("root.child");
+    final FqName fqName = FqName.valueOf("root.child");
     assertEquals("root", fqName.getParent().getName());
     assertTrue(fqName.getParent().isRoot());
     assertEquals("child", fqName.getName());
@@ -23,7 +23,7 @@ public final class FqNameTest {
 
   @Test
   public void shouldParseRootName() {
-    final FqName rootName = FqName.parse("root");
+    final FqName rootName = FqName.valueOf("root");
     assertTrue(rootName.isRoot());
     assertEquals("root", rootName.getName());
     assertEquals("root", rootName.toString());
@@ -31,15 +31,15 @@ public final class FqNameTest {
 
   @Test(expected = IllegalStateException.class)
   public void shouldDisallowAccessToParentOfRoot() {
-    FqName.parse("root").getParent();
+    FqName.valueOf("root").getParent();
   }
 
   @Test
   public void shouldLongNameBeEqualToItsEquivalent() {
     final String name = "com.mysite.demo.sample.MyClass";
-    final FqName fqName1 = FqName.parse(name);
-    final FqName fqName2 = FqName.parse(new String(name.toCharArray()));
-    final FqName fqName3 = FqName.parse(fqName1.toString());
+    final FqName fqName1 = FqName.valueOf(name);
+    final FqName fqName2 = FqName.valueOf(new String(name.toCharArray()));
+    final FqName fqName3 = FqName.valueOf(fqName1.toString());
 
     // equals test
     assertEquals(fqName1, fqName2);
@@ -54,11 +54,11 @@ public final class FqNameTest {
 
   @Test
   public void shouldBeEqualAndHaveSameHashCode() {
-    final FqName foo = FqName.parse("Foo");
+    final FqName foo = FqName.valueOf("Foo");
     final FqName[][] nameArrs = {
-        { foo, foo, FqName.parse("Foo") },
-        { FqName.parse("com.Foo"), FqName.parse("com.Foo"), new FqName("Foo", new FqName("com", null)) },
-        { FqName.parse("com.mysite.Foo"), FqName.parse("com.mysite.Foo"),
+        { foo, foo, FqName.valueOf("Foo") },
+        { FqName.valueOf("com.Foo"), FqName.valueOf("com.Foo"), new FqName("Foo", new FqName("com", null)) },
+        { FqName.valueOf("com.mysite.Foo"), FqName.valueOf("com.mysite.Foo"),
             new FqName("Foo", new FqName("mysite", new FqName("com", null))) }
     };
 
@@ -77,7 +77,7 @@ public final class FqNameTest {
 
   @Test
   public void shouldAppendWithCustomSeparator() throws IOException {
-    final FqName name = FqName.parse("com.mysite.Foo");
+    final FqName name = FqName.valueOf("com.mysite.Foo");
     final StringBuilder builder = new StringBuilder();
     name.appendTo(builder, '/');
     assertEquals("com/mysite/Foo", builder.toString());
@@ -85,26 +85,26 @@ public final class FqNameTest {
 
   @Test
   public void shouldJoinNames() {
-    assertEquals("com.mysite.domain", FqName.parse("com.mysite").append(FqName.parse("domain")).toString());
-    assertEquals("com.mysite.domain", FqName.parse("com").append(FqName.parse("mysite.domain")).toString());
+    assertEquals("com.mysite.domain", FqName.valueOf("com.mysite").append(FqName.valueOf("domain")).toString());
+    assertEquals("com.mysite.domain", FqName.valueOf("com").append(FqName.valueOf("mysite.domain")).toString());
   }
 
   @Test
   public void shouldConvertToList() {
-    assertEquals(Arrays.asList("com"), FqName.parse("com").toList());
-    assertEquals(Arrays.asList("com", "mysite"), FqName.parse("com.mysite").toList());
+    assertEquals(Arrays.asList("com"), FqName.valueOf("com").toList());
+    assertEquals(Arrays.asList("com", "mysite"), FqName.valueOf("com.mysite").toList());
   }
 
   @Test
   public void shouldNotBeEqual() {
     final FqName[] names = {
-        FqName.parse("com.mysite.Foo"),
-        FqName.parse("Foo"),
-        FqName.parse("com.mysite.service.Foo"),
-        FqName.parse("org.mysite.Foo"),
-        FqName.parse("com.anothersite.Foo"),
-        FqName.parse("org.mysite"),
-        FqName.parse("com.mysite.Bar")
+        FqName.valueOf("com.mysite.Foo"),
+        FqName.valueOf("Foo"),
+        FqName.valueOf("com.mysite.service.Foo"),
+        FqName.valueOf("org.mysite.Foo"),
+        FqName.valueOf("com.anothersite.Foo"),
+        FqName.valueOf("org.mysite"),
+        FqName.valueOf("com.mysite.Bar")
     };
 
     for (int i = 0; i < names.length; ++i) {
@@ -130,7 +130,7 @@ public final class FqNameTest {
         } else {
           // assert matches
           final FqName name = names[i];
-          final FqName clone = FqName.parse(name.toString());
+          final FqName clone = FqName.valueOf(name.toString());
           assertEquals(0, name.compareTo(name));
           assertEquals(0, name.compareTo(clone));
           assertEquals(name, clone);
@@ -143,25 +143,25 @@ public final class FqNameTest {
 
   @Test
   public void shouldAppend() {
-    final FqName com = FqName.parse("com");
-    assertEquals(FqName.parse("com.mysite"), com.append("mysite"));
-    assertEquals(FqName.parse("com.mysite.demo"), com.append("mysite").append("demo"));
+    final FqName com = FqName.valueOf("com");
+    assertEquals(FqName.valueOf("com.mysite"), com.append("mysite"));
+    assertEquals(FqName.valueOf("com.mysite.demo"), com.append("mysite").append("demo"));
   }
 
   @Test
   public void shouldCalculateCount() {
-    assertEquals(1, FqName.parse("com").count());
-    assertEquals(2, FqName.parse("com.mysite").count());
-    assertEquals(3, FqName.parse("com.mysite.demo").count());
+    assertEquals(1, FqName.valueOf("com").count());
+    assertEquals(2, FqName.valueOf("com.mysite").count());
+    assertEquals(3, FqName.valueOf("com.mysite.demo").count());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIAEOnEmptyString() {
-    FqName.parse("");
+    FqName.valueOf("");
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIAEOnMalformedName() {
-    FqName.parse("com..mysite");
+    FqName.valueOf("com..mysite");
   }
 }

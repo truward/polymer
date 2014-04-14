@@ -8,7 +8,6 @@ import com.truward.polymer.output.StandardFileTypes;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -31,13 +30,13 @@ public final class MemOutputStreamProviderTest {
 
   @Test
   public void shouldAppendFileType() throws IOException {
-    print(FqName.parse("my.File"), StandardFileTypes.JAVA, content);
+    print(FqName.valueOf("my.File"), StandardFileTypes.JAVA, content);
     assertEquals(content, provider.getContentMap().get("my/File.java"));
   }
 
   @Test
   public void shouldOmitExtension() throws IOException {
-    print(FqName.parse("README"), StandardFileTypes.NONE, content);
+    print(FqName.valueOf("README"), StandardFileTypes.NONE, content);
     assertEquals(content, provider.getContentMap().get("README"));
   }
 

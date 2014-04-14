@@ -28,7 +28,7 @@ public final class AstPrinterTest {
 
   @Test
   public void shouldPrintClassDecl() {
-    final Ast.ClassDecl classDecl = astFactory.classDecl(FqName.parse("my.pkg.FooClass"));
+    final Ast.ClassDecl classDecl = astFactory.classDecl(FqName.valueOf("my.pkg.FooClass"));
     astPrinter.print(classDecl);
     assertSameGeneratedContent("package my.pkg;\n\n\nclass FooClass {\n}\n", "my/pkg/FooClass.java");
   }

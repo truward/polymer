@@ -95,7 +95,7 @@ public final class GsonMarshallingTest {
     @Specification(ordinal = 2)
     public void specifyGsonSerialization() {
       jsonMarshallingSpecifier
-          .setTargetClassName(FqName.parse("generated.GsonMarshallers"))
+          .setTargetClassName(FqName.valueOf("generated.GsonMarshallers"))
           .addDomainEntity(Foo.class);
     }
   }

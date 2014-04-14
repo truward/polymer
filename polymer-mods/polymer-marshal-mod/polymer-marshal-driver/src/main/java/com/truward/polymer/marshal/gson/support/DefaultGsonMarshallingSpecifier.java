@@ -60,7 +60,7 @@ public final class DefaultGsonMarshallingSpecifier extends AbstractJsonMarshalle
 
   @Override
   protected FqName getDefaultTargetClassName() {
-    return FqName.parse("generated.GsonMarshaller");
+    return FqName.valueOf("generated.GsonMarshaller");
   }
 
   //

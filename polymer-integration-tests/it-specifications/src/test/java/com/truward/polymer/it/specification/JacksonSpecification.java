@@ -20,6 +20,6 @@ public final class JacksonSpecification {
   @Specification
   public void jacksonSpecification() {
     jacksonMarshallerSpecifier.addDomainEntity(User.class);
-    jacksonMarshallerSpecifier.setTargetClassName(FqName.parse("com.truward.polymer.generated.jackson.JacksonMarshallers"));
+    jacksonMarshallerSpecifier.setTargetClassName(FqName.valueOf("com.truward.polymer.generated.jackson.JacksonMarshallers"));
   }
 }

@@ -15,7 +15,7 @@ public final class ModelSpecification {
   @Resource
   private DomainObjectSpecifier specifier;
 
-  private final FqName targetPackage = FqName.parse("com.truward.polymer.generated.model");
+  private final FqName targetPackage = FqName.valueOf("com.truward.polymer.generated.model");
 
   @Specification
   public void globalSettings() {
