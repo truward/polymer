@@ -8,6 +8,8 @@ import com.truward.polymer.output.MemOutputStreamProvider;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -27,7 +29,7 @@ public final class AstPrinterTest {
   }
 
   @Test
-  public void shouldPrintClassDecl() {
+  public void shouldPrintClassDecl() throws IOException {
     final Ast.ClassDecl classDecl = astFactory.classDecl(FqName.valueOf("my.pkg.FooClass"));
     astPrinter.print(classDecl);
     assertSameGeneratedContent("package my.pkg;\n\n\nclass FooClass {\n}\n", "my/pkg/FooClass.java");

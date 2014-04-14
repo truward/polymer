@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -52,7 +53,7 @@ public final class GsonMarshallingTest {
 
 
   @Test
-  public void shouldGenerateTarget() {
+  public void shouldGenerateTarget() throws IOException {
     specificationHandler.parseClass(FooSpecification.class);
     SpecificationUtil.notifyState(specificationStateAwareBeans, SpecificationState.COMPLETED);
 

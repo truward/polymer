@@ -46,7 +46,7 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
   private Map<DomainAnalysisResult, GenDomainClass> implementationTargets = new HashMap<>();
 
   @Override
-  public void generateImplementations() {
+  public void generateImplementations() throws IOException {
     checkIsFrozen();
     generateCode();
   }
@@ -106,13 +106,9 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
     return new FqName(className, implementerSettings.getDefaultTargetPackageName());
   }
 
-  private void generateCode() {
-    try {
-      for (final GenDomainClass implementationTarget : implementationTargets.values()) {
-        generateCode(implementationTarget);
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+  private void generateCode() throws IOException {
+    for (final GenDomainClass implementationTarget : implementationTargets.values()) {
+      generateCode(implementationTarget);
     }
 
     log.info("Done with code generation");

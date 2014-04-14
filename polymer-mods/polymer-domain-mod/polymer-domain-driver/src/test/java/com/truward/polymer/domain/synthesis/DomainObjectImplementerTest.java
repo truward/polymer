@@ -19,6 +19,7 @@ import com.truward.polymer.naming.FqName;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -83,21 +84,21 @@ public final class DomainObjectImplementerTest {
   }
 
   @Test
-  public void shouldImplement() {
+  public void shouldImplement() throws IOException {
     generateCode(User.class);
     final String code = getOneContent(mosp);
     assertTrue(code.contains("package")); // TODO: more complex verification
   }
 
   @Test
-  public void shouldImplementEqualsAndHashCodeForPrimitiveType() {
+  public void shouldImplementEqualsAndHashCodeForPrimitiveType() throws IOException {
     generateCode(Primitive.class);
     final String code = getOneContent(mosp);
     assertTrue(code.startsWith("package generated;\n"));
   }
 
   @Test
-  public void shouldGenerateBuilder() {
+  public void shouldGenerateBuilder() throws IOException {
     final String packageName = "com.mycompany.model";
 
     // trigger beginning
@@ -127,7 +128,7 @@ public final class DomainObjectImplementerTest {
   }
 
   @Test
-  public void shouldGenerateCustomPackage() {
+  public void shouldGenerateCustomPackage() throws IOException {
     final String packageName = "com.mysite.generated";
     settings.setTargetPackageName(FqName.valueOf(packageName));
     settings.setImplClassPrefix("Default");
@@ -144,7 +145,7 @@ public final class DomainObjectImplementerTest {
   // Private
   //
 
-  private void generateCode(Class<?> domainClass) {
+  private void generateCode(Class<?> domainClass) throws IOException {
     domainObjectSpecifier.targets(domainClass);
     SpecificationUtil.notifyState(specificationStateAwareBeans, SpecificationState.COMPLETED);
     implementer.generateImplementations();

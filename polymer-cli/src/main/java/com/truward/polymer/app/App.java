@@ -112,13 +112,13 @@ public final class App {
     try {
       runCodeGenerator(new FSOutputStreamProvider(new File(result.getTargetDir())), specificationClasses);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("I/O error while running code generator", e);
     }
   }
 
   @VisibleForTesting
   public static void runCodeGenerator(@Nonnull OutputStreamProvider outputStreamProvider,
-                                      @Nonnull List<Class<?>> specificationClasses) {
+                                      @Nonnull List<Class<?>> specificationClasses) throws IOException {
     final Logger log = LoggerFactory.getLogger(App.class);
     final PolymerModule module = new PolymerModule();
     final InjectionContext injectionContext = module.addDefaults().getInjectionContext();

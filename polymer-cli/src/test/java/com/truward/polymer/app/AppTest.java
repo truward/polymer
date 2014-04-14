@@ -31,14 +31,14 @@ public class AppTest {
   }
 
   @Test
-  public void shouldGenerateCodeForP1UserRoleSpecification() {
+  public void shouldGenerateCodeForP1UserRoleSpecification() throws IOException {
     final MemOutputStreamProvider mosp = new MemOutputStreamProvider();
     App.runCodeGenerator(mosp, ImmutableList.<Class<?>>of(UserRoleSpecification.class));
     System.out.println(String.format("Generated: %d files", mosp.getContentMap().size()));
   }
 
   @Test
-  public void shouldGenerateCodeForP2UserSpecification() {
+  public void shouldGenerateCodeForP2UserSpecification() throws IOException {
     final MemOutputStreamProvider mosp = new MemOutputStreamProvider();
     App.runCodeGenerator(mosp, ImmutableList.<Class<?>>of(UserSpecification.class));
     System.out.println(String.format("Generated: %d files", mosp.getContentMap().size()));
