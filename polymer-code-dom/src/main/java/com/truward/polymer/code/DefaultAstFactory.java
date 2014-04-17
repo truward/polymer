@@ -8,6 +8,7 @@ import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.annotation.Annotation;
 
 /**
  * Represents a factory class for AST nodes.
@@ -20,7 +21,7 @@ public final class DefaultAstFactory implements AstFactory {
   @Nonnull @Override public Ast.ClassDecl classDecl(@Nonnull Ast.Node parent, @Nullable String name) {
     final Ast.ClassDecl classDecl = new Ast.ClassDecl();
 
-    AstVoidVisitor.apply(parent, new AstVoidVisitor<RuntimeException>() {
+    parent.accept(new AstVoidVisitor<RuntimeException>() {
       @Override
       protected void visitNode(@Nonnull Ast.Node node) {
         throw new UnsupportedOperationException("Class may not be a parent of " + node);
@@ -67,8 +68,24 @@ public final class DefaultAstFactory implements AstFactory {
     return classDecl(parent, className.getName());
   }
 
-  @Nonnull @Override public Ast.TypeExpr classRef(@Nonnull Class<?> classRef) {
-    return new Ast.ClassRef(classRef);
+  @Nonnull @Override public Ast.TypeExpr classRef(@Nonnull Class<?> standardClass) {
+    return new Ast.ClassRef(standardClass); // TODO: can be cached
+  }
+
+  @Override @Nonnull public Ast.VarDecl var(@Nonnull String name, @Nonnull Ast.TypeExpr typeExpr) {
+    return new Ast.VarDecl(name).setTypeExpr(typeExpr);
+  }
+
+  @Override @Nonnull public Ast.VarDecl var(@Nonnull String name) {
+    return var(name, nil());
+  }
+
+  @Override @Nonnull public Ast.Nil nil() {
+    return Ast.Nil.INSTANCE;
+  }
+
+  @Override @Nonnull public Ast.Annotation annotation(@Nonnull Class<? extends Annotation> annotationClass) {
+    return new Ast.Annotation().setTypeExpr(classRef(annotationClass));
   }
 
   @Nonnull @Override public Ast.TypeExpr voidType() {
@@ -81,6 +98,26 @@ public final class DefaultAstFactory implements AstFactory {
       throw new IllegalStateException("Non-package entity has been created for " + fqName);
     }
     return result;
+  }
+
+  @Nonnull @Override public Ast.Return returnStmt() {
+    return new Ast.Return();
+  }
+
+  @Nonnull @Override public Ast.Return returnStmt(@Nonnull Ast.Expr expr) {
+    return returnStmt().setExpr(expr);
+  }
+
+  @Nonnull @Override public Ast.Literal literal(@Nullable Object value) {
+    return new Ast.Literal(value);
+  }
+
+  @Nonnull @Override public Ast.Ident ident(@Nonnull String name) {
+    return new Ast.Ident(name);
+  }
+
+  @Nonnull @Override public Ast.Select select(@Nonnull Ast.Expr expr, @Nonnull String name) {
+    return new Ast.Select(expr, name);
   }
 
   //
@@ -119,6 +156,7 @@ public final class DefaultAstFactory implements AstFactory {
 
   private static final class AsPackageVisitor extends AstVoidVisitor<RuntimeException> {
     private Ast.Package result;
+
     @Override protected void visitNode(@Nonnull Ast.Node node) {
       // do nothing
     }
@@ -129,7 +167,7 @@ public final class DefaultAstFactory implements AstFactory {
 
     @Nullable static Ast.Package asPackage(@Nonnull Ast.Node node) {
       final AsPackageVisitor visitor = new AsPackageVisitor();
-      AstVoidVisitor.apply(node, visitor);
+      node.accept(visitor);
       return visitor.result;
     }
   }

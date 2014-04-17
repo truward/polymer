@@ -15,13 +15,9 @@ public final class EscapeUtil {
    * @param str String to be escaped.
    * @return String, with properly escaped characters
    */
-  @Nonnull public static String escape(@Nonnull String str) {
+  @Nonnull public static String escape(@Nonnull String str) throws IOException {
     final StringBuilder builder = new StringBuilder();
-    try {
-      escape(str, builder);
-    } catch (IOException e) {
-      throw new RuntimeException(e); // shouldn't happen
-    }
+    escape(str, builder);
     return builder.toString();
   }
 

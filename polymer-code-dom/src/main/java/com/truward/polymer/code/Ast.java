@@ -12,6 +12,8 @@ import java.util.*;
 /**
  * Holder for Java Abstract Syntax Tree's nodes.
  *
+ * TODO: clear separations to interfaces and implementations
+ *
  * @author Alexander Shabanov
  */
 public final class Ast {
@@ -41,6 +43,8 @@ public final class Ast {
     boolean hasName();
 
     @Nonnull String getName();
+
+    <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T;
   }
 
   /**
@@ -141,6 +145,10 @@ public final class Ast {
     @Override public String toString() {
       return "<nil>";
     }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitNil(this);
+    }
   }
 
   /**
@@ -154,8 +162,38 @@ public final class Ast {
       this.name = name;
     }
 
-    @Nonnull public String getName() {
+    @Override @Nonnull public String getName() {
       return name;
+    }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitIdent(this);
+    }
+  }
+
+  /**
+   * Represent selectors, aka Field Access expression.
+   * @see "JLS 3, section 15.11"
+   */
+  public static final class Select extends AbstractExpr {
+    private final Expr expr;
+    private final String name;
+
+    Select(@Nonnull Expr expr, @Nonnull String name) {
+      this.name = name;
+      this.expr = expr;
+    }
+
+    @Override @Nonnull public String getName() {
+      return name;
+    }
+
+    @Nonnull public Expr getExpr() {
+      return expr;
+    }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitSelect(this);
     }
   }
 
@@ -175,6 +213,10 @@ public final class Ast {
     @Nonnull public FqName getImportName() {
       return importName;
     }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitImport(this);
+    }
   }
 
   /**
@@ -192,6 +234,10 @@ public final class Ast {
     @Nonnull @Override public List<Stmt> getStatements() {
       return statements;
     }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitBlock(this);
+    }
   }
 
   public static final class Array extends AbstractTypeExpr {
@@ -204,10 +250,16 @@ public final class Ast {
     public void setType(@Nonnull TypeExpr type) {
       this.type = type;
     }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitArray(this);
+    }
   }
 
   public static final class ParameterizedClass extends AbstractTypeExpr {
-
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitParameterizedClass(this);
+    }
   }
 
   public static final class ClassRef extends AbstractTypeExpr {
@@ -215,8 +267,9 @@ public final class Ast {
     private transient FqName fqName = null;
 
     ClassRef(@Nonnull Class<?> classRef) {
-      if (classRef.isArray() || classRef.isSynthetic()) {
-        throw new IllegalArgumentException("Non-array (plain) class expected");
+      if (classRef.isArray() || classRef.isSynthetic() || classRef.isAnonymousClass()) {
+        throw new IllegalArgumentException("Array, syntetic and anonymous classes are forbidden for reference, " +
+            "got " + classRef);
       }
 
       this.classRef = classRef;
@@ -241,17 +294,36 @@ public final class Ast {
     @Nonnull public Class<?> getClassRef() {
       return classRef;
     }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitClassRef(this);
+    }
   }
 
   public static final class Annotation extends AbstractNode {
     private TypeExpr typeExpr = Nil.INSTANCE;
+    private List<Expr> arguments = new ArrayList<>();
 
     @Nonnull public TypeExpr getTypeExpr() {
       return typeExpr;
     }
 
-    public void setTypeExpr(@Nonnull TypeExpr typeExpr) {
+    @Nonnull public Annotation setTypeExpr(@Nonnull TypeExpr typeExpr) {
       this.typeExpr = typeExpr;
+      return this;
+    }
+
+    @Nonnull public List<Expr> getArguments() {
+      return arguments;
+    }
+
+    @Nonnull public Annotation addArgument(@Nonnull Expr argument) {
+      this.arguments.add(argument);
+      return this;
+    }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitAnnotation(this);
     }
   }
 
@@ -266,19 +338,13 @@ public final class Ast {
 
     protected abstract @Nonnull TSelf getSelf();
 
-    public final TSelf makePublic() {
-      modifiers.add(Modifier.PUBLIC);
+    public final TSelf addModifiers(Collection<Modifier> modifiers) {
+      this.modifiers.addAll(modifiers);
       return getSelf();
     }
 
-    public final TSelf makeFinal() {
-      modifiers.add(Modifier.FINAL);
-      return getSelf();
-    }
-
-    public final TSelf makePublicFinal() {
-      makeFinal().makePublic();
-      return getSelf();
+    public final TSelf addModifiers(Modifier... modifiers) {
+      return addModifiers(Arrays.asList(modifiers));
     }
 
     @Nonnull public final Set<Modifier> getModifiers() {
@@ -287,6 +353,11 @@ public final class Ast {
 
     @Nonnull public final List<Annotation> getAnnotations() {
       return annotations;
+    }
+
+    @Nonnull public final TSelf addAnnotation(@Nonnull Annotation annotation) {
+      this.annotations.add(annotation);
+      return getSelf();
     }
 
     @Nonnull @Override public final String getName() {
@@ -310,6 +381,7 @@ public final class Ast {
     }
 
     public TSelf setParent(@Nonnull Node parent) {
+      assert parent != this : "This class should not be a parent of itself";
       this.parent = parent;
       return getSelf();
     }
@@ -368,6 +440,10 @@ public final class Ast {
       }
       return getFqNameFromPackage(pkg.parent).append(pkg.getName());
     }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitPackage(this);
+    }
   }
 
   /**
@@ -389,6 +465,10 @@ public final class Ast {
     @Nonnull public List<TypeExpr> getTypeBounds() {
       return typeBounds;
     }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitTypeParameter(this);
+    }
   }
 
   /**
@@ -408,6 +488,10 @@ public final class Ast {
 
     @Nonnull public TypeBoundExpr getBoundExpr() {
       return boundExpr;
+    }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitWildcard(this);
     }
   }
 
@@ -434,6 +518,10 @@ public final class Ast {
     @Nonnull public Expr getBoundExpr() {
       return boundExpr;
     }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitTypeBoundExpr(this);
+    }
   }
 
   public static final class CompilationUnit extends AbstractNode implements Unit {
@@ -446,9 +534,12 @@ public final class Ast {
       return imports;
     }
 
-    @Override
-    public void setImports(@Nonnull List<Import> imports) {
+    @Override public void setImports(@Nonnull List<Import> imports) {
       this.imports = ImmutableList.copyOf(imports);
+    }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitCompilationUnit(this);
     }
   }
 
@@ -499,6 +590,10 @@ public final class Ast {
       throw new IllegalStateException("Can't determine field kind based on parent=" + getParent());
     }
 
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitVarDecl(this);
+    }
+
     public static enum Kind {
       UNDEFINED,
       FIELD,
@@ -532,7 +627,8 @@ public final class Ast {
 
     @Nonnull public MethodDecl addMethodDecl(@Nonnull String name) {
       final MethodDecl methodDecl = new MethodDecl(name);
-      addStmt(methodDecl).setParent(this);
+      methodDecl.setParent(this);
+      addStmt(methodDecl);
       return methodDecl;
     }
 
@@ -586,9 +682,13 @@ public final class Ast {
       }
 
       final NameVisitor nameVisitor = new NameVisitor();
-      AstVoidVisitor.apply(getParent(), nameVisitor);
+      getParent().accept(nameVisitor);
       nameVisitor.appendName(FqName.valueOf(getName()));
       return nameVisitor.fqName;
+    }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitClassDecl(this);
     }
 
     //
@@ -637,6 +737,10 @@ public final class Ast {
     @Nullable public Object getValue() {
       return value;
     }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitLiteral(this);
+    }
   }
 
   /**
@@ -650,8 +754,13 @@ public final class Ast {
       return expr;
     }
 
-    public void setExpr(@Nonnull Expr expr) {
+    @Nonnull public Return setExpr(@Nonnull Expr expr) {
       this.expr = expr;
+      return this;
+    }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitReturn(this);
     }
   }
 
@@ -661,13 +770,18 @@ public final class Ast {
    */
   public static final class MethodDecl extends NamedStmt<MethodDecl> {
     private final List<TypeParameter> typeParameters = new ArrayList<>();
+    private final List<VarDecl> arguments = new ArrayList<>();
     private final List<Expr> thrown = new ArrayList<>();
-    private TypeExpr returnType = Nil.INSTANCE;
+    private TypeExpr returnType = Nil.INSTANCE; // nil for constructors
     private Expr defaultValue = Nil.INSTANCE; // for annotation types
     private StmtBlock body = Nil.INSTANCE; // nil for interface/abstract methods
 
     MethodDecl(@Nonnull String name) {
       setName(name);
+    }
+
+    @Nonnull public List<VarDecl> getArguments() {
+      return arguments;
     }
 
     @Nonnull public List<TypeParameter> getTypeParameters() {
@@ -686,7 +800,7 @@ public final class Ast {
       return defaultValue;
     }
 
-    @Nullable public StmtBlock getBody() {
+    @Nonnull public StmtBlock getBody() {
       return body;
     }
 
@@ -698,6 +812,16 @@ public final class Ast {
       return this;
     }
 
+    @Nonnull public MethodDecl addArgument(@Nonnull VarDecl argument) {
+      argument.setParent(this);
+      this.arguments.add(argument);
+      return this;
+    }
+
+    @Nonnull public MethodDecl addArgument(@Nonnull String name, @Nonnull TypeExpr type) {
+      return addArgument(new VarDecl(name).setTypeExpr(type));
+    }
+
     @Nonnull public MethodDecl setReturnType(@Nonnull TypeExpr returnType) {
       this.returnType = returnType;
       return this;
@@ -706,6 +830,15 @@ public final class Ast {
     @Nonnull public MethodDecl setDefaultValue(@Nonnull Expr defaultValue) {
       this.defaultValue = defaultValue;
       return this;
+    }
+
+    @Nonnull public MethodDecl addTypeParameter(@Nonnull TypeParameter typeParameter) {
+      this.typeParameters.add(typeParameter);
+      return this;
+    }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitMethodDecl(this);
     }
 
     //

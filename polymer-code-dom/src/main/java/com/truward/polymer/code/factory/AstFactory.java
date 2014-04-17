@@ -5,6 +5,7 @@ import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.annotation.Annotation;
 
 /**
  * @author Alexander Shabanov
@@ -16,7 +17,25 @@ public interface AstFactory {
 
   @Nonnull Ast.TypeExpr classRef(@Nonnull Class<?> classRef);
 
+  @Nonnull Ast.VarDecl var(@Nonnull String name, @Nonnull Ast.TypeExpr typeExpr);
+
+  @Nonnull Ast.VarDecl var(@Nonnull String name);
+
+  @Nonnull Ast.Nil nil();
+
+  @Nonnull Ast.Annotation annotation(@Nonnull Class<? extends Annotation> annotationClass);
+
   @Nonnull Ast.TypeExpr voidType();
 
   @Nonnull Ast.Package pkg(@Nonnull FqName fqName);
+
+  @Nonnull Ast.Return returnStmt();
+
+  @Nonnull Ast.Return returnStmt(@Nonnull Ast.Expr expr);
+
+  @Nonnull Ast.Literal literal(@Nullable Object value);
+
+  @Nonnull Ast.Ident ident(@Nonnull String name);
+
+  @Nonnull Ast.Select select(@Nonnull Ast.Expr expr, @Nonnull String name);
 }

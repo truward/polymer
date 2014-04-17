@@ -48,27 +48,43 @@ public abstract class AstVoidVisitor<T extends Exception> {
     visitNode(node);
   }
 
-  public static <T extends Exception> void apply(@Nonnull Ast.Node node, @Nonnull AstVoidVisitor<T> visitor) throws T {
-    if (node instanceof Ast.Package) {
-      visitor.visitPackage((Ast.Package) node);
-    } else if (node instanceof Ast.ClassDecl) {
-      visitor.visitClassDecl((Ast.ClassDecl) node);
-    } else if (node instanceof Ast.MethodDecl) {
-      visitor.visitMethodDecl((Ast.MethodDecl) node);
-    } else if (node instanceof Ast.VarDecl) {
-      visitor.visitVarDecl((Ast.VarDecl) node);
-    } else if (node instanceof Ast.ClassRef) {
-      visitor.visitClassRef((Ast.ClassRef) node);
-    } else if (node instanceof Ast.Literal) {
-      visitor.visitLiteral((Ast.Literal) node);
-    } else if (node instanceof Ast.Return) {
-      visitor.visitReturn((Ast.Return) node);
-    } else if (node instanceof Ast.Ident) {
-      visitor.visitIdent((Ast.Ident) node);
-    } else if (node instanceof Ast.Nil) {
-      visitor.visitNil((Ast.Nil) node);
-    } else {
-      visitor.visitNode(node);
-    }
+  public void visitSelect(@Nonnull Ast.Select node) throws T {
+    visitNode(node);
+  }
+
+  public void visitImport(@Nonnull Ast.Import node) throws T {
+    visitNode(node);
+  }
+
+  public void visitBlock(@Nonnull Ast.Block node) throws T {
+    visitNode(node);
+  }
+
+  public void visitArray(@Nonnull Ast.Array node) throws T {
+    visitNode(node);
+  }
+
+  public void visitParameterizedClass(@Nonnull Ast.ParameterizedClass node) throws T {
+    visitNode(node);
+  }
+
+  public void visitAnnotation(@Nonnull Ast.Annotation node) throws T {
+    visitNode(node);
+  }
+
+  public void visitTypeParameter(@Nonnull Ast.TypeParameter node) throws T {
+    visitNode(node);
+  }
+
+  public void visitWildcard(@Nonnull Ast.Wildcard node) throws T {
+    visitNode(node);
+  }
+
+  public void visitTypeBoundExpr(@Nonnull Ast.TypeBoundExpr node) throws T {
+    visitNode(node);
+  }
+
+  public void visitCompilationUnit(@Nonnull Ast.CompilationUnit node) throws T {
+    visitNode(node);
   }
 }
