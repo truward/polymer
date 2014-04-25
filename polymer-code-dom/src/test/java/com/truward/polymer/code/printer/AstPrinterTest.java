@@ -13,6 +13,8 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -46,7 +48,6 @@ public final class AstPrinterTest extends DelegatingAstFactory {
     classDecl.addField("b", classRef(int.class)).addModifiers(AstUtil.PRIVATE_FINAL);
     astPrinter.print(classDecl);
     final String contents = mosp.getContentMap().get("my/pkg/FooClass.java");
-    System.out.println(contents);
 
     assertTrue(contents.contains("strictfp class FooClass {\n"));
     assertTrue(contents.contains("private final String a;\n"));
@@ -66,16 +67,18 @@ public final class AstPrinterTest extends DelegatingAstFactory {
 
     // >> @Override public String toString() { return this.name; }
     userClass.addMethodDecl("toString").addModifiers(Modifier.PUBLIC).addAnnotation(annotation(Override.class))
-        .addBodyStmt(returnStmt(select(ident("this"), "name")))
+        .addBodyStmt(var("result", classRef(String.class))
+            .setInitializer(select(ident("this"), "name")))
+        .addBodyStmt(returnStmt(ident("result")))
         .setReturnType(classRef(String.class));
 
     // >> @Override public int hashCode() { return 1; }
-    userClass.addMethodDecl("hashCode").addModifiers(Modifier.PUBLIC).addAnnotation(annotation(Override.class))
+    AstUtil.makePublicOverride(this, userClass.addMethodDecl("hashCode"))
         .addBodyStmt(returnStmt(literal(1)))
         .setReturnType(classRef(int.class));
 
     // >> @Override public boolean equals(Object other) { return false; }
-    userClass.addMethodDecl("equals").addModifiers(Modifier.PUBLIC).addAnnotation(annotation(Override.class))
+    AstUtil.makePublicOverride(this, userClass.addMethodDecl("equals"))
         .addArgument("other", classRef(Object.class))
         .addBodyStmt(returnStmt(literal(false)))
         .setReturnType(classRef(boolean.class));
@@ -83,10 +86,28 @@ public final class AstPrinterTest extends DelegatingAstFactory {
     // print class and get contents
     astPrinter.print(userClass);
     final String contents = mosp.getContentMap().get("domain/User.java");
-    System.out.println(contents);
 
     assertTrue(contents.contains("private String name;\n"));
+    assertTrue(contents.contains("public String toString() {\n"));
+    assertTrue(contents.contains("String result = this.name;\n"));
+    assertTrue(contents.contains("return result;\n"));
     assertTrue(contents.contains("public boolean equals(Object other) {\n"));
+  }
+
+  @Test
+  public void shouldPrintSuperclassAndInterfaces() throws IOException {
+    final Ast.ClassDecl userClass = classDecl(FqName.valueOf("domain.User"))
+        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+        .addInterface(classRef(Serializable.class))
+        .addInterface(classRef(Cloneable.class))
+        .setSuperclass(classRef(Date.class));
+
+    // print class and get contents
+    astPrinter.print(userClass);
+    final String contents = mosp.getContentMap().get("domain/User.java");
+
+    assertTrue(contents.contains("public abstract class User extends java.util.Date " +
+        "implements java.io.Serializable, Cloneable {\n"));
   }
 
   //

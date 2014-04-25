@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Helper class for printing class declaration.
@@ -57,7 +58,27 @@ final class ClassPrinter {
 
   private void printClassDecl(@Nonnull Ast.ClassDecl classDecl) throws IOException {
     printNamedStmt(classDecl, true);
-    printer.print("class").print(' ').print(classDecl.getName()).print(' ').print('{');
+    printer.print("class").print(' ').print(classDecl.getName());
+
+    // print superclass, if any
+    if (!classDecl.getSuperclass().isNil()) {
+      printer.print(' ').print("extends").print(' ');
+      printGeneric(classDecl.getSuperclass());
+    }
+
+    // print implemented interfaces, if any
+    final List<Ast.TypeExpr> interfaces = classDecl.getInterfaces();
+    if (!interfaces.isEmpty()) {
+      printer.print(' ').print("implements").print(' ');
+      for (int i = 0; i < interfaces.size(); ++i) {
+        if (i > 0) {
+          printer.print(',').print(' ');
+        }
+        printGeneric(interfaces.get(i));
+      }
+    }
+
+    printer.print(' ').print('{');
 
     for (final Ast.Stmt stmt : classDecl.getBodyStmts()) {
       printGeneric(stmt);
@@ -80,6 +101,11 @@ final class ClassPrinter {
       printNamedStmt(node, varKind == Ast.VarDecl.Kind.FIELD);
       node.getTypeExpr().accept(this);
       printer.print(' ').print(node.getName());
+
+      if (!node.getInitializer().isNil()) {
+        printer.print(' ').print('=').print(' ');
+        node.getInitializer().accept(this);
+      }
 
       if (varKind != Ast.VarDecl.Kind.PARAMETER) {
         printer.print(';');

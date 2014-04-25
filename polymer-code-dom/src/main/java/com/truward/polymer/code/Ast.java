@@ -334,7 +334,7 @@ public final class Ast {
     private final Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
     private final List<Annotation> annotations = new ArrayList<>();
     private String name;
-    private Node parent;
+    private Node parent = Nil.INSTANCE;
 
     protected abstract @Nonnull TSelf getSelf();
 
@@ -376,7 +376,7 @@ public final class Ast {
       return getSelf();
     }
 
-    @Nonnull public Node getParent() {
+    @Nonnull public final Node getParent() {
       return parent;
     }
 
@@ -387,17 +387,16 @@ public final class Ast {
     }
   }
 
-  public static final class Package extends AbstractNode {
-    private final Package parent; // TODO: nil object?
-    private final String name;
+  public static final class Package extends NamedStmt<Package> {
     private final Map<String, Node> childs = new HashMap<>();
 
-    Package(@Nullable Package parent, @Nonnull String name) {
-      if (parent != null) {
-        parent.addChild(this);
+    Package(@Nonnull Node parent, @Nonnull String name) {
+      if (!parent.isNil()) {
+        // TODO: visitor
+        ((Package) parent).addChild(this);
       }
-      this.parent = parent;
-      this.name = name;
+      setParent(parent);
+      setName(name);
     }
 
     @Nonnull Package addChild(@Nonnull Node node) {
@@ -417,32 +416,24 @@ public final class Ast {
       return childs;
     }
 
-    // TODO: Nil object?
-    @Nullable public Package getParent() {
-      return parent;
-    }
-
-    @Override public boolean hasName() {
-      return true;
-    }
-
-    @Override @Nonnull public String getName() {
-      return name;
-    }
-
     @Nonnull public FqName getFqName() {
       return getFqNameFromPackage(this);
     }
 
-    @Nonnull private static FqName getFqNameFromPackage(@Nonnull Package pkg) {
-      if (pkg.parent == null) {
+    @Nonnull private static FqName getFqNameFromPackage(@Nonnull Node pkgNode) {
+      final Package pkg = (Package) pkgNode; // TODO: visitor
+      if (pkg.getParent().isNil()) {
         return new FqName(pkg.getName(), null); // root package
       }
-      return getFqNameFromPackage(pkg.parent).append(pkg.getName());
+      return getFqNameFromPackage(pkg.getParent()).append(pkg.getName());
     }
 
     @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
       visitor.visitPackage(this);
+    }
+
+    @Nonnull @Override protected Package getSelf() {
+      return this;
     }
   }
 
@@ -548,6 +539,7 @@ public final class Ast {
    */
   public static final class VarDecl extends NamedStmt<VarDecl> {
     private TypeExpr typeExpr = Nil.INSTANCE;
+    private Expr initializer = Nil.INSTANCE;
 
     public VarDecl() {
       super();
@@ -563,6 +555,15 @@ public final class Ast {
 
     @Nonnull public VarDecl setTypeExpr(@Nonnull TypeExpr typeExpr) {
       this.typeExpr = typeExpr;
+      return this;
+    }
+
+    @Nonnull public Expr getInitializer() {
+      return initializer;
+    }
+
+    @Nonnull public VarDecl setInitializer(@Nonnull Expr initializer) {
+      this.initializer = initializer;
       return this;
     }
 

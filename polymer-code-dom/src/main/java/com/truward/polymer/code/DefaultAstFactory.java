@@ -138,7 +138,7 @@ public final class DefaultAstFactory implements AstFactory {
 
     // root package requested - add to packages list and return the result
     if (fqName.isRoot()) {
-      result = new Ast.Package(null, fqName.getName());
+      result = new Ast.Package(nil(), fqName.getName());
     } else {
       final Ast.Package parent = AsPackageVisitor.asPackage(getParentOrCreatePackage(fqName.getParent()));
       if (parent == null) {
