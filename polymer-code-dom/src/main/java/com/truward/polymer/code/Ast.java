@@ -152,6 +152,26 @@ public final class Ast {
   }
 
   /**
+   * Represents an expression, that interacts as a statement in the current context, like
+   * method invocation which can be used as an expression and as a statement.
+   */
+  public static final class ExprStmt extends AbstractStmt {
+    private final Expr expr;
+
+    public ExprStmt(@Nonnull Expr expr) {
+      this.expr = expr;
+    }
+
+    @Nonnull public Expr getExpr() {
+      return expr;
+    }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitExprStmt(this);
+    }
+  }
+
+  /**
    * Represents identifier, e.g. variable importName.
    * @see "JLS 3, section 6.5.6.1"
    */
@@ -741,6 +761,245 @@ public final class Ast {
 
     @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
       visitor.visitLiteral(this);
+    }
+  }
+
+  /**
+   * Inline 'if' or conditional operator '(condition) ? (thenPart) : (elsePart)'.
+   * @see "JLS 3, section 15.25"
+   */
+  public static final class Conditional extends AbstractExpr {
+    private Expr condition = Nil.INSTANCE;
+    private Expr thenPart = Nil.INSTANCE;
+    private Expr elsePart = Nil.INSTANCE;
+
+    @Nonnull public Conditional setCondition(@Nonnull Expr condition) {
+      this.condition = condition;
+      return this;
+    }
+
+    @Nonnull public final Conditional setThenPart(@Nonnull Expr thenPart) {
+      this.thenPart = thenPart;
+      return this;
+    }
+
+    @Nonnull public final Conditional setElsePart(@Nonnull Expr elsePart) {
+      this.elsePart = elsePart;
+      return this;
+    }
+
+    @Nonnull public final Expr getCondition() {
+      return condition;
+    }
+
+    @Nonnull public final Expr getThenPart() {
+      return thenPart;
+    }
+
+    @Nonnull public final Expr getElsePart() {
+      return elsePart;
+    }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitConditional(this);
+    }
+  }
+
+  /**
+   * 'if' statement.
+   * @see "JLS 3, section 14.9"
+   */
+  public static final class If extends AbstractStmt {
+    private Expr condition = Nil.INSTANCE;
+    private Stmt thenPart = Nil.INSTANCE;
+    private Stmt elsePart = Nil.INSTANCE;
+
+    @Nonnull public If setCondition(@Nonnull Expr condition) {
+      this.condition = condition;
+      return this;
+    }
+
+    @Nonnull public final If setThenPart(@Nonnull Stmt thenPart) {
+      this.thenPart = thenPart;
+      return this;
+    }
+
+    @Nonnull public final If setElsePart(@Nonnull Stmt elsePart) {
+      this.elsePart = elsePart;
+      return this;
+    }
+
+    @Nonnull public final Expr getCondition() {
+      return condition;
+    }
+
+    @Nonnull public final Stmt getThenPart() {
+      return thenPart;
+    }
+
+    @Nonnull public final Stmt getElsePart() {
+      return elsePart;
+    }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitIf(this);
+    }
+  }
+
+  /**
+   * Represents method invocation.
+   * @see "JLS 3, section 15.2"
+   */
+  public static final class Call extends AbstractExpr {
+    private final String methodName;
+    private Expr base = Nil.INSTANCE;
+    private List<TypeParameter> typeParameters = new ArrayList<>();
+    private List<Expr> args = new ArrayList<>();
+
+    public Call(@Nonnull String methodName) {
+      this.methodName = methodName;
+    }
+
+    @Nonnull public String getMethodName() {
+      return methodName;
+    }
+
+    @Nonnull public Expr getBase() {
+      return base;
+    }
+
+    @Nonnull public Call setBase(@Nonnull Expr base) {
+      this.base = base;
+      return this;
+    }
+
+    @Nonnull public List<TypeParameter> getTypeParameters() {
+      return typeParameters;
+    }
+
+    @Nonnull public Call addTypeParameter(TypeParameter typeParameter) {
+      this.typeParameters.add(typeParameter);
+      return this;
+    }
+
+    @Nonnull public List<Expr> getArgs() {
+      return args;
+    }
+
+    @Nonnull public Call addArg(@Nonnull Expr arg) {
+      this.args.add(arg);
+      return this;
+    }
+
+    @Nonnull public Call addArgs(@Nonnull Collection<Expr> args) {
+      this.args.addAll(args);
+      return this;
+    }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitCall(this);
+    }
+  }
+
+  /**
+   * Represents unary expressions.
+   * @see "JLS 3, section 15.14 and 15.15"
+   */
+  public static final class Unary extends AbstractExpr {
+    private Expr expr = Nil.INSTANCE;
+    private final Operator code;
+
+    public Unary(@Nonnull Operator code) {
+      this.code = code;
+    }
+
+    @Nonnull public Expr getExpr() {
+      return expr;
+    }
+
+    @Nonnull public Unary setExpr(@Nonnull Expr expr) {
+      this.expr = expr;
+      return this;
+    }
+
+    @Nonnull public Operator getCode() {
+      return code;
+    }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitUnary(this);
+    }
+  }
+
+  /**
+   * Represents binary expressions.
+   * @see "JLS 3, section 15.17 to 15.24"
+   */
+  public static final class Binary extends AbstractExpr {
+    private Expr leftSide = Nil.INSTANCE;
+    private Expr rightSide = Nil.INSTANCE;
+    private final Operator code;
+
+    public Binary(@Nonnull Operator code) {
+      this.code = code;
+    }
+
+    @Nonnull public Expr getLeftSide() {
+      return leftSide;
+    }
+
+    @Nonnull public Binary setLeftSide(@Nonnull Expr leftSide) {
+      this.leftSide = leftSide;
+      return this;
+    }
+
+    @Nonnull public Expr getRightSide() {
+      return rightSide;
+    }
+
+    @Nonnull public Binary setRightSide(@Nonnull Expr rightSide) {
+      this.rightSide = rightSide;
+      return this;
+    }
+
+    @Nonnull public Operator getCode() {
+      return code;
+    }
+
+    @Override public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitBinary(this);
+    }
+  }
+
+  /**
+   * Represents an assignment expression.
+   * @see "JLS 3, section 15.26.1"
+   */
+  public static final class Assignment extends AbstractStmt {
+    private Expr leftSide = Nil.INSTANCE;
+    private Expr rightSide = Nil.INSTANCE;
+
+    @Nonnull public Expr getLeftSide() {
+      return leftSide;
+    }
+
+    @Nonnull public Assignment setLeftSide(@Nonnull Expr leftSide) {
+      this.leftSide = leftSide;
+      return this;
+    }
+
+    @Nonnull public Expr getRightSide() {
+      return rightSide;
+    }
+
+    @Nonnull public Assignment setRightSide(@Nonnull Expr rightSide) {
+      this.rightSide = rightSide;
+      return this;
+    }
+
+    @Override
+    public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
+      visitor.visitAssingment(this);
     }
   }
 

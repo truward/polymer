@@ -1,6 +1,7 @@
 package com.truward.polymer.code.factory;
 
 import com.truward.polymer.code.Ast;
+import com.truward.polymer.code.Operator;
 import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
@@ -38,4 +39,34 @@ public interface AstFactory {
   @Nonnull Ast.Ident ident(@Nonnull String name);
 
   @Nonnull Ast.Select select(@Nonnull Ast.Expr expr, @Nonnull String name);
+
+  @Nonnull Ast.If ifStmt();
+
+  @Nonnull Ast.If ifStmt(@Nonnull Ast.Expr condition, @Nonnull Ast.Stmt thenStmt);
+
+  @Nonnull Ast.If ifStmt(@Nonnull Ast.Expr condition, @Nonnull Ast.Stmt thenStmt, @Nonnull Ast.Stmt elseStmt);
+
+  @Nonnull Ast.Conditional ifCond();
+
+  @Nonnull Ast.Conditional ifCond(@Nonnull Ast.Expr condition, @Nonnull Ast.Expr thenExpr);
+
+  @Nonnull Ast.Conditional ifCond(@Nonnull Ast.Expr condition, @Nonnull Ast.Expr thenExpr, @Nonnull Ast.Expr elseExpr);
+
+  @Nonnull Ast.Call call(@Nonnull String methodName);
+
+  @Nonnull Ast.Call call(@Nonnull String methodName, @Nonnull Ast.Expr... arguments);
+
+  @Nonnull Ast.Binary binary(@Nonnull Operator operator);
+
+  @Nonnull Ast.Binary binary(@Nonnull Operator operator, @Nonnull Ast.Expr leftSide, @Nonnull Ast.Expr rightSide);
+
+  @Nonnull Ast.Unary unary(@Nonnull Operator operator);
+
+  @Nonnull Ast.Unary unary(@Nonnull Operator operator, @Nonnull Ast.Expr expr);
+
+  @Nonnull Ast.Assignment assignment();
+
+  @Nonnull Ast.Assignment assignment(@Nonnull Ast.Expr left, @Nonnull Ast.Expr right);
+
+  @Nonnull Ast.ExprStmt exprStmt(@Nonnull Ast.Expr expr);
 }

@@ -2,6 +2,7 @@ package com.truward.polymer.code.printer;
 
 import com.truward.polymer.code.Ast;
 import com.truward.polymer.code.DefaultAstFactory;
+import com.truward.polymer.code.Operator;
 import com.truward.polymer.code.factory.AstFactory;
 import com.truward.polymer.code.factory.DelegatingAstFactory;
 import com.truward.polymer.code.util.AstUtil;
@@ -108,6 +109,25 @@ public final class AstPrinterTest extends DelegatingAstFactory {
 
     assertTrue(contents.contains("public abstract class User extends java.util.Date " +
         "implements java.io.Serializable, Cloneable {\n"));
+  }
+
+  @Test
+  public void shouldPrintConditionals() throws IOException {
+    final Ast.ClassDecl userClass = classDecl(FqName.valueOf("domain.User"));
+
+    final Ast.MethodDecl methodDecl = userClass.addMethodDecl("foo")
+        .addArgument("a", classRef(int.class))
+        .addModifiers(Modifier.PUBLIC)
+        .setReturnType(classRef(int.class));
+
+    methodDecl.addBodyStmt(ifStmt(binary(Operator.GT, ident("a"), literal(0)),
+        returnStmt(literal(1)), // < then
+        returnStmt(literal(2))));
+
+    astPrinter.print(userClass);
+    final String contents = mosp.getContentMap().get("domain/User.java");
+
+    assertTrue(contents.contains("if (a > 0) {\n"));
   }
 
   //

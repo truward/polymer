@@ -1,6 +1,7 @@
 package com.truward.polymer.code.printer;
 
 import com.truward.polymer.code.Ast;
+import com.truward.polymer.code.Operator;
 import com.truward.polymer.code.util.EscapeUtil;
 import com.truward.polymer.code.visitor.AstVoidVisitor;
 import com.truward.polymer.naming.FqName;
@@ -11,7 +12,6 @@ import javax.annotation.Nullable;
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
 import java.util.List;
-
 /**
  * Helper class for printing class declaration.
  *
@@ -190,6 +190,63 @@ final class ClassPrinter {
         printer.print(')');
       }
     }
+
+    @Override public void visitIf(@Nonnull Ast.If node) throws IOException {
+      printer.print("if").print(' ').print('(');
+      node.getCondition().accept(this);
+      printer.print(')').print(' ').print('{');
+      node.getThenPart().accept(this);
+      printer.print('}').print(' ').print("else").print(' ');
+
+      final Ast.Stmt elsePart = node.getElsePart();
+      if (elsePart instanceof Ast.If) {
+        // Here: optimization - do not print open block
+        visitIf((Ast.If) elsePart);
+      } else {
+        printer.print('{');
+        elsePart.accept(this);
+        printer.print('}');
+      }
+    }
+
+    @Override public void visitConditional(@Nonnull Ast.Conditional node) throws IOException {
+      node.getCondition().accept(this);
+      printer.print(' ').print('?').print(' ');
+      node.getThenPart().accept(this);
+      printer.print(' ').print(':').print(' ');
+      node.getElsePart().accept(this);
+    }
+
+    @Override public void visitCall(@Nonnull Ast.Call node) throws IOException {
+      if (!node.getBase().isNil()) {
+        node.getBase().accept(this);
+        printer.print('.');
+      }
+    }
+
+    @Override public void visitBinary(@Nonnull Ast.Binary node) throws IOException {
+      node.getLeftSide().accept(this);
+      printer.print(' ');
+      printOperator(node.getCode());
+      printer.print(' ');
+      node.getRightSide().accept(this);
+    }
+
+    @Override public void visitUnary(@Nonnull Ast.Unary node) throws IOException {
+      printOperator(node.getCode());
+      node.getExpr().accept(this);
+    }
+
+    @Override public void visitAssingment(@Nonnull Ast.Assignment node) throws IOException {
+      node.getLeftSide().accept(this);
+      printer.print(' ').print('=').print(' ');
+      node.getRightSide().accept(this);
+    }
+
+    @Override public void visitExprStmt(@Nonnull Ast.ExprStmt node) throws IOException {
+      node.getExpr().accept(this);
+      printer.print(';');
+    }
   }
 
   private void printLiteral(@Nullable Object value) throws IOException {
@@ -218,6 +275,10 @@ final class ClassPrinter {
     } else {
       throw new IllegalArgumentException("Unknown literal: " + value);
     }
+  }
+
+  private void printOperator(@Nonnull Operator operator) throws IOException {
+    printer.print(operator.getValue());
   }
 
   private void printClassNameReference(@Nonnull FqName className) throws IOException {

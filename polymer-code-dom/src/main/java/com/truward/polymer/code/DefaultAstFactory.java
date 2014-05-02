@@ -9,6 +9,7 @@ import com.truward.polymer.naming.FqName;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 
 /**
  * Represents a factory class for AST nodes.
@@ -118,6 +119,66 @@ public final class DefaultAstFactory implements AstFactory {
 
   @Nonnull @Override public Ast.Select select(@Nonnull Ast.Expr expr, @Nonnull String name) {
     return new Ast.Select(expr, name);
+  }
+
+  @Nonnull @Override public Ast.If ifStmt() {
+    return new Ast.If();
+  }
+
+  @Nonnull @Override public Ast.If ifStmt(@Nonnull Ast.Expr condition, @Nonnull Ast.Stmt thenStmt) {
+    return ifStmt().setCondition(condition).setThenPart(thenStmt);
+  }
+
+  @Nonnull @Override public Ast.If ifStmt(@Nonnull Ast.Expr condition, @Nonnull Ast.Stmt thenStmt, @Nonnull Ast.Stmt elseStmt) {
+    return ifStmt(condition, thenStmt).setElsePart(elseStmt);
+  }
+
+  @Nonnull @Override public Ast.Conditional ifCond() {
+    return new Ast.Conditional();
+  }
+
+  @Nonnull @Override public Ast.Conditional ifCond(@Nonnull Ast.Expr condition, @Nonnull Ast.Expr thenExpr) {
+    return ifCond().setCondition(condition).setThenPart(thenExpr);
+  }
+
+  @Nonnull @Override public Ast.Conditional ifCond(@Nonnull Ast.Expr condition, @Nonnull Ast.Expr thenExpr, @Nonnull Ast.Expr elseExpr) {
+    return ifCond(condition, thenExpr).setElsePart(elseExpr);
+  }
+
+  @Nonnull @Override public Ast.Call call(@Nonnull String methodName) {
+    return new Ast.Call(methodName);
+  }
+
+  @Nonnull @Override public Ast.Call call(@Nonnull String methodName, @Nonnull Ast.Expr... arguments) {
+    return call(methodName).addArgs(Arrays.asList(arguments));
+  }
+
+  @Nonnull @Override public Ast.Binary binary(@Nonnull Operator operator) {
+    return new Ast.Binary(operator);
+  }
+
+  @Nonnull @Override public Ast.Binary binary(@Nonnull Operator operator, @Nonnull Ast.Expr leftSide, @Nonnull Ast.Expr rightSide) {
+    return binary(operator).setLeftSide(leftSide).setRightSide(rightSide);
+  }
+
+  @Nonnull @Override public Ast.Unary unary(@Nonnull Operator operator) {
+    return new Ast.Unary(operator);
+  }
+
+  @Nonnull @Override public Ast.Unary unary(@Nonnull Operator operator, @Nonnull Ast.Expr expr) {
+    return unary(operator).setExpr(expr);
+  }
+
+  @Nonnull @Override public Ast.Assignment assignment() {
+    return new Ast.Assignment();
+  }
+
+  @Nonnull @Override public Ast.Assignment assignment(@Nonnull Ast.Expr left, @Nonnull Ast.Expr right) {
+    return assignment().setLeftSide(left).setRightSide(right);
+  }
+
+  @Nonnull @Override public Ast.ExprStmt exprStmt(@Nonnull Ast.Expr expr) {
+    return new Ast.ExprStmt(expr);
   }
 
   //

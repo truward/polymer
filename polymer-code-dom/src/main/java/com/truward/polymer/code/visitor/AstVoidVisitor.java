@@ -87,4 +87,34 @@ public abstract class AstVoidVisitor<T extends Exception> {
   public void visitCompilationUnit(@Nonnull Ast.CompilationUnit node) throws T {
     visitNode(node);
   }
+
+  public void visitIf(@Nonnull Ast.If node) throws T {
+    visitNode(node);
+  }
+
+  public void visitConditional(@Nonnull Ast.Conditional node) throws T {
+    visitNode(node);
+  }
+
+  public void visitCall(@Nonnull Ast.Call node) throws T {
+    visitNode(node);
+  }
+
+  public void visitBinary(@Nonnull Ast.Binary node) throws T {
+    visitNode(node);
+  }
+
+  public void visitUnary(@Nonnull Ast.Unary node) throws T {
+    visitNode(node);
+  }
+
+
+  public void visitAssingment(@Nonnull Ast.Assignment node) throws T {
+    visitNode(node);
+  }
+
+
+  public void visitExprStmt(@Nonnull Ast.ExprStmt node) throws T {
+    visitNode(node);
+  }
 }
