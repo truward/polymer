@@ -15,9 +15,15 @@ import java.io.Writer;
 public class CAlikePrinter {
   public static final String DEFAULT_INDENT_UNIT = "  ";
 
+  private static enum State {
+    NONE,
+    INDENT,
+    NEWLINE_AND_INDENT
+  }
+
   private final Writer writer;
   private int indentationLevel = 0;
-  private boolean doIndent = true;
+  private State state = State.NONE;
   private final String indentUnit;
 
   public CAlikePrinter(@Nonnull Writer writer, @Nonnull String indentUnit) {
@@ -45,42 +51,37 @@ public class CAlikePrinter {
 
   @Nonnull
   public CAlikePrinter print(char ch) throws IOException {
-    boolean printFollowupNewlineAndReturn = false;
     if (ch > ' ') {
       if (ch == '}') {
         // special case for closing brace
         --indentationLevel;
+        writer.append('}');
         assert indentationLevel >= 0;
-        printFollowupNewlineAndReturn = true;
+        state = State.NEWLINE_AND_INDENT;
+        return this;
       }
 
       // indent only non-whitespace started strings
       indentIfNeeded();
     } else {
-      doIndent = false;
+      state = State.NONE;
     }
 
     writer.append(ch);
 
-    if (printFollowupNewlineAndReturn) {
-      writer.append('\n');
-      doIndent = true;
-      return this;
-    }
-
     switch (ch) {
       case '\n':
-        doIndent = true;
+        state = State.INDENT;
         break;
       case '{':
         writer.append('\n');
-        doIndent = true;
+        state = State.INDENT;
         ++indentationLevel;
         break;
       case ';':
         // each semicolon will be followed by the newline
         writer.append('\n');
-        doIndent = true;
+        state = State.INDENT;
         break;
     }
 
@@ -92,12 +93,22 @@ public class CAlikePrinter {
   //
 
   private void indentIfNeeded() throws IOException {
-    if (doIndent) {
-      assert indentationLevel >= 0;
-      for (int i = 0; i < indentationLevel; ++i) {
-        writer.append(indentUnit);
-      }
-      doIndent = false;
+    switch (state) {
+      case NONE: return;
+
+      case NEWLINE_AND_INDENT:
+        writer.append('\n');
+        // fallthrough
+      case INDENT:
+        assert indentationLevel >= 0;
+        for (int i = 0; i < indentationLevel; ++i) {
+          writer.append(indentUnit);
+        }
+        state = State.NONE;
+        return;
+
+      default:
+        throw new IllegalStateException("Unrecognized state=" + state); // shouldn't happen
     }
   }
 }

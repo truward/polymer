@@ -43,4 +43,18 @@ public final class CAlikePrinterTest {
         "}\n", writer.toString());
   }
 
+  @Test
+  public void shouldNotIndentWhitespaceAfterCloseBrace() throws IOException {
+    p.print('{');
+    p.print('a').print(';');
+    p.print('}').print(' ').print("else").print(' ').print('{');
+    p.print('b').print(';');
+    p.print('}');
+
+    assertEquals("{\n" +
+        "  a;\n" +
+        "} else {\n" +
+        "  b;\n" +
+        "}\n", writer.toString());
+  }
 }
