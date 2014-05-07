@@ -49,7 +49,7 @@ public final class CAlikePrinterTest {
     p.print('a').print(';');
     p.print('}').print(' ').print("else").print(' ').print('{');
     p.print('b').print(';');
-    p.print('}');
+    p.print('}').print('\n');
 
     assertEquals("{\n" +
         "  a;\n" +
