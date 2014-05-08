@@ -999,7 +999,7 @@ public final class Ast {
 
     @Override
     public <T extends Exception> void accept(@Nonnull AstVoidVisitor<T> visitor) throws T {
-      visitor.visitAssingment(this);
+      visitor.visitAssignment(this);
     }
   }
 

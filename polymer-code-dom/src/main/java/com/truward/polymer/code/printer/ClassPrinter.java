@@ -222,6 +222,14 @@ final class ClassPrinter {
         node.getBase().accept(this);
         printer.print('.');
       }
+      printer.print(node.getMethodName()).print('(');
+      for (int i = 0; i < node.getArgs().size(); ++i) {
+        if (i > 0) {
+          printer.print(',').print(' ');
+        }
+        node.getArgs().get(i).accept(this);
+      }
+      printer.print(')');
     }
 
     @Override public void visitBinary(@Nonnull Ast.Binary node) throws IOException {
@@ -237,7 +245,7 @@ final class ClassPrinter {
       node.getExpr().accept(this);
     }
 
-    @Override public void visitAssingment(@Nonnull Ast.Assignment node) throws IOException {
+    @Override public void visitAssignment(@Nonnull Ast.Assignment node) throws IOException {
       node.getLeftSide().accept(this);
       printer.print(' ').print('=').print(' ');
       node.getRightSide().accept(this);

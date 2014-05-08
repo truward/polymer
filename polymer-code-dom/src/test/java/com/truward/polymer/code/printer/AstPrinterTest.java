@@ -120,13 +120,16 @@ public final class AstPrinterTest extends DelegatingAstFactory {
         .addModifiers(Modifier.PUBLIC)
         .setReturnType(classRef(int.class));
 
-    methodDecl.addBodyStmt(ifStmt(binary(Operator.GT, ident("a"), literal(0)),
-        returnStmt(literal(1)), // < then
-        returnStmt(literal(2))));
+    methodDecl
+        .addBodyStmt(exprStmt(call("hashCode").setBase(ident("this"))))
+        .addBodyStmt(ifStmt(binary(Operator.GT, ident("a"), literal(0)),
+            returnStmt(literal(1)), // < then
+            returnStmt(literal(2))));
 
     astPrinter.print(userClass);
     final String contents = mosp.getContentMap().get("domain/User.java");
 
+    assertTrue(contents.contains("this.hashCode();\n"));
     assertTrue(contents.contains("if (a > 0) {\n"));
   }
 

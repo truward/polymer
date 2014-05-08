@@ -109,7 +109,7 @@ public abstract class AstVoidVisitor<T extends Exception> {
   }
 
 
-  public void visitAssingment(@Nonnull Ast.Assignment node) throws T {
+  public void visitAssignment(@Nonnull Ast.Assignment node) throws T {
     visitNode(node);
   }
 
