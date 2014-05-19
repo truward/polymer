@@ -55,6 +55,7 @@ public class CAlikePrinter {
       if (ch == '}') {
         // special case for closing brace
         --indentationLevel;
+        indentIfNeeded();
         writer.append('}');
         assert indentationLevel >= 0;
         state = State.NEWLINE_AND_INDENT;
