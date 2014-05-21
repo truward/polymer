@@ -25,6 +25,25 @@ public final class CAlikePrinterTest {
   }
 
   @Test
+  public void shouldPrintStatementSequence() throws IOException {
+    p.print("foo").print(';');
+    p.print("bar").print(';');
+    p.print("baz").print(';');
+
+    assertEquals("foo;\nbar;\nbaz;\n", writer.toString());
+  }
+
+  @Test
+  public void shouldPrintNestedBlocks() throws IOException {
+    p.print('{').print('{').print('}').print('}');
+
+    assertEquals("{\n" +
+        "  {\n" +
+        "  }\n" +
+        "}", writer.toString());
+  }
+
+  @Test
   public void shouldPrintIndented() throws IOException {
     p.print("static").print(' ').print('{');
     p.print("foo()").print(';');
@@ -40,7 +59,7 @@ public final class CAlikePrinterTest {
         "  if a {\n" +
         "    baz();\n" +
         "  }\n" +
-        "}\n", writer.toString());
+        "}", writer.toString());
   }
 
   @Test
