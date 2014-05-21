@@ -1,4 +1,4 @@
-package com.truward.polymer.domain;
+package com.truward.polymer.plugin.domain;
 
 /**
  * @author Alexander Shabanov
@@ -6,7 +6,7 @@ package com.truward.polymer.domain;
 public enum DefensiveCopyStyle {
   /**
    * No defensive copying will be used.
-   * This will make object non-effectively immutable but you may gain some performance advantages.
+   * This might make your object non-effectively immutable but you may gain some performance advantages.
    */
   NONE,
 

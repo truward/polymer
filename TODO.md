@@ -1,6 +1,12 @@
 TODOs
 =====
 
+* Split interface package with the real 'driver' packages - this will allow to avoid unwanted dependency in code on the
+real implementation. Driver will look like as follows:
+    driver-specification-api (visible to user),
+    driver-plugin-api (visible to other driver implementations, allows other drivers to operate with this driver),
+    driver-impl (runtime dep).
+Also split polymer-core into polymer-core-api and polymer-core-impl
 * Compiler Friendly CLI option - don't overwrite existing identical files (so compiler won't recompile them)
 * Compiler Friendly CLI option - remove non-generated (older) files from generated sources dir
 * Freeze analysis settings after specification phase

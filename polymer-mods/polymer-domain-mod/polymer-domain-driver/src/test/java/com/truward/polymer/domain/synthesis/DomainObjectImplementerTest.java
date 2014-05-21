@@ -8,7 +8,7 @@ import com.truward.polymer.core.driver.SpecificationState;
 import com.truward.polymer.core.driver.SpecificationStateAware;
 import com.truward.polymer.core.driver.SpecificationUtil;
 import com.truward.polymer.output.MemOutputStreamProvider;
-import com.truward.polymer.domain.DefensiveCopyStyle;
+import com.truward.polymer.plugin.domain.DefensiveCopyStyle;
 import com.truward.polymer.domain.DomainImplementerSettings;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.domain.analysis.DomainAnalysisContext;

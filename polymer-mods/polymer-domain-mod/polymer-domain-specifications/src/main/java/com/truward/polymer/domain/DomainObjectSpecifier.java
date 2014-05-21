@@ -1,6 +1,6 @@
 package com.truward.polymer.domain;
 
-import com.truward.polymer.annotation.SpecificatorInvocation;
+import com.truward.polymer.annotation.SpecificationMethodInvocation;
 import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
@@ -57,16 +57,16 @@ public interface DomainObjectSpecifier {
    * @return Current specifier, provided for convenience such that the user is able to chain calls.
    */
   @Nonnull
-  DomainObjectSpecifier isNullable(@SpecificatorInvocation Object invocationResult);
+  DomainObjectSpecifier isNullable(@SpecificationMethodInvocation Object invocationResult);
 
   @Nonnull
-  DomainObjectSpecifier isNonNull(@SpecificatorInvocation Object invocationResult);
+  DomainObjectSpecifier isNonNull(@SpecificationMethodInvocation Object invocationResult);
 
   @Nonnull
-  DomainObjectSpecifier hasLength(@SpecificatorInvocation String invocationResult);
+  DomainObjectSpecifier hasLength(@SpecificationMethodInvocation String invocationResult);
 
   @Nonnull
-  DomainObjectSpecifier isNonNegative(@SpecificatorInvocation int invocationResult);
+  DomainObjectSpecifier isNonNegative(@SpecificationMethodInvocation int invocationResult);
 
   @Nonnull
   DomainObjectSettings getObjectSettings(@Nonnull Class<?> clazz);

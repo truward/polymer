@@ -1,6 +1,6 @@
 package com.truward.polymer.marshal.rest;
 
-import com.truward.polymer.annotation.SpecificatorInvocation;
+import com.truward.polymer.annotation.SpecificationMethodInvocation;
 
 /**
  * Designates reaction on certain rest method.
@@ -8,7 +8,7 @@ import com.truward.polymer.annotation.SpecificatorInvocation;
  * @author Alexander Shabanov
  */
 public interface RestBinderSpecification {
-  RestBinderSpecification trigger(@SpecificatorInvocation Object invocation);
+  RestBinderSpecification trigger(@SpecificationMethodInvocation Object invocation);
 
   /**
    * This is a counterpart of {@link #trigger(Object)} method for invocations that return void.

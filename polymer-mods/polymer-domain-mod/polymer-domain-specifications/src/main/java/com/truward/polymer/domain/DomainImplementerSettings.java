@@ -1,6 +1,7 @@
 package com.truward.polymer.domain;
 
 import com.truward.polymer.naming.FqName;
+import com.truward.polymer.plugin.domain.DefensiveCopyStyle;
 
 import javax.annotation.Nonnull;
 
