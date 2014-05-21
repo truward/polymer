@@ -39,7 +39,7 @@ public final class AstPrinterTest extends DelegatingAstFactory {
   public void shouldPrintClassDecl() throws IOException {
     final Ast.ClassDecl classDecl = classDecl(FqName.valueOf("my.pkg.FooClass"));
     astPrinter.print(classDecl);
-    assertSameGeneratedContent("package my.pkg;\n\n\nclass FooClass {\n}\n", "my/pkg/FooClass.java");
+    assertSameGeneratedContent("package my.pkg;\n\n\nclass FooClass {\n}", "my/pkg/FooClass.java");
   }
 
   @Test
