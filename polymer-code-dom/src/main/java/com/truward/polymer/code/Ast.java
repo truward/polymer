@@ -411,12 +411,13 @@ public final class Ast {
     private final Map<String, Node> childs = new HashMap<>();
 
     Package(@Nonnull Node parent, @Nonnull String name) {
+      setParent(parent);
+      setName(name);
+
       if (!parent.isNil()) {
         // TODO: visitor
         ((Package) parent).addChild(this);
       }
-      setParent(parent);
-      setName(name);
     }
 
     @Nonnull Package addChild(@Nonnull Node node) {
