@@ -8,6 +8,6 @@ import java.lang.reflect.Type;
  */
 public interface CaiField extends CaiAnnotated {
 
-    @Nonnull
-    Type getFieldType();
+  @Nonnull
+  Type getFieldType();
 }

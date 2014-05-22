@@ -9,19 +9,19 @@ import java.util.Collection;
  */
 public interface CaiMethod extends CaiAnnotated {
 
-    @Nonnull
-    String getName();
+  @Nonnull
+  String getName();
 
-    @Nonnull
-    Type getReturnType();
+  @Nonnull
+  Type getReturnType();
 
-    @Nonnull
-    Collection<CaiVar> getArguments();
+  @Nonnull
+  Collection<CaiVar> getArguments();
 
-    boolean isConstructor();
+  boolean isConstructor();
 
-    @Nonnull
-    CaiMethodRole getMethodRole();
+  @Nonnull
+  CaiMethodRole getMethodRole();
 
-    void setMethodRole(@Nonnull CaiMethodRole role);
+  void setMethodRole(@Nonnull CaiMethodRole role);
 }

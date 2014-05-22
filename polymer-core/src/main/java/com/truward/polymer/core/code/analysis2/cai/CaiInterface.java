@@ -9,15 +9,15 @@ import java.util.List;
  */
 public interface CaiInterface extends CaiAnnotated {
 
-    @Nullable
-    Class<?> getOriginJavaInterface();
+  @Nullable
+  Class<?> getOriginJavaInterface();
 
-    /**
-     * @return Immediate childs
-     */
-    @Nonnull
-    List<CaiAnnotated> getChilds();
+  /**
+   * @return Immediate childs
+   */
+  @Nonnull
+  List<CaiAnnotated> getChilds();
 
-    @Nonnull
-    List<CaiInterface> getParents();
+  @Nonnull
+  List<CaiInterface> getParents();
 }

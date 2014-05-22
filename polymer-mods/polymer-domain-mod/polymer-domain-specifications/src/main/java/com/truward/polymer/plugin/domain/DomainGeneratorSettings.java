@@ -11,21 +11,21 @@ import javax.annotation.Nonnull;
  */
 public interface DomainGeneratorSettings {
 
-    @Nonnull
-    DomainGeneratorSettings setDefensiveCopyStyle(@Nonnull DefensiveCopyStyle defensiveCopyStyle);
+  @Nonnull
+  DomainGeneratorSettings setDefensiveCopyStyle(@Nonnull DefensiveCopyStyle defensiveCopyStyle);
 
-    @Nonnull
-    DomainGeneratorSettings registerValidationInterfaceMarker(@Nonnull Class<?> validationInterface);
+  @Nonnull
+  DomainGeneratorSettings registerValidationInterfaceMarker(@Nonnull Class<?> validationInterface);
 
-    @Nonnull
-    DomainGeneratorSettings registerFreezableInterfaceMarker(@Nonnull Class<?> validationInterface);
+  @Nonnull
+  DomainGeneratorSettings registerFreezableInterfaceMarker(@Nonnull Class<?> validationInterface);
 
-    @Nonnull
-    DomainGeneratorSettings setDefaultTargetPackage(@Nonnull FqName defaultTargetPackage);
+  @Nonnull
+  DomainGeneratorSettings setDefaultTargetPackage(@Nonnull FqName defaultTargetPackage);
 
-    @Nonnull
-    DomainGeneratorSettings setDefaultGeneratedClassPrefix(@Nonnull String prefix);
+  @Nonnull
+  DomainGeneratorSettings setDefaultGeneratedClassPrefix(@Nonnull String prefix);
 
-    @Nonnull
-    DomainGeneratorSettings setDefaultGeneratedClassSuffix(@Nonnull String suffix);
+  @Nonnull
+  DomainGeneratorSettings setDefaultGeneratedClassSuffix(@Nonnull String suffix);
 }

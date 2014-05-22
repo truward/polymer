@@ -8,6 +8,6 @@ import java.util.Collection;
  */
 public interface CaiAnnotationContainer extends CaiNode {
 
-    @Nonnull
-    Collection<CaiAnnotation> getAnnotations();
+  @Nonnull
+  Collection<CaiAnnotation> getAnnotations();
 }

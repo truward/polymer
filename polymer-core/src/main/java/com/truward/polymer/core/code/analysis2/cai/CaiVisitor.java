@@ -7,13 +7,13 @@ import javax.annotation.Nonnull;
  */
 public interface CaiVisitor {
 
-    void visitNode(@Nonnull CaiNode node);
+  void visitNode(@Nonnull CaiNode node);
 
-    void visitField(@Nonnull CaiField node);
+  void visitField(@Nonnull CaiField node);
 
-    void visitInterface(@Nonnull CaiInterface node);
+  void visitInterface(@Nonnull CaiInterface node);
 
-    void visitMethod(@Nonnull CaiMethod node);
+  void visitMethod(@Nonnull CaiMethod node);
 
-    void visitMethodRole(@Nonnull CaiMethodRole node);
+  void visitMethodRole(@Nonnull CaiMethodRole node);
 }

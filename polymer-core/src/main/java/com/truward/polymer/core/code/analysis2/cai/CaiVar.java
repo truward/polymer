@@ -8,6 +8,6 @@ import java.lang.reflect.Type;
  */
 public interface CaiVar extends CaiAnnotated {
 
-    @Nonnull
-    Type getVarType();
+  @Nonnull
+  Type getVarType();
 }

@@ -7,5 +7,5 @@ package com.truward.polymer.core.code.analysis2.cai;
  */
 public interface CaiMethodRole extends CaiNode {
 
-    boolean isUncertain();
+  boolean isUncertain();
 }
