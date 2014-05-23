@@ -13,8 +13,11 @@
     <module>polymer-output</module>
     <module>polymer-specifications</module>
     <module>polymer-code-dom</module>
+    <module>polymer-core-api</module>
+    <module>polymer-core-impl</module>
     <module>polymer-core</module>
     <module>polymer-mods</module>
+    <module>polymer-plugins</module>
     <module>polymer-cli</module>
   </modules>
 
@@ -60,6 +63,16 @@
       <dependency>
         <groupId>com.truward.polymer</groupId>
         <artifactId>polymer-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.truward.polymer</groupId>
+        <artifactId>polymer-core-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.truward.polymer</groupId>
+        <artifactId>polymer-core-impl</artifactId>
         <version>${project.version}</version>
       </dependency>
 

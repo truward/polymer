@@ -1,4 +1,4 @@
-package com.truward.polymer.core.code.analysis2.cai;
+package com.truward.polymer.api.cai;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Type;
