@@ -1,6 +1,6 @@
 package com.truward.polymer.domain;
 
-import com.truward.polymer.annotation.SpecificationMethodInvocation;
+import com.truward.polymer.specification.annotation.SpecificationMethodInvocation;
 import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;

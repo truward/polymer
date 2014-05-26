@@ -1,4 +1,4 @@
-package com.truward.polymer;
+package com.truward.polymer.specification;
 
 import com.truward.polymer.naming.FqName;
 

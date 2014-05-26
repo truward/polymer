@@ -4,16 +4,18 @@
 
   <parent>
     <groupId>com.truward.polymer</groupId>
-    <artifactId>polymer</artifactId>
+    <artifactId>polymer-plugins</artifactId>
     <version>0.1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>polymer-plugins</artifactId>
+  <artifactId>domain-plugin</artifactId>
   <packaging>pom</packaging>
-  <name>Polymer Standard Plugins Parent</name>
+  <name>Polymer Domain Plugin Parent</name>
 
   <modules>
-    <module>domain-plugin</module>
+    <module>domain-plugin-api</module>
+    <module>domain-plugin-impl</module>
+    <module>domain-specifications</module>
   </modules>
 </project>
 

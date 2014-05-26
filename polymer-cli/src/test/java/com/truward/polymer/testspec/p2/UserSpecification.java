@@ -1,6 +1,6 @@
 package com.truward.polymer.testspec.p2;
 
-import com.truward.polymer.annotation.Specification;
+import com.truward.polymer.specification.annotation.Specification;
 import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 import com.truward.polymer.naming.FqName;

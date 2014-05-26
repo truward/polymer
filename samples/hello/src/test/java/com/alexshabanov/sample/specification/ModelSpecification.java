@@ -1,7 +1,7 @@
 package com.alexshabanov.sample.specification;
 
 import com.alexshabanov.sample.model.UserAccount;
-import com.truward.polymer.annotation.Specification;
+import com.truward.polymer.specification.annotation.Specification;
 import com.truward.polymer.domain.DomainObject;
 import com.truward.polymer.domain.DomainObjectSpecifier;
 

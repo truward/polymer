@@ -1,6 +1,6 @@
 package com.truward.polymer.it.specification;
 
-import com.truward.polymer.annotation.Specification;
+import com.truward.polymer.specification.annotation.Specification;
 import com.truward.polymer.it.model.User;
 import com.truward.polymer.marshal.json.JacksonMarshallingSpecifier;
 import com.truward.polymer.naming.FqName;

@@ -2,7 +2,7 @@ package com.truward.polymer.marshal.gson;
 
 import com.truward.di.InjectionContext;
 import com.truward.di.support.DefaultInjectionContext;
-import com.truward.polymer.annotation.Specification;
+import com.truward.polymer.specification.annotation.Specification;
 import com.truward.polymer.core.driver.*;
 import com.truward.polymer.output.MemOutputStreamProvider;
 import com.truward.polymer.core.support.driver.DefaultSpecificationHandler;

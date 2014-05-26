@@ -1,6 +1,6 @@
 package com.truward.polymer.marshal.rest;
 
-import com.truward.polymer.annotation.SpecificationMethodInvocation;
+import com.truward.polymer.specification.annotation.SpecificationMethodInvocation;
 
 /**
  * Designates reaction on certain rest method.

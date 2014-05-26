@@ -3,7 +3,7 @@ package com.truward.polymer.core.support.driver;
 import com.google.common.collect.ImmutableList;
 import com.truward.di.InjectionContext;
 import com.truward.di.InjectionException;
-import com.truward.polymer.annotation.Specification;
+import com.truward.polymer.specification.annotation.Specification;
 import com.truward.polymer.core.driver.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

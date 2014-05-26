@@ -1,6 +1,6 @@
 package com.truward.polymer.marshal;
 
-import com.truward.polymer.annotation.Specification;
+import com.truward.polymer.specification.annotation.Specification;
 import com.truward.polymer.marshal.rest.HttpMethod;
 import com.truward.polymer.marshal.rest.RestSpecifier;
 import org.junit.Test;

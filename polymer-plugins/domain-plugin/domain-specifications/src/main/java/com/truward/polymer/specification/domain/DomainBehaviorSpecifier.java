@@ -1,4 +1,4 @@
-package com.truward.polymer.plugin.domain;
+package com.truward.polymer.specification.domain;
 
 import com.truward.polymer.specification.annotation.SpecificationMethodInvocation;
 

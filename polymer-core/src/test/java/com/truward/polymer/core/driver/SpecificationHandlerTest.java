@@ -1,6 +1,6 @@
 package com.truward.polymer.core.driver;
 
-import com.truward.polymer.annotation.Specification;
+import com.truward.polymer.specification.annotation.Specification;
 import com.truward.polymer.output.OutputStreamProvider;
 import com.truward.polymer.core.support.PolymerModule;
 import org.junit.Before;

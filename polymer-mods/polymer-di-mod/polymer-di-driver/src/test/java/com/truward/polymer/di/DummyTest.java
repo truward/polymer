@@ -1,7 +1,7 @@
 package com.truward.polymer.di;
 
 import com.google.common.collect.ImmutableList;
-import com.truward.polymer.annotation.Specification;
+import com.truward.polymer.specification.annotation.Specification;
 import org.junit.Test;
 
 import java.util.List;
