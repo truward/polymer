@@ -1,6 +1,6 @@
 package com.truward.polymer.domain.driver.support;
 
-import com.truward.polymer.plugin.domain.DefensiveCopyStyle;
+import com.truward.polymer.domain.DefensiveCopyStyle;
 import com.truward.polymer.domain.DomainImplementerSettings;
 import com.truward.polymer.domain.analysis.DomainImplementerSettingsReader;
 import com.truward.polymer.freezable.FreezableSupport;

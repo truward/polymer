@@ -1,4 +1,4 @@
-package com.truward.polymer.plugin.domain;
+package com.truward.polymer.domain;
 
 /**
  * @author Alexander Shabanov
