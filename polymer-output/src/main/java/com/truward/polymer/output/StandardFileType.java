@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
  *
  * @author Alexander Shabanov
  */
-public enum StandardFileTypes implements FileType {
+public enum StandardFileType implements FileType {
   NONE(""),
   JAVA("java"),
   PROPERTIES("properties"),
@@ -27,7 +27,7 @@ public enum StandardFileTypes implements FileType {
     return extension;
   }
 
-  private StandardFileTypes(@Nonnull String extension) {
+  private StandardFileType(@Nonnull String extension) {
     this.extension = extension;
   }
 }

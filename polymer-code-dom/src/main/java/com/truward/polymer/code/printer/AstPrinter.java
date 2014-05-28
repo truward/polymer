@@ -3,7 +3,7 @@ package com.truward.polymer.code.printer;
 import com.truward.polymer.code.Ast;
 import com.truward.polymer.naming.FqName;
 import com.truward.polymer.output.OutputStreamProvider;
-import com.truward.polymer.output.StandardFileTypes;
+import com.truward.polymer.output.StandardFileType;
 import com.truward.polymer.printer.CAlikePrinter;
 
 import javax.annotation.Nonnull;
@@ -26,7 +26,7 @@ public final class AstPrinter {
 
   public void print(@Nonnull Ast.ClassDecl classDecl) throws IOException {
     final FqName className = classDecl.getFqName();
-    try (final OutputStream out = provider.createStreamForFile(className, StandardFileTypes.JAVA)) {
+    try (final OutputStream out = provider.createStreamForFile(className, StandardFileType.JAVA)) {
       try (final Writer writer = new OutputStreamWriter(out, OutputStreamProvider.DEFAULT_CHARSET)) {
         final CAlikePrinter printer = new CAlikePrinter(writer);
 

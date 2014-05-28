@@ -25,7 +25,7 @@ public interface OutputStreamProvider {
    * extension 'java' the output file will be generated at $targetDir/com/mysite/App.java
    *
    * @param name Qualified entity name
-   * @param fileType Target file typed, e.g. {@link StandardFileTypes#JAVA}
+   * @param fileType Target file typed, e.g. {@link StandardFileType#JAVA}
    * @return Created output stream
    * @throws IOException On I/O error
    */

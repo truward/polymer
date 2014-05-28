@@ -17,7 +17,7 @@ import com.truward.polymer.domain.analysis.support.GenDomainClass;
 import com.truward.polymer.freezable.FreezableSupport;
 import com.truward.polymer.naming.FqName;
 import com.truward.polymer.output.OutputStreamProvider;
-import com.truward.polymer.output.StandardFileTypes;
+import com.truward.polymer.output.StandardFileType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,7 +123,7 @@ public final class DomainObjectImplementer extends FreezableSupport implements I
     generateCompilationUnit(moduleBuilder.getStream(), implementationTarget);
     moduleBuilder.freeze();
 
-    try (final OutputStream stream = outputStreamProvider.createStreamForFile(targetName, StandardFileTypes.JAVA)) {
+    try (final OutputStream stream = outputStreamProvider.createStreamForFile(targetName, StandardFileType.JAVA)) {
       try (final OutputStreamWriter writer = new OutputStreamWriter(stream, OutputStreamProvider.DEFAULT_CHARSET)) {
         final CodePrinter codePrinter = new DefaultCodePrinter(writer, typeManager);
         codePrinter.print(moduleBuilder.getStream());

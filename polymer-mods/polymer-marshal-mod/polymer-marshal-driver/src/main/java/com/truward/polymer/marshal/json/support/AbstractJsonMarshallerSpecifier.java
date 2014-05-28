@@ -24,7 +24,7 @@ import com.truward.polymer.marshal.json.support.analysis.DefaultJsonFieldRegistr
 import com.truward.polymer.marshal.json.support.analysis.DefaultJsonTarget;
 import com.truward.polymer.naming.FqName;
 import com.truward.polymer.output.OutputStreamProvider;
-import com.truward.polymer.output.StandardFileTypes;
+import com.truward.polymer.output.StandardFileType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +88,7 @@ public abstract class AbstractJsonMarshallerSpecifier extends FreezableSupport
       moduleBuilder.freeze();
 
       // dump code to the file
-      try (final OutputStream stream = outputStreamProvider.createStreamForFile(targetClassName, StandardFileTypes.JAVA)) {
+      try (final OutputStream stream = outputStreamProvider.createStreamForFile(targetClassName, StandardFileType.JAVA)) {
         try (final OutputStreamWriter writer = new OutputStreamWriter(stream, OutputStreamProvider.DEFAULT_CHARSET)) {
           final CodePrinter codePrinter = new DefaultCodePrinter(writer, typeManager);
           codePrinter.print(moduleBuilder.getStream());
