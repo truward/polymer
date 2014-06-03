@@ -20,5 +20,8 @@ public interface SpecificationHandler {
   @Nullable
   <T> T parseClass(@Nonnull Class<T> clazz);
 
+  /**
+   * Tells to finalize specification handling and triggers code generation.
+   */
   void done();
 }
