@@ -16,6 +16,7 @@ import java.util.*;
  *
  * @author Alexander Shabanov
  */
+@Deprecated
 public final class Ast {
   /** Hidden */
   private Ast() {}
@@ -25,6 +26,7 @@ public final class Ast {
   //
 
   /** Base class for all the nodes */
+  @Deprecated
   public interface Node {
 
     /**
