@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
  *
  * @author Alexander Shabanov
  */
+@Deprecated
 public interface SynteticClass {
   @Nonnull FqName getFqName();
 }

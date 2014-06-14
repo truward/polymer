@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 /**
  * @author Alexander Shabanov
  */
+@Deprecated
 public abstract class AstVoidVisitor<T extends Exception> {
   protected void visitNode(@Nonnull Ast.Node node) throws T {
     throw new IllegalStateException(String.format("Node %s is not handled by visitor %s", node.getClass(), getClass()));

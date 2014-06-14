@@ -16,6 +16,7 @@ import java.util.Arrays;
  *
  * @author Alexander Shabanov
  */
+@Deprecated
 public final class DefaultAstFactory implements AstFactory {
   private BiMap<FqName, Ast.Node> entities = HashBiMap.create(); // Node ::= Package||Class
 

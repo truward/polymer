@@ -11,6 +11,7 @@ import java.lang.annotation.Annotation;
 /**
  * @author Alexander Shabanov
  */
+@Deprecated
 public interface AstFactory {
   @Nonnull Ast.ClassDecl classDecl(@Nonnull Ast.Node parent, @Nullable String name);
 

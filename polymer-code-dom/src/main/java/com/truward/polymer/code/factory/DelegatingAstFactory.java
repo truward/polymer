@@ -13,6 +13,7 @@ import java.lang.annotation.Annotation;
  *
  * @author Alexander Shabanov
  */
+@Deprecated
 public abstract class DelegatingAstFactory implements AstFactory {
   @Nonnull protected abstract AstFactory getDelegate();
 

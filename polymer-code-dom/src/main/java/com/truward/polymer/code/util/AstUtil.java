@@ -13,6 +13,7 @@ import java.util.List;
  *
  * @author Alexander Shabanov
  */
+@Deprecated
 public final class AstUtil {
   private AstUtil() {} // hidden
 
