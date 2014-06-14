@@ -3,14 +3,16 @@ package com.truward.polymer.api.output;
 import com.truward.polymer.freezable.Freezable;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.io.Writer;
 
 /**
  * @author Alexander Shabanov
  */
-public interface VirtualFile<T extends ContentGenerator> extends Freezable {
+public interface VirtualFile extends Freezable {
 
   @Nonnull
-  T getContentGenerator();
+  Writer getWriter() throws IOException;
 
   boolean isFrozen();
 

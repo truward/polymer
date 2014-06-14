@@ -1,22 +1,27 @@
 package com.truward.polymer.api.impl.output;
 
-import com.truward.polymer.api.output.ContentGenerator;
 import com.truward.polymer.api.output.VirtualFile;
 
 import javax.annotation.Nonnull;
+import java.io.Writer;
 
 /**
  * @author Alexander Shabanov
  */
 public final class VoidVirtualFile implements VirtualFile {
-  public static final VoidVirtualFile INSTANCE = new VoidVirtualFile();
+  private static final VoidVirtualFile INSTANCE = new VoidVirtualFile();
 
   private VoidVirtualFile() {
   }
 
   @Nonnull
+  public static VoidVirtualFile getInstance() {
+    return INSTANCE;
+  }
+
+  @Nonnull
   @Override
-  public ContentGenerator getContentGenerator() {
+  public Writer getWriter() {
     throw new UnsupportedOperationException();
   }
 

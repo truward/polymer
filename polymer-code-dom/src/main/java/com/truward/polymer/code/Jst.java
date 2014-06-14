@@ -207,7 +207,7 @@ public interface Jst {
 
     @Nonnull Expression getThenPart();
 
-    @Nullable Expression getElsePart();
+    @Nonnull Expression getElsePart();
   }
 
   /**
@@ -346,9 +346,7 @@ public interface Jst {
 
     void setTypeParameters(@Nonnull Collection<? extends TypeParameter> typeParameters);
 
-    @Nonnull List<Statement> getBody();
-
-    void addToBody(@Nonnull Statement statement);
+    @Nonnull Block getBody();
   }
 
   /**
@@ -358,13 +356,23 @@ public interface Jst {
   interface MethodDeclaration extends NamedStatement {
     @Nonnull TypeExpression getReturnType();
 
+    void setReturnType(@Nonnull TypeExpression returnType);
+
     @Nullable Expression getDefaultValue();
+
+    void setDefaultValue(@Nullable Expression defaultValue);
 
     @Nullable Block getBody();
 
+    void setBody(@Nullable Block body);
+
     @Nullable List<VarDeclaration> getArguments();
 
+    void setArguments(@Nonnull List<VarDeclaration> arguments);
+
     @Nonnull List<Expression> getThrown();
+
+    void setThrown(@Nonnull List<Expression> thrown);
   }
 
   /**
@@ -375,6 +383,8 @@ public interface Jst {
     @Nonnull List<Statement> getStatements();
 
     void addStatement(@Nonnull Statement statement);
+
+    void setStatements(@Nonnull List<Statement> statements);
   }
 
   /**
@@ -402,9 +412,9 @@ public interface Jst {
    * @see "JLS 3, section 14.13"
    */
   interface DoWhileLoop extends Statement {
-    @Nonnull Statement getBody();
-
     @Nonnull Expression getCondition();
+
+    @Nonnull Statement getBody();
   }
 
   /**
@@ -412,9 +422,9 @@ public interface Jst {
    * @see "JLS 3, section 14.12"
    */
   interface WhileLoop extends Statement {
-    @Nonnull Statement getBody();
-
     @Nonnull Expression getCondition();
+
+    @Nonnull Statement getBody();
   }
 
   /**
@@ -426,7 +436,7 @@ public interface Jst {
 
     @Nonnull Expression getCondition();
 
-    @Nonnull ExpressionStatement getStep();
+    @Nonnull Expression getStep();
 
     @Nonnull Statement getBody();
   }

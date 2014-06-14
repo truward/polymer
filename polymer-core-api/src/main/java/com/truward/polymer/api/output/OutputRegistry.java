@@ -15,9 +15,7 @@ import java.util.Collection;
 public interface OutputRegistry {
 
   @Nonnull
-  <T extends ContentGenerator> VirtualFile<T> getOrCreate(@Nonnull FqName name,
-                                                          @Nonnull FileType fileType,
-                                                          @Nonnull Class<T> contentGeneratorClass);
+  VirtualFile getOrCreate(@Nonnull FqName name, @Nonnull FileType fileType);
 
   @Nonnull
   Collection<VirtualFile> getAll();

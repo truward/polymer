@@ -29,6 +29,8 @@ public abstract class JstVisitor<E extends Exception> {
 
   public void visitBlock(@Nonnull Jst.Block node) throws E { visitNode(node); }
 
+  public void visitInitializerBlock(@Nonnull Jst.InitializerBlock node) throws E { visitNode(node); }
+
   public void visitDoWhileLoop(@Nonnull Jst.DoWhileLoop node) throws E { visitNode(node); }
 
   public void visitWhileLoop(@Nonnull Jst.WhileLoop node) throws E { visitNode(node); }
