@@ -17,6 +17,7 @@ import java.io.Writer;
  *
  * @author Alexander Shabanov
  */
+@Deprecated
 public final class AstPrinter {
   private final OutputStreamProvider provider;
 

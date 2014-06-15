@@ -1,4 +1,6 @@
-package com.truward.polymer.code;
+package com.truward.polymer.code.visitor;
+
+import com.truward.polymer.code.Jst;
 
 import javax.annotation.Nonnull;
 
@@ -8,14 +10,14 @@ import javax.annotation.Nonnull;
  * @param <E> Thrown exception
  */
 public abstract class JstVisitor<E extends Exception> {
-  public void visitNode(@Nonnull Jst.Node n) throws E {
+  public void visitNode(@Nonnull Jst.Node node) throws E {
     throw new IllegalStateException(String.format(
-        "Node %s is not handled by visitor %s", n.getClass(), getClass()));
+        "Node %s is not handled by visitor %s", node.getClass(), getClass()));
   }
 
   public void visitUnit(@Nonnull Jst.Unit node) throws E { visitNode(node); }
 
-  public void visitImport(@Nonnull Jst.Unit node) throws E { visitNode(node); }
+  public void visitImport(@Nonnull Jst.Import node) throws E { visitNode(node); }
 
   public void visitClass(@Nonnull Jst.ClassDeclaration node) throws E { visitNode(node); }
 
@@ -97,17 +99,17 @@ public abstract class JstVisitor<E extends Exception> {
 
   public void visitAnnotation(@Nonnull Jst.Annotation node) throws E { visitNode(node); }
 
-  //
-  // types
-  //
+  public void visitType(@Nonnull Jst.TypeExpression node) throws E { visitNode(node); }
 
-//    public void visitPrimitiveType(@Nonnull {Primitive?} node) throws E { visitNode(node); }
-//
-//    public void visitArrayType(@Nonnull {Array?} node) throws E { visitNode(node); }
-//
-//    public void visitParameterizedType(@Nonnull {Parameterized?} node) throws E { visitNode(node); }
-//
-//    public void visitTypeParameter(@Nonnull {TypeParameter?} node) throws E { visitNode(node); }
+  public void visitSimpleClass(@Nonnull Jst.SimpleClassType node) throws E { visitType(node); }
 
-  public void visitWildcard(@Nonnull Jst.Wildcard node) throws E { visitNode(node); }
+  public void visitClassType(@Nonnull Jst.ClassType node) throws E { visitSimpleClass(node); }
+
+  public void visitSynteticType(@Nonnull Jst.SynteticType node) throws E { visitSimpleClass(node); }
+
+  public void visitArray(@Nonnull Jst.Array node) throws E { visitType(node); }
+
+  public void visitParameterizedType(@Nonnull Jst.ParameterizedType node) throws E { visitType(node); }
+
+  public void visitWildcard(@Nonnull Jst.Wildcard node) throws E { visitType(node); }
 }

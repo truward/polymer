@@ -1,10 +1,10 @@
 package com.truward.polymer.code;
 
+import com.truward.polymer.code.visitor.JstVisitor;
 import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -68,9 +68,9 @@ public interface Jst {
 
     void setAnnotations(@Nonnull Collection<Annotation> annotations);
 
-    @Nonnull List<Node> getDefinitions();
+    @Nonnull List<ClassDeclaration> getClasses();
 
-    void setDefinitions(@Nonnull Collection<? extends Node> definitions);
+    void setClasses(@Nonnull Collection<ClassDeclaration> definitions);
   }
 
   /**
@@ -83,6 +83,14 @@ public interface Jst {
     @Nonnull FqName getImportName();
   }
 
+  interface Annotation extends Node {
+    @Nonnull TypeExpression getTypeExpression();
+
+    @Nonnull List<Expression> getArguments();
+
+    void setArguments(@Nonnull Collection<? extends Expression> expressions);
+  }
+
 
   //
   // types
@@ -93,12 +101,24 @@ public interface Jst {
    */
   interface TypeExpression extends Expression {}
 
-  interface Annotation extends Node {
-    @Nonnull TypeExpression getTypeExpression();
+  /**
+   * Represents non-array, non-generic imported class type
+   */
+  interface SimpleClassType extends TypeExpression {
+    @Nonnull FqName getFqName();
+  }
 
-    @Nonnull List<Expression> getArguments();
+  /**
+   * Represents non-array, non-generic imported class type
+   */
+  interface ClassType extends SimpleClassType {
+    @Nonnull Class<?> getWrappedClass();
+  }
 
-    void setArguments(@Nonnull Collection<? extends Expression> expressions);
+  /**
+   * Represents certain syntetic type, identified by name
+   */
+  interface SynteticType extends SimpleClassType {
   }
 
   /**
@@ -128,8 +148,22 @@ public interface Jst {
     @Nonnull Expression getExpression();
   }
 
+  /**
+   * An array type.
+   * @see "JLS 3, section 10.1"
+   */
   interface Array extends TypeExpression {
-    // TODO: body
+    @Nonnull TypeExpression getType();
+  }
+
+  /**
+   * A type expression involving type parameters (e.g. List or Map).
+   * @see "JLS 3, section 4.5.1"
+   */
+  interface ParameterizedType extends TypeExpression {
+    @Nonnull TypeExpression getType();
+
+    @Nonnull List<Expression> getArguments();
   }
 
   //
@@ -284,7 +318,7 @@ public interface Jst {
 
     @Nonnull List<Expression> getArguments();
 
-    @Nullable Block getClassBody();
+    @Nullable ClassDeclaration getClassDeclaration();
   }
 
   /**
@@ -310,11 +344,9 @@ public interface Jst {
 
     void setAnnotations(@Nonnull Collection<? extends Annotation> annotations);
 
-    @Nonnull Set<Modifier> getModifiers();
+    @Nonnull Set<JstFlag> getFlags();
 
-    void setModifiers(@Nonnull List<Modifier> modifiers);
-
-    // childs?
+    void setFlags(@Nonnull List<JstFlag> flags);
   }
 
   interface Package extends NamedStatement {
@@ -366,7 +398,7 @@ public interface Jst {
 
     void setBody(@Nullable Block body);
 
-    @Nullable List<VarDeclaration> getArguments();
+    @Nonnull List<VarDeclaration> getArguments();
 
     void setArguments(@Nonnull List<VarDeclaration> arguments);
 

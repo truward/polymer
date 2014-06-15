@@ -17,6 +17,7 @@ import java.util.List;
  *
  * @author Alexander Shabanov
  */
+@Deprecated
 final class ClassPrinter {
   private final CAlikePrinter printer;
   private final Ast.ClassDecl classDecl;

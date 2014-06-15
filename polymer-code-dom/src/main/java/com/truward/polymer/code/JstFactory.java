@@ -78,7 +78,7 @@ public interface JstFactory {
                                     @Nonnull Jst.TypeExpression type,
                                     @Nonnull List<Jst.TypeParameter> typeParameters,
                                     @Nonnull List<Jst.Expression> arguments,
-                                    @Nullable Jst.Block classBody);
+                                    @Nullable Jst.ClassDeclaration classDeclaration);
 
   @Nonnull Jst.NewArray jstNewArray(@Nonnull Jst.TypeExpression type,
                                     @Nonnull List<Jst.Expression> dimensions,
@@ -95,4 +95,17 @@ public interface JstFactory {
   @Nonnull Jst.Unary jstUnary(@Nonnull Operator operator, @Nonnull Jst.Expression expression);
 
   @Nonnull Jst.Binary jstBinary(@Nonnull Operator operator, @Nonnull Jst.Expression left, @Nonnull Jst.Expression right);
+
+  @Nonnull Jst.ClassType jstClassType(@Nonnull Class<?> clazz);
+
+  @Nonnull Jst.SynteticType jstSynteticType(@Nonnull FqName name);
+
+  @Nonnull Jst.Array jstArray(@Nonnull Jst.TypeExpression elementType);
+
+  @Nonnull Jst.ParameterizedType jstParameterizedType(@Nonnull Jst.TypeExpression type,
+                                                      @Nonnull List<Jst.Expression> arguments);
+
+  @Nonnull Jst.Wildcard jstWildcard(@Nullable Jst.TypeBoundExpression typeBoundExpression);
+
+  @Nonnull Jst.TypeBoundExpression jstTypeBound(@Nonnull TypeBoundKind kind, @Nonnull Jst.Expression expression);
 }

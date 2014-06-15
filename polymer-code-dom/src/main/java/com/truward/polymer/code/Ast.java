@@ -630,7 +630,7 @@ public final class Ast {
    * Class, Interface, Enum or Annotation Declaration.
    * @see "JLS 3, sections 8.1, 8.9, 9.1, and 9.6"
    */
-  public static final class ClassDecl extends NamedStmt<ClassDecl> implements SynteticClass {
+  public static final class ClassDecl extends NamedStmt<ClassDecl> {
     private TypeExpr superclass = Nil.INSTANCE;
     private final List<TypeExpr> interfaces = new ArrayList<>();
     private final List<Stmt> bodyStmts = new ArrayList<>();
@@ -699,7 +699,6 @@ public final class Ast {
     }
 
     @Nonnull
-    @Override
     public FqName getFqName() {
       if (!hasName()) {
         throw new IllegalStateException("Anonymous class has no fully qualified name");
