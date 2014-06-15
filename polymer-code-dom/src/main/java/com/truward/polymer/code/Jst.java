@@ -70,7 +70,7 @@ public interface Jst {
 
     @Nonnull List<ClassDeclaration> getClasses();
 
-    void setClasses(@Nonnull Collection<ClassDeclaration> definitions);
+    void setClasses(@Nonnull Collection<ClassDeclaration> classes);
   }
 
   /**
@@ -346,7 +346,7 @@ public interface Jst {
 
     @Nonnull Set<JstFlag> getFlags();
 
-    void setFlags(@Nonnull List<JstFlag> flags);
+    void setFlags(@Nonnull Collection<JstFlag> flags);
   }
 
   interface Package extends NamedStatement {
@@ -413,8 +413,6 @@ public interface Jst {
    */
   interface Block extends Statement {
     @Nonnull List<Statement> getStatements();
-
-    void addStatement(@Nonnull Statement statement);
 
     void setStatements(@Nonnull List<Statement> statements);
   }

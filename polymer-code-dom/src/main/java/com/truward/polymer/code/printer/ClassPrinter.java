@@ -2,7 +2,6 @@ package com.truward.polymer.code.printer;
 
 import com.truward.polymer.code.Ast;
 import com.truward.polymer.code.Operator;
-import com.truward.polymer.code.util.EscapeUtil;
 import com.truward.polymer.code.visitor.AstVoidVisitor;
 import com.truward.polymer.naming.FqName;
 import com.truward.polymer.printer.CAlikePrinter;

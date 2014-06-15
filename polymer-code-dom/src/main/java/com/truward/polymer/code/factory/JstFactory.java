@@ -1,5 +1,8 @@
-package com.truward.polymer.code;
+package com.truward.polymer.code.factory;
 
+import com.truward.polymer.code.Jst;
+import com.truward.polymer.code.Operator;
+import com.truward.polymer.code.TypeBoundKind;
 import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
@@ -12,7 +15,8 @@ import java.util.List;
  * @author Alexander Shabanov
  */
 public interface JstFactory {
-  @Nonnull Jst.Unit jstUnit(@Nonnull FqName packageName);
+  @Nonnull
+  Jst.Unit jstUnit(@Nonnull FqName packageName);
 
   @Nonnull Jst.Import jstImport(@Nonnull FqName importName, boolean isStatic);
 
