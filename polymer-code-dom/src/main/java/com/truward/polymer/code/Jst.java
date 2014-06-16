@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Java semantics tree
+ * Java semantics tree.
  *
  * @author Alexander Shabanov
  */
@@ -19,6 +19,11 @@ public interface Jst {
   /** Base class for all the semantics tree nodes */
   interface Node {
     <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E;
+  }
+
+  /** Interface, that designates all the named nodes */
+  interface Named {
+    @Nonnull String getName();
   }
 
   /**
@@ -125,9 +130,7 @@ public interface Jst {
    * Represents type parameter in generic type expression, e.g. 'T extends Serializable'
    * @see "JLS 3, section 4.4"
    */
-  interface TypeParameter extends TypeExpression {
-    @Nonnull String getName();
-
+  interface TypeParameter extends TypeExpression, Named {
     @Nonnull List<TypeExpression> getTypeBounds();
   }
 
@@ -174,17 +177,14 @@ public interface Jst {
    * Represents identifier, i.e. variable.
    * @see "JLS 3, section 6.5.6.1"
    */
-  interface Identifier extends Expression {
-    @Nonnull String getName();
+  interface Identifier extends Expression, Named {
   }
 
   /**
    * Represent selectors, aka Field Access expression.
    * @see "JLS 3, section 15.11"
    */
-  interface Selector extends Expression {
-    @Nonnull String getName();
-
+  interface Selector extends Expression, Named {
     @Nonnull Expression getExpression();
   }
 
@@ -215,9 +215,7 @@ public interface Jst {
    * @see "JLS 3, section 15.2"
    */
   interface Call extends Expression {
-    @Nonnull String getMethodName();
-
-    @Nullable Expression getBase();
+    @Nonnull Expression getMethodName();
 
     @Nonnull List<TypeParameter> getTypeParameters();
 
@@ -337,12 +335,10 @@ public interface Jst {
   // statements
   //
 
-  interface NamedStatement extends Statement {
-    @Nonnull String getName();
-
+  interface NamedStatement extends Statement, Named {
     @Nonnull List<Annotation> getAnnotations();
 
-    void setAnnotations(@Nonnull Collection<? extends Annotation> annotations);
+    void setAnnotations(@Nonnull Collection<Annotation> annotations);
 
     @Nonnull Set<JstFlag> getFlags();
 
@@ -368,7 +364,7 @@ public interface Jst {
   interface ClassDeclaration extends NamedStatement {
     @Nullable TypeExpression getSuperclass();
 
-    void setSuperclass(@Nonnull TypeExpression superclass);
+    void setSuperclass(@Nullable TypeExpression superclass);
 
     @Nonnull List<TypeExpression> getInterfaces();
 
@@ -400,7 +396,7 @@ public interface Jst {
 
     @Nonnull List<VarDeclaration> getArguments();
 
-    void setArguments(@Nonnull List<VarDeclaration> arguments);
+    void setArguments(@Nonnull Collection<VarDeclaration> arguments);
 
     @Nonnull List<Expression> getThrown();
 
@@ -414,7 +410,7 @@ public interface Jst {
   interface Block extends Statement {
     @Nonnull List<Statement> getStatements();
 
-    void setStatements(@Nonnull List<Statement> statements);
+    void setStatements(@Nonnull Collection<? extends Statement> statements);
   }
 
   /**

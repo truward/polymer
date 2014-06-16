@@ -259,9 +259,9 @@ public final class JstParentAwareVisitor<T extends Exception> extends JstVisitor
     parents.pop();
   }
 
-  @Override public void visitSelect(@Nonnull Jst.Selector node) throws T {
+  @Override public void visitSelector(@Nonnull Jst.Selector node) throws T {
     parents.push(node);
-    delegate.visitSelect(node);
+    delegate.visitSelector(node);
     parents.pop();
   }
 

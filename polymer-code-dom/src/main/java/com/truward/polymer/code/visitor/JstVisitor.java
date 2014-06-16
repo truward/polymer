@@ -91,7 +91,7 @@ public abstract class JstVisitor<E extends Exception> {
 
   public void visitArrayAccess(@Nonnull Jst.ArrayAccess node) throws E { visitNode(node); }
 
-  public void visitSelect(@Nonnull Jst.Selector node) throws E { visitNode(node); }
+  public void visitSelector(@Nonnull Jst.Selector node) throws E { visitNode(node); }
 
   public void visitIdentifier(@Nonnull Jst.Identifier node) throws E { visitNode(node); }
 

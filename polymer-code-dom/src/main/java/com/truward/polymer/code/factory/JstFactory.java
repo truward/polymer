@@ -7,6 +7,7 @@ import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -19,6 +20,14 @@ public interface JstFactory {
   Jst.Unit jstUnit(@Nonnull FqName packageName);
 
   @Nonnull Jst.Import jstImport(@Nonnull FqName importName, boolean isStatic);
+
+  @Nonnull Jst.Identifier jstIdentifier(@Nonnull String name);
+
+  @Nonnull Jst.Selector jstSelector(@Nonnull Jst.Expression base, @Nonnull String name);
+
+  @Nonnull Jst.Literal jstLiteral(@Nullable Object value);
+
+  @Nonnull Jst.Annotation jstAnnotation(@Nonnull Jst.TypeExpression annotationType);
 
   @Nonnull Jst.ClassDeclaration jstClass(@Nonnull String name);
 
@@ -73,10 +82,9 @@ public interface JstFactory {
 
   @Nonnull Jst.Assert jstAssert(@Nonnull Jst.Expression expression, @Nullable Jst.Expression detail);
 
-  @Nonnull Jst.Call jstCall(@Nonnull String methodName,
-                            @Nullable Jst.Expression base,
-                            @Nonnull List<Jst.TypeParameter> typeParameters,
-                            @Nonnull List<Jst.Expression> arguments);
+  @Nonnull Jst.Call jstCall(@Nonnull Jst.Expression methodName,
+                            @Nonnull Collection<? extends Jst.TypeParameter> typeParameters,
+                            @Nonnull Collection<? extends Jst.Expression> arguments);
 
   @Nonnull Jst.NewClass jstNewClass(@Nullable Jst.Expression enclosingExpression,
                                     @Nonnull Jst.TypeExpression type,

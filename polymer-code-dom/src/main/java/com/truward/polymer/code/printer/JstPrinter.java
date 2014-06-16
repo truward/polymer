@@ -93,10 +93,20 @@ public final class JstPrinter {
       }
 
       if (!node.getClasses().isEmpty()) {
-        printer.print('\n');
         for (final Jst.ClassDeclaration classDeclaration : node.getClasses()) {
           visitClass(classDeclaration);
         }
+      }
+    }
+
+    @Override
+    public void visitAnnotation(@Nonnull Jst.Annotation node) throws IOException {
+      printer.print('@');
+      print(node.getTypeExpression());
+      if (!node.getArguments().isEmpty()) {
+        printer.print('(');
+        printCommaSeparated(node.getArguments());
+        printer.print(')');
       }
     }
 
@@ -108,6 +118,7 @@ public final class JstPrinter {
         assert node.getInterfaces().isEmpty() : "Anonymous class should not implement any interfaces";
         assert node.getTypeParameters().isEmpty() : "Anonymous class should not be parameterized";
       } else {
+        printer.print('\n');
         printNamedStatement(node, false);
         if (node.getFlags().contains(JstFlag.INTERFACE)) {
           printer.print("interface");
@@ -136,11 +147,13 @@ public final class JstPrinter {
 
         // print interfaces
         if (!node.getInterfaces().isEmpty()) {
+          printer.print(' ');
           if (node.getFlags().contains(JstFlag.INTERFACE)) {
             printer.print("extends");
           } else {
             printer.print("implements");
           }
+          printer.print(' ');
 
           printCommaSeparated(node.getInterfaces());
         }
@@ -152,12 +165,21 @@ public final class JstPrinter {
 
     @Override
     public void visitMethod(@Nonnull Jst.MethodDeclaration node) throws IOException {
+      printer.print('\n').print('\n');
       printNamedStatement(node, false);
       print(node.getReturnType());
       printer.print(' ').print(node.getName());
       printer.print('(');
       printCommaSeparated(node.getArguments());
       printer.print(')');
+
+      final Jst.Block body = node.getBody();
+      if (body != null) {
+        printer.print(' ');
+        print(body);
+      } else {
+        printer.print(';');
+      }
     }
 
     @Override
@@ -201,7 +223,7 @@ public final class JstPrinter {
     }
 
     @Override
-    public void visitSelect(@Nonnull Jst.Selector node) throws IOException {
+    public void visitSelector(@Nonnull Jst.Selector node) throws IOException {
       print(node.getExpression());
       printer.print('.').print(node.getName());
     }

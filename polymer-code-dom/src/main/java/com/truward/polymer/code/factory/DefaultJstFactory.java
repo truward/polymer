@@ -30,6 +30,22 @@ public class DefaultJstFactory implements JstFactory {
     throw new UnsupportedOperationException();
   }
 
+  @Nonnull @Override public Jst.Identifier jstIdentifier(@Nonnull String name) {
+    return new Identifier(name);
+  }
+
+  @Nonnull @Override public Jst.Selector jstSelector(@Nonnull Jst.Expression base, @Nonnull String name) {
+    return new Selector(name, base);
+  }
+
+  @Nonnull @Override public Jst.Literal jstLiteral(@Nullable Object value) {
+    return new Literal(value);
+  }
+
+  @Nonnull @Override public Jst.Annotation jstAnnotation(@Nonnull Jst.TypeExpression annotationType) {
+    return new Annotation(annotationType);
+  }
+
   @Nonnull @Override public Jst.ClassDeclaration jstClass(@Nonnull String name) {
     return new ClassDeclaration(name, jstBlock());
   }
@@ -104,7 +120,7 @@ public class DefaultJstFactory implements JstFactory {
   @Nonnull @Override public Jst.If jstIf(@Nonnull Jst.Expression condition,
                                          @Nonnull Jst.Statement then,
                                          @Nullable Jst.Statement els) {
-    throw new UnsupportedOperationException();
+    return new If(condition, then, els);
   }
 
   @Nonnull @Override public Jst.Conditional jstConditional(@Nonnull Jst.Expression condition,
@@ -122,7 +138,7 @@ public class DefaultJstFactory implements JstFactory {
   }
 
   @Nonnull @Override public Jst.Return jstReturn(@Nullable Jst.Expression expression) {
-    throw new UnsupportedOperationException();
+    return new Return(expression);
   }
 
   @Nonnull @Override public Jst.Throw jstThrow(@Nonnull Jst.Expression expression) {
@@ -134,10 +150,9 @@ public class DefaultJstFactory implements JstFactory {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull @Override public Jst.Call jstCall(@Nonnull String methodName,
-                                             @Nullable Jst.Expression base,
-                                             @Nonnull List<Jst.TypeParameter> typeParameters,
-                                             @Nonnull List<Jst.Expression> arguments) {
+  @Nonnull @Override public Jst.Call jstCall(@Nonnull Jst.Expression methodName,
+                                             @Nonnull Collection<? extends Jst.TypeParameter> typeParameters,
+                                             @Nonnull Collection<? extends Jst.Expression> arguments) {
     throw new UnsupportedOperationException();
   }
 
@@ -241,6 +256,86 @@ public class DefaultJstFactory implements JstFactory {
     }
   }
 
+  private static final class Annotation extends AbstractNode implements Jst.Annotation {
+    private final Jst.TypeExpression typeExpression;
+    private List<Jst.Expression> arguments = ImmutableList.of();
+
+    Annotation(@Nonnull Jst.TypeExpression typeExpression) {
+      this.typeExpression = typeExpression;
+    }
+
+    @Nonnull @Override public Jst.TypeExpression getTypeExpression() {
+      return typeExpression;
+    }
+
+    @Nonnull @Override public List<Jst.Expression> getArguments() {
+      return arguments;
+    }
+
+    @Override public void setArguments(@Nonnull Collection<? extends Jst.Expression> expressions) {
+      this.arguments = ImmutableList.copyOf(expressions);
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitAnnotation(this);
+    }
+  }
+
+  private static abstract class AbstractNamed extends AbstractNode implements Jst.Named {
+    private final String name;
+
+    AbstractNamed(@Nonnull String name) {
+      this.name = name;
+    }
+
+    @Nonnull @Override public final String getName() {
+      return name;
+    }
+  }
+
+  private static final class Identifier extends AbstractNamed implements Jst.Identifier {
+    Identifier(@Nonnull String name) {
+      super(name);
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitIdentifier(this);
+    }
+  }
+
+  private static final class Selector extends AbstractNamed implements Jst.Selector {
+    private final Jst.Expression expression;
+
+    Selector(@Nonnull String name, @Nonnull Jst.Expression expression) {
+      super(name);
+      this.expression = expression;
+    }
+
+    @Nonnull @Override public Jst.Expression getExpression() {
+      return expression;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitSelector(this);
+    }
+  }
+
+  private static final class Literal extends AbstractNode implements Jst.Literal {
+    private final Object value;
+
+    Literal(@Nullable Object value) {
+      this.value = value;
+    }
+
+    @Nullable @Override public Object getValue() {
+      return value;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitLiteral(this);
+    }
+  }
+
   private static final class Unit extends AbstractNode implements Jst.Unit {
 
     private final FqName packageName;
@@ -337,7 +432,7 @@ public class DefaultJstFactory implements JstFactory {
       return statements;
     }
 
-    @Override public void setStatements(@Nonnull List<Jst.Statement> statements) {
+    @Override public void setStatements(@Nonnull Collection<? extends Jst.Statement> statements) {
       this.statements = ImmutableList.copyOf(statements);
     }
 
@@ -346,24 +441,19 @@ public class DefaultJstFactory implements JstFactory {
     }
   }
 
-  private static abstract class NamedStatement extends AbstractNode implements Jst.NamedStatement {
-    private final String name;
+  private static abstract class NamedStatement extends AbstractNamed implements Jst.NamedStatement {
     private List<Jst.Annotation> annotations = ImmutableList.of();
     private Set<JstFlag> flags = ImmutableSet.of();
 
     NamedStatement(@Nonnull String name) {
-      this.name = name;
-    }
-
-    @Nonnull @Override public final String getName() {
-      return name;
+      super(name);
     }
 
     @Nonnull @Override public final List<Jst.Annotation> getAnnotations() {
       return annotations;
     }
 
-    @Override public final void setAnnotations(@Nonnull Collection<? extends Jst.Annotation> annotations) {
+    @Override public final void setAnnotations(@Nonnull Collection<Jst.Annotation> annotations) {
       this.annotations = ImmutableList.copyOf(annotations);
     }
 
@@ -372,7 +462,7 @@ public class DefaultJstFactory implements JstFactory {
     }
 
     @Override public final void setFlags(@Nonnull Collection<JstFlag> flags) {
-      this.flags = EnumSet.copyOf(flags);
+      this.flags = flags.isEmpty() ? EnumSet.noneOf(JstFlag.class) : EnumSet.copyOf(flags);
     }
   }
 
@@ -417,7 +507,7 @@ public class DefaultJstFactory implements JstFactory {
       return superclass;
     }
 
-    @Override public void setSuperclass(@Nonnull Jst.TypeExpression superclass) {
+    @Override public void setSuperclass(@Nullable Jst.TypeExpression superclass) {
       this.superclass = superclass;
     }
 
@@ -486,7 +576,7 @@ public class DefaultJstFactory implements JstFactory {
       return arguments;
     }
 
-    @Override public void setArguments(@Nonnull List<Jst.VarDeclaration> arguments) {
+    @Override public void setArguments(@Nonnull Collection<Jst.VarDeclaration> arguments) {
       this.arguments = ImmutableList.copyOf(arguments);
     }
 
@@ -500,6 +590,50 @@ public class DefaultJstFactory implements JstFactory {
 
     @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
       visitor.visitMethod(this);
+    }
+  }
+
+  private static final class If extends AbstractNode implements Jst.If {
+    private final Jst.Expression condition;
+    private final Jst.Statement thenPart;
+    private final Jst.Statement elsePart;
+
+    If(@Nonnull Jst.Expression condition, @Nonnull Jst.Statement thenPart, @Nullable Jst.Statement elsePart) {
+      this.condition = condition;
+      this.thenPart = thenPart;
+      this.elsePart = elsePart;
+    }
+
+    @Nonnull @Override public Jst.Expression getCondition() {
+      return condition;
+    }
+
+    @Nonnull @Override public Jst.Statement getThenPart() {
+      return thenPart;
+    }
+
+    @Nullable @Override public Jst.Statement getElsePart() {
+      return elsePart;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitIf(this);
+    }
+  }
+
+  private static final class Return extends AbstractNode implements Jst.Return {
+    private final Jst.Expression expression;
+
+    Return(@Nullable Jst.Expression expression) {
+      this.expression = expression;
+    }
+
+    @Nullable @Override public Jst.Expression getExpression() {
+      return expression;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitReturn(this);
     }
   }
 }
