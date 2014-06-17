@@ -384,6 +384,10 @@ public interface Jst {
   interface MethodDeclaration extends NamedStatement {
     @Nonnull TypeExpression getReturnType();
 
+    @Nonnull List<TypeParameter> getTypeParameters();
+
+    void setTypeParameters(@Nonnull Collection<? extends Jst.TypeParameter> typeParameters);
+
     void setReturnType(@Nonnull TypeExpression returnType);
 
     @Nullable Expression getDefaultValue();

@@ -133,9 +133,9 @@ public abstract class JstFactorySupport {
     return method(flags, ImmutableList.<Jst.Annotation>of(), methodName, returnType, arguments, body);
   }
 
-  @Nonnull public Jst.Call call(@Nonnull String methodName,
+  @Nonnull public Jst.Call call(@Nonnull Jst.Expression methodName,
                                 @Nonnull Collection<? extends Jst.Expression> arguments) {
-    return getFactory().jstCall(methodName, null, ImmutableList.<Jst.TypeParameter>of(), arguments);
+    return getFactory().jstCall(methodName, ImmutableList.<Jst.TypeParameter>of(), arguments);
   }
 
   @Nonnull public Jst.Binary op(@Nonnull Operator operator, @Nonnull Jst.Expression left, @Nonnull Jst.Expression right) {

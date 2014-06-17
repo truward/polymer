@@ -164,7 +164,7 @@ public final class JstPrinterTest extends JstFactorySupport {
             // >> public int foo(int a) { if (hashCode() > a) { return 1; } else { return 2; } }
             method(flags(PUBLIC), annotations(), "foo", int.class, args(var("a", int.class)),
                 block(
-                    ifs(op(Operator.GT, call("hashCode", expressions()), ident("a")),
+                    ifs(op(Operator.GT, call(ident("this", "hashCode"), expressions()), ident("a")),
                         block(returns(literal(1))), block(returns(literal(2))))
                 ))
         )));
@@ -176,9 +176,8 @@ public final class JstPrinterTest extends JstFactorySupport {
     // Then:
     assertEquals("package my;\n\n\n" +
         "public abstract class User {\n\n\n" +
-        "  @Override\n" +
-        "  public int hashCode() {\n" +
-        "    if (hashCode() > a) {\n" +
+        "  public int foo(int a) {\n" +
+        "    if (this.hashCode() > a) {\n" +
         "      return 1;\n" +
         "    } else {\n" +
         "      return 2;\n" +
@@ -187,29 +186,6 @@ public final class JstPrinterTest extends JstFactorySupport {
         "}",
         contents);
   }
-
-//
-//  @Test
-//  public void shouldPrintConditionals() throws IOException {
-//    final Ast.ClassDecl userClass = unit(FqName.valueOf("domain.User"));
-//
-//    final Ast.MethodDecl methodDecl = userClass.addMethodDecl("foo")
-//        .addArgument("a", classRef(int.class))
-//        .addModifiers(Modifier.PUBLIC)
-//        .setReturnType(classRef(int.class));
-//
-//    methodDecl
-//        .addBodyStmt(exprStmt(call("hashCode").setBase(ident("this"))))
-//        .addBodyStmt(ifStmt(binary(Operator.GT, ident("a"), literal(0)),
-//            returnStmt(literal(1)), // < then
-//            returnStmt(literal(2))));
-//
-//    astPrinter.print(userClass);
-//    final String contents = mosp.getContentMap().get("domain/User.java");
-//
-//    assertTrue(contents.contains("this.hashCode();\n"));
-//    assertTrue(contents.contains("if (a > 0) {\n"));
-//  }
 
   //
   // Private

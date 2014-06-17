@@ -66,7 +66,7 @@ public final class JstPrinter {
 
     private final ParentProvider parents;
     private final CAlikePrinter printer;
-    @Nonnull private JstVisitor<IOException> visitor;
+    private JstVisitor<IOException> visitor;
 
     void setVisitor(@Nonnull JstVisitor<IOException> visitor) {
       this.visitor = visitor;
@@ -128,38 +128,36 @@ public final class JstPrinter {
           printer.print("class");
         }
 
-        printer.print(' ').print(node.getName());
+        printer.print(' ').print(node.getName()).print(' ');
 
         // print type parameters
         if (!node.getTypeParameters().isEmpty()) {
-          printer.print(' ').print('<');
-          printCommaSeparated(node.getTypeParameters());
-          printer.print('>');
+          printTypeParameters(node.getTypeParameters());
+          printer.print(' ');
         }
 
         // print superclass
         final Jst.TypeExpression superclass = node.getSuperclass();
         if (superclass != null) {
           assert !node.getFlags().contains(JstFlag.INTERFACE) : "Interface should not have superclass";
-          printer.print(' ').print("extends").print(' ');
+          printer.print("extends").print(' ');
           print(superclass);
+          printer.print(' ');
         }
 
         // print interfaces
         if (!node.getInterfaces().isEmpty()) {
-          printer.print(' ');
           if (node.getFlags().contains(JstFlag.INTERFACE)) {
             printer.print("extends");
           } else {
             printer.print("implements");
           }
           printer.print(' ');
-
           printCommaSeparated(node.getInterfaces());
+          printer.print(' ');
         }
       }
 
-      printer.print(' ');
       print(node.getBody());
     }
 
@@ -167,6 +165,9 @@ public final class JstPrinter {
     public void visitMethod(@Nonnull Jst.MethodDeclaration node) throws IOException {
       printer.print('\n').print('\n');
       printNamedStatement(node, false);
+      if (!node.getTypeParameters().isEmpty()) {
+        printTypeParameters(node.getTypeParameters());
+      }
       print(node.getReturnType());
       printer.print(' ').print(node.getName());
       printer.print('(');
@@ -231,7 +232,7 @@ public final class JstPrinter {
     @Override
     public void visitBlock(@Nonnull Jst.Block node) throws IOException {
       printer.print('{');
-      print(node.getStatements());
+      printStatements(node.getStatements());
       printer.print('}');
     }
 
@@ -239,7 +240,7 @@ public final class JstPrinter {
     public void visitAssignment(@Nonnull Jst.Assignment node) throws IOException {
       print(node.getLeftExpression());
       printer.print(' ').print('=').print(' ');
-      print(node.getRightExpression());;
+      print(node.getRightExpression());
     }
 
     @Override
@@ -265,9 +266,143 @@ public final class JstPrinter {
       printClassNameReference(node.getFqName());
     }
 
+    @Override public void visitCall(@Nonnull Jst.Call node) throws IOException {
+      final Jst.Expression methodName = node.getMethodName();
+      if (node.getTypeParameters().isEmpty()) {
+        print(methodName);
+      } else {
+        // special case: print type parameters with method name
+        if (!(methodName instanceof Jst.Selector)) {
+          // print type parameters before method name, like <MyType>copyOf(something)
+          printTypeParameters(node.getTypeParameters());
+          print(methodName);
+        } else {
+          // print type parameters before last name in a selector, like ImmutableList.<MyType>copyOf(something)
+          final Jst.Selector selectorMethodName = (Jst.Selector) methodName;
+          print(selectorMethodName.getExpression());
+          printer.print('.');
+          printTypeParameters(node.getTypeParameters());
+          printer.print(selectorMethodName.getName());
+        }
+      }
+
+      // print arguments
+      printer.print('(');
+      printCommaSeparated(node.getArguments());
+      printer.print(')');
+    }
+
+    @Override public void visitEmptyExpression(@Nonnull Jst.EmptyExpression node) throws IOException {
+      // do nothing
+    }
+
+    @Override public void visitEmptyStatement(@Nonnull Jst.EmptyStatement node) throws IOException {
+      // do nothing
+    }
+
+    @Override public void visitImport(@Nonnull Jst.Import node) throws IOException {
+      printer.print("import").print(' ');
+      if (node.isStatic()) {
+        printer.print("static").print(' ');
+      }
+      printer.print(node.getImportName()).print(';');
+    }
+
+    @Override public void visitIf(@Nonnull Jst.If node) throws IOException {
+      printer.print("if").print(' ').print('(');
+      print(node.getCondition());
+      printer.print(')').print(' ');
+      print(node.getThenPart());
+      // optional else part
+      final Jst.Statement elsePart = node.getElsePart();
+      if (elsePart != null) {
+        printer.print(' ').print("else").print(' ');
+        print(elsePart);
+      }
+    }
+
+    @Override public void visitContinue(@Nonnull Jst.Continue node) throws IOException {
+      printer.print("continue");
+      final String label = node.getLabel();
+      if (label != null) {
+        printer.print(' ').print(label);
+      }
+      printer.print(';');
+    }
+
+    @Override public void visitBreak(@Nonnull Jst.Break node) throws IOException {
+      printer.print("break");
+      final String label = node.getLabel();
+      if (label != null) {
+        printer.print(' ').print(label);
+      }
+      printer.print(';');
+    }
+
+    @Override public void visitThrow(@Nonnull Jst.Throw node) throws IOException {
+      printer.print("throw").print(' ');
+      print(node.getExpression());
+      printer.print(';');
+    }
+
+    @Override public void visitUnary(@Nonnull Jst.Unary node) throws IOException {
+      printOperator(node.getOperator());
+      print(node.getExpression());
+    }
+
+    @Override public void visitBinary(@Nonnull Jst.Binary node) throws IOException {
+      print(node.getLeftExpression());
+      printer.print(' ');
+      printOperator(node.getOperator());
+      printer.print(' ');
+      print(node.getRightExpression());
+    }
+
+    @Override public void visitInstanceOf(@Nonnull Jst.InstanceOf node) throws IOException {
+      print(node.getExpression());
+      printer.print(' ').print("instanceof").print(' ');
+      print(node.getType());
+    }
+
+    @Override public void visitInitializerBlock(@Nonnull Jst.InitializerBlock node) throws IOException {
+      if (node.isStatic()) {
+        printer.print("static").print(' ');
+      }
+      printer.print('{');
+      printStatements(node.getStatements());
+      printer.print('}');
+    }
+
+    @Override public void visitWhileLoop(@Nonnull Jst.WhileLoop node) throws IOException {
+      printer.print("while").print(' ').print('(');
+      print(node.getCondition());
+      printer.print(')').print(' ');
+      print(node.getBody());
+    }
+
+    @Override public void visitDoWhileLoop(@Nonnull Jst.DoWhileLoop node) throws IOException {
+      printer.print("do").print(' ');
+      print(node.getBody());
+      printer.print(' ').print("while").print('(');
+      print(node.getCondition());
+      printer.print(')').print(';');
+    }
+
+    @Override public void visitParens(@Nonnull Jst.Parens node) throws IOException {
+      printer.print('(');
+      print(node.getExpression());
+      printer.print(')');
+    }
+
     //
     // Private
     //
+
+    private void printTypeParameters(@Nonnull List<Jst.TypeParameter> typeParameters) throws IOException {
+      printer.print('<');
+      printCommaSeparated(typeParameters);
+      printer.print('>');
+    }
 
     private void printCommaSeparated(@Nonnull List<? extends Jst.Node> nodes) throws IOException {
       final int size = nodes.size();
@@ -294,7 +429,7 @@ public final class JstPrinter {
       }
     }
 
-    private void print(@Nonnull List<Jst.Statement> statements) throws IOException {
+    private void printStatements(@Nonnull List<Jst.Statement> statements) throws IOException {
       for (final Jst.Statement statement : statements) {
         print(statement);
       }

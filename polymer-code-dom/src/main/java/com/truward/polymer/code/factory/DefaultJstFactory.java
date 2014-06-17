@@ -153,7 +153,7 @@ public class DefaultJstFactory implements JstFactory {
   @Nonnull @Override public Jst.Call jstCall(@Nonnull Jst.Expression methodName,
                                              @Nonnull Collection<? extends Jst.TypeParameter> typeParameters,
                                              @Nonnull Collection<? extends Jst.Expression> arguments) {
-    throw new UnsupportedOperationException();
+    return new Call(methodName, typeParameters, arguments);
   }
 
   @Nonnull @Override public Jst.NewClass jstNewClass(@Nullable Jst.Expression enclosingExpression,
@@ -185,13 +185,13 @@ public class DefaultJstFactory implements JstFactory {
   }
 
   @Nonnull @Override public Jst.Unary jstUnary(@Nonnull Operator operator, @Nonnull Jst.Expression expression) {
-    throw new UnsupportedOperationException();
+    return new Unary(operator, expression);
   }
 
   @Nonnull @Override public Jst.Binary jstBinary(@Nonnull Operator operator,
                                                  @Nonnull Jst.Expression left,
                                                  @Nonnull Jst.Expression right) {
-    throw new UnsupportedOperationException();
+    return new Binary(operator, left, right);
   }
 
   @Nonnull @Override public Jst.ClassType jstClassType(@Nonnull Class<?> clazz) {
@@ -542,10 +542,19 @@ public class DefaultJstFactory implements JstFactory {
     private Jst.Block body;
     private List<Jst.VarDeclaration> arguments = ImmutableList.of();
     private List<Jst.Expression> thrown = ImmutableList.of();
+    private List<Jst.TypeParameter> typeParameters = ImmutableList.of();
 
     MethodDeclaration(@Nonnull String name, @Nonnull Jst.TypeExpression defaultReturnType) {
       super(name);
       this.returnType = defaultReturnType;
+    }
+
+    @Nonnull @Override public List<Jst.TypeParameter> getTypeParameters() {
+      return typeParameters;
+    }
+
+    @Override public void setTypeParameters(@Nonnull Collection<? extends Jst.TypeParameter> typeParameters) {
+      this.typeParameters = ImmutableList.copyOf(typeParameters);
     }
 
     @Nonnull @Override public Jst.TypeExpression getReturnType() {
@@ -634,6 +643,86 @@ public class DefaultJstFactory implements JstFactory {
 
     @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
       visitor.visitReturn(this);
+    }
+  }
+
+  private static final class Call extends AbstractNode implements Jst.Call {
+    private final Jst.Expression methodName;
+    private final List<Jst.TypeParameter> typeParameters;
+    private final List<Jst.Expression> arguments;
+
+    Call(@Nonnull Jst.Expression methodName,
+         @Nonnull Collection<? extends Jst.TypeParameter> typeParameters,
+         @Nonnull Collection<? extends Jst.Expression> arguments) {
+      this.methodName = methodName;
+      this.typeParameters = ImmutableList.copyOf(typeParameters);
+      this.arguments = ImmutableList.copyOf(arguments);
+    }
+
+    @Nonnull @Override public Jst.Expression getMethodName() {
+      return methodName;
+    }
+
+    @Nonnull @Override public List<Jst.TypeParameter> getTypeParameters() {
+      return typeParameters;
+    }
+
+    @Nonnull @Override public List<Jst.Expression> getArguments() {
+      return arguments;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitCall(this);
+    }
+  }
+
+  private static final class Unary extends AbstractNode implements Jst.Unary {
+    private final Operator operator;
+    private final Jst.Expression expression;
+
+    Unary(@Nonnull Operator operator, @Nonnull Jst.Expression expression) {
+      this.operator = operator;
+      this.expression = expression;
+    }
+
+    @Nonnull @Override public Operator getOperator() {
+      return operator;
+    }
+
+    @Nonnull @Override public Jst.Expression getExpression() {
+      return expression;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitUnary(this);
+    }
+  }
+
+  private static final class Binary extends AbstractNode implements Jst.Binary {
+    private final Operator operator;
+    private final Jst.Expression leftExpression;
+    private final Jst.Expression rightExpression;
+
+    Binary(@Nonnull Operator operator, @Nonnull Jst.Expression leftExpression, @Nonnull Jst.Expression rightExpression) {
+      this.operator = operator;
+      this.leftExpression = leftExpression;
+      this.rightExpression = rightExpression;
+    }
+
+    @Nonnull @Override public Operator getOperator() {
+      return operator;
+    }
+
+    @Nonnull @Override public Jst.Expression getLeftExpression() {
+      return leftExpression;
+    }
+
+    @Nonnull @Override public Jst.Expression getRightExpression() {
+      return rightExpression;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitBinary(this);
     }
   }
 }
