@@ -60,6 +60,8 @@ public interface JstFactory {
 
   @Nonnull Jst.Switch jstSwitch(@Nonnull Jst.Expression selector, @Nonnull List<Jst.Case> cases);
 
+  @Nonnull Jst.Case jstCase(@Nonnull Jst.Expression expression);
+
   @Nonnull Jst.Synchronized jstSynchronized(@Nonnull Jst.Expression lock, @Nonnull Jst.Block body);
 
   @Nonnull Jst.Try jstTry(@Nonnull Jst.Block body, @Nonnull List<Jst.Catch> catchers, @Nullable Jst.Block finalizer);

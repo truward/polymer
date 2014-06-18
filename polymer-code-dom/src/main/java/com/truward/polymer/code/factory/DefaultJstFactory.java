@@ -27,7 +27,7 @@ public class DefaultJstFactory implements JstFactory {
   }
 
   @Nonnull @Override public Jst.Import jstImport(@Nonnull FqName importName, boolean isStatic) {
-    throw new UnsupportedOperationException();
+    return new Import(importName, isStatic);
   }
 
   @Nonnull @Override public Jst.Identifier jstIdentifier(@Nonnull String name) {
@@ -59,11 +59,11 @@ public class DefaultJstFactory implements JstFactory {
   }
 
   @Nonnull @Override public Jst.EmptyStatement jstEmptyStatement() {
-    throw new UnsupportedOperationException();
+    return EmptyStatement.INSTANCE;
   }
 
   @Nonnull @Override public Jst.EmptyExpression jstEmptyExpression() {
-    throw new UnsupportedOperationException();
+    return EmptyExpression.INSTANCE;
   }
 
   @Nonnull @Override public Jst.Block jstBlock() {
@@ -71,7 +71,7 @@ public class DefaultJstFactory implements JstFactory {
   }
 
   @Nonnull @Override public Jst.InitializerBlock jstInitializerBlock(boolean isStatic) {
-    throw new UnsupportedOperationException();
+    return new InitializerBlock(isStatic);
   }
 
   @Nonnull @Override public Jst.DoWhileLoop jstDoWhileLoop(@Nonnull Jst.Expression condition, @Nonnull Jst.Statement body) {
@@ -101,6 +101,10 @@ public class DefaultJstFactory implements JstFactory {
 
   @Nonnull @Override public Jst.Switch jstSwitch(@Nonnull Jst.Expression selector, @Nonnull List<Jst.Case> cases) {
     throw new UnsupportedOperationException();
+  }
+
+  @Nonnull @Override public Jst.Case jstCase(@Nonnull Jst.Expression expression) {
+    return new Case(expression);
   }
 
   @Nonnull @Override public Jst.Synchronized jstSynchronized(@Nonnull Jst.Expression lock, @Nonnull Jst.Block body) {
@@ -142,12 +146,12 @@ public class DefaultJstFactory implements JstFactory {
   }
 
   @Nonnull @Override public Jst.Throw jstThrow(@Nonnull Jst.Expression expression) {
-    throw new UnsupportedOperationException();
+    return new Throw(expression);
   }
 
   @Nonnull @Override public Jst.Assert jstAssert(@Nonnull Jst.Expression expression,
                                                  @Nullable Jst.Expression detail) {
-    throw new UnsupportedOperationException();
+    return new Assert(expression, detail);
   }
 
   @Nonnull @Override public Jst.Call jstCall(@Nonnull Jst.Expression methodName,
@@ -171,17 +175,17 @@ public class DefaultJstFactory implements JstFactory {
   }
 
   @Nonnull @Override public Jst.Parens jstParens(@Nonnull Jst.Expression expression) {
-    throw new UnsupportedOperationException();
+    return new Parens(expression);
   }
 
   @Nonnull @Override public Jst.Assignment jstAssignment(@Nonnull Jst.Expression left, @Nonnull Jst.Expression right) {
-    throw new UnsupportedOperationException();
+    return new Assignment(left, right);
   }
 
   @Nonnull @Override public Jst.CompoundAssignment jstCompoundAssignment(@Nonnull Operator operator,
                                                                          @Nonnull Jst.Expression left,
                                                                          @Nonnull Jst.Expression right) {
-    throw new UnsupportedOperationException();
+    return new CompoundAssignment(operator, left, right);
   }
 
   @Nonnull @Override public Jst.Unary jstUnary(@Nonnull Operator operator, @Nonnull Jst.Expression expression) {
@@ -380,6 +384,28 @@ public class DefaultJstFactory implements JstFactory {
     }
   }
 
+  private static final class Import extends AbstractNode implements Jst.Import {
+    private final FqName importName;
+    private final boolean staticImport;
+
+    Import(FqName importName, boolean staticImport) {
+      this.importName = importName;
+      this.staticImport = staticImport;
+    }
+
+    @Override public boolean isStatic() {
+      return staticImport;
+    }
+
+    @Nonnull @Override public FqName getImportName() {
+      return importName;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitImport(this);
+    }
+  }
+
   private static abstract class SimpleClassType extends AbstractNode implements Jst.SimpleClassType {
     private final FqName fqName;
 
@@ -425,19 +451,54 @@ public class DefaultJstFactory implements JstFactory {
     }
   }
 
-  private static final class Block extends AbstractNode implements Jst.Block {
+  private static abstract class StatementList extends AbstractNode implements Jst.StatementList {
     private List<Jst.Statement> statements = ImmutableList.of();
 
-    @Nonnull @Override public List<Jst.Statement> getStatements() {
+    @Nonnull @Override public final List<Jst.Statement> getStatements() {
       return statements;
     }
 
-    @Override public void setStatements(@Nonnull Collection<? extends Jst.Statement> statements) {
+    @Override public final void setStatements(@Nonnull Collection<? extends Jst.Statement> statements) {
       this.statements = ImmutableList.copyOf(statements);
+    }
+  }
+
+  private static final class Block extends StatementList implements Jst.Block {
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitBlock(this);
+    }
+  }
+
+  private static final class InitializerBlock extends StatementList implements Jst.InitializerBlock {
+    private final boolean staticBlock;
+
+    InitializerBlock(boolean staticBlock) {
+      this.staticBlock = staticBlock;
+    }
+
+    @Override public boolean isStatic() {
+      return staticBlock;
     }
 
     @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
-      visitor.visitBlock(this);
+      visitor.visitInitializerBlock(this);
+    }
+  }
+
+  private static final class Case extends StatementList implements Jst.Case {
+    private final Jst.Expression expression;
+
+    Case(@Nonnull Jst.Expression expression) {
+      this.expression = expression;
+    }
+
+    @Nonnull @Override public Jst.Expression getExpression() {
+      return expression;
+    }
+
+    @Override
+    public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitCase(this);
     }
   }
 
@@ -646,6 +707,38 @@ public class DefaultJstFactory implements JstFactory {
     }
   }
 
+  private static final class Parens extends AbstractNode implements Jst.Parens {
+    private final Jst.Expression expression;
+
+    Parens(@Nonnull Jst.Expression expression) {
+      this.expression = expression;
+    }
+
+    @Nonnull @Override public Jst.Expression getExpression() {
+      return expression;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitParens(this);
+    }
+  }
+
+  private static final class Throw extends AbstractNode implements Jst.Throw {
+    private final Jst.Expression expression;
+
+    Throw(@Nonnull Jst.Expression expression) {
+      this.expression = expression;
+    }
+
+    @Nonnull @Override public Jst.Expression getExpression() {
+      return expression;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitThrow(this);
+    }
+  }
+
   private static final class Call extends AbstractNode implements Jst.Call {
     private final Jst.Expression methodName;
     private final List<Jst.TypeParameter> typeParameters;
@@ -673,6 +766,22 @@ public class DefaultJstFactory implements JstFactory {
 
     @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
       visitor.visitCall(this);
+    }
+  }
+
+  private static final class EmptyExpression extends AbstractNode implements Jst.EmptyExpression {
+    static final EmptyExpression INSTANCE = new EmptyExpression();
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitEmptyExpression(this);
+    }
+  }
+
+  private static final class EmptyStatement extends AbstractNode implements Jst.EmptyStatement {
+    static final EmptyStatement INSTANCE = new EmptyStatement();
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitEmptyStatement(this);
     }
   }
 
@@ -723,6 +832,78 @@ public class DefaultJstFactory implements JstFactory {
 
     @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
       visitor.visitBinary(this);
+    }
+  }
+
+  private static final class Assert extends AbstractNode implements Jst.Assert {
+    private final Jst.Expression expression;
+    private final Jst.Expression detail;
+
+    Assert(@Nonnull Jst.Expression expression, @Nullable Jst.Expression detail) {
+      this.expression = expression;
+      this.detail = detail;
+    }
+
+    @Nonnull @Override public Jst.Expression getExpression() {
+      return expression;
+    }
+
+    @Nullable @Override public Jst.Expression getDetail() {
+      return detail;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitAssert(this);
+    }
+  }
+
+  private static final class Assignment extends AbstractNode implements Jst.Assignment {
+    private final Jst.Expression leftExpression;
+    private final Jst.Expression rightExpression;
+
+    Assignment(@Nonnull Jst.Expression leftExpression, @Nonnull Jst.Expression rightExpression) {
+      this.leftExpression = leftExpression;
+      this.rightExpression = rightExpression;
+    }
+
+    @Nonnull @Override public Jst.Expression getLeftExpression() {
+      return leftExpression;
+    }
+
+    @Nonnull @Override public Jst.Expression getRightExpression() {
+      return rightExpression;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitAssignment(this);
+    }
+  }
+
+  private static final class CompoundAssignment extends AbstractNode implements Jst.CompoundAssignment {
+    private final Operator operator;
+    private final Jst.Expression leftExpression;
+    private final Jst.Expression rightExpression;
+
+    CompoundAssignment(@Nonnull Operator operator, @Nonnull Jst.Expression leftExpression, @Nonnull Jst.Expression rightExpression) {
+      this.operator = operator;
+      this.leftExpression = leftExpression;
+      this.rightExpression = rightExpression;
+    }
+
+    @Nonnull @Override public Jst.Expression getLeftExpression() {
+      return leftExpression;
+    }
+
+    @Nonnull @Override public Jst.Expression getRightExpression() {
+      return rightExpression;
+    }
+
+    @Nonnull @Override public Operator getOperator() {
+      return operator;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitCompoundAssignment(this);
     }
   }
 }

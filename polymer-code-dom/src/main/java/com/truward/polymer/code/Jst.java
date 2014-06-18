@@ -408,25 +408,27 @@ public interface Jst {
   }
 
   /**
-   * Represents statement block, i.e. method body
-   * @see "JLS 3, section 14.2"
+   * Represents a list of statement.
    */
-  interface Block extends Statement {
+  interface StatementList {
     @Nonnull List<Statement> getStatements();
 
     void setStatements(@Nonnull Collection<? extends Statement> statements);
   }
 
   /**
+   * Represents statement block, i.e. method body
+   * @see "JLS 3, section 14.2"
+   */
+  interface Block extends Statement, StatementList {
+  }
+
+  /**
    * Represents class initializer block
    * @see "JLS 3, section 14.2"
    */
-  interface InitializerBlock extends Statement {
+  interface InitializerBlock extends Statement, StatementList {
     boolean isStatic();
-
-    @Nonnull List<Statement> getStatements();
-
-    void addStatement(@Nonnull Statement statement);
   }
 
   interface If extends Statement {
@@ -497,10 +499,8 @@ public interface Jst {
    * A 'case' in a 'switch' statement.
    * @see "JLS 3, section 14.11"
    */
-  interface Case extends Statement {
+  interface Case extends Statement, StatementList {
     @Nonnull Expression getExpression();
-
-    @Nonnull List<Statement> getStatements();
   }
 
   /**
