@@ -13,7 +13,7 @@ import java.util.*;
 /**
  * @author Alexander Shabanov
  */
-public class DefaultJstFactory implements JstFactory {
+public final class DefaultJstFactory implements JstFactory {
   // private members
   private final Map<Class<?>, Jst.ClassType> classTypeCache = new HashMap<>(500);
   private final Map<FqName, Jst.SimpleClassType> importedTypes = new HashMap<>(500);
@@ -103,7 +103,7 @@ public class DefaultJstFactory implements JstFactory {
     return new Switch(selector, cases);
   }
 
-  @Nonnull @Override public Jst.Case jstCase(@Nonnull Jst.Expression expression) {
+  @Nonnull @Override public Jst.Case jstCase(@Nullable Jst.Expression expression) {
     return new Case(expression);
   }
 
@@ -643,11 +643,11 @@ public class DefaultJstFactory implements JstFactory {
   private static final class Case extends StatementList implements Jst.Case {
     private final Jst.Expression expression;
 
-    Case(@Nonnull Jst.Expression expression) {
+    Case(@Nullable Jst.Expression expression) {
       this.expression = expression;
     }
 
-    @Nonnull @Override public Jst.Expression getExpression() {
+    @Nullable @Override public Jst.Expression getExpression() {
       return expression;
     }
 

@@ -78,13 +78,29 @@ public final class JstPrinter {
       setVisitor(this);
     }
 
-    void print(@Nonnull Jst.Node node) throws IOException {
+    @Nonnull PrintVisitor print(@Nonnull Jst.Node node) throws IOException {
       node.accept(visitor);
+      return this;
+    }
+    
+    @Nonnull PrintVisitor print(char ch) throws IOException {
+      printer.print(ch);
+      return this;
+    }
+    
+    @Nonnull PrintVisitor print(@Nonnull String str) throws IOException {
+      printer.print(str);
+      return this;
+    }
+    
+    @Nonnull PrintVisitor print(@Nonnull FqName fqName) throws IOException {
+      printer.print(fqName);
+      return this;
     }
 
     @Override
     public void visitUnit(@Nonnull Jst.Unit node) throws IOException {
-      printer.print("package").print(' ').print(node.getPackageName()).print(';').print('\n');
+      print("package").print(' ').print(node.getPackageName()).print(';').print('\n');
 
       if (!node.getImports().isEmpty()) {
         for (final Jst.Import importNode : node.getImports()) {
@@ -101,12 +117,9 @@ public final class JstPrinter {
 
     @Override
     public void visitAnnotation(@Nonnull Jst.Annotation node) throws IOException {
-      printer.print('@');
-      print(node.getTypeExpression());
+      print('@').print(node.getTypeExpression());
       if (!node.getArguments().isEmpty()) {
-        printer.print('(');
-        printCommaSeparated(node.getArguments());
-        printer.print(')');
+        print('(').printCommaSeparated(node.getArguments()).print(')');
       }
     }
 
@@ -118,43 +131,38 @@ public final class JstPrinter {
         assert node.getInterfaces().isEmpty() : "Anonymous class should not implement any interfaces";
         assert node.getTypeParameters().isEmpty() : "Anonymous class should not be parameterized";
       } else {
-        printer.print('\n');
+        print('\n');
         printNamedStatement(node, false);
         if (node.getFlags().contains(JstFlag.INTERFACE)) {
-          printer.print("interface");
+          print("interface");
         } else if (node.getFlags().contains(JstFlag.ENUM)) {
-          printer.print("enum");
+          print("enum");
         } else {
-          printer.print("class");
+          print("class");
         }
 
-        printer.print(' ').print(node.getName()).print(' ');
+        print(' ').print(node.getName()).print(' ');
 
         // print type parameters
         if (!node.getTypeParameters().isEmpty()) {
-          printTypeParameters(node.getTypeParameters());
-          printer.print(' ');
+          printTypeParameters(node.getTypeParameters()).print(' ');
         }
 
         // print superclass
         final Jst.TypeExpression superclass = node.getSuperclass();
         if (superclass != null) {
           assert !node.getFlags().contains(JstFlag.INTERFACE) : "Interface should not have superclass";
-          printer.print("extends").print(' ');
-          print(superclass);
-          printer.print(' ');
+          print("extends").print(' ').print(superclass).print(' ');
         }
 
         // print interfaces
         if (!node.getInterfaces().isEmpty()) {
           if (node.getFlags().contains(JstFlag.INTERFACE)) {
-            printer.print("extends");
+            print("extends");
           } else {
-            printer.print("implements");
+            print("implements");
           }
-          printer.print(' ');
-          printCommaSeparated(node.getInterfaces());
-          printer.print(' ');
+          print(' ').printCommaSeparated(node.getInterfaces()).print(' ');
         }
       }
 
@@ -163,23 +171,19 @@ public final class JstPrinter {
 
     @Override
     public void visitMethod(@Nonnull Jst.MethodDeclaration node) throws IOException {
-      printer.print('\n').print('\n');
+      print('\n').print('\n');
       printNamedStatement(node, false);
       if (!node.getTypeParameters().isEmpty()) {
         printTypeParameters(node.getTypeParameters());
       }
-      print(node.getReturnType());
-      printer.print(' ').print(node.getName());
-      printer.print('(');
-      printCommaSeparated(node.getArguments());
-      printer.print(')');
+      print(node.getReturnType()).print(' ').print(node.getName());
+      print('(').printCommaSeparated(node.getArguments()).print(')');
 
       final Jst.Block body = node.getBody();
       if (body != null) {
-        printer.print(' ');
-        print(body);
+        print(' ').print(body);
       } else {
-        printer.print(';');
+        print(';');
       }
     }
 
@@ -188,29 +192,26 @@ public final class JstPrinter {
       boolean isInBlock = parents.getParent() instanceof Jst.Block; // parent is a block (variable or field)
 
       printNamedStatement(node, !isInBlock); // inline annotations if not in block (e.g. for arguments)
-      print(node.getType());
-      printer.print(' ').print(node.getName());
+      print(node.getType()).print(' ').print(node.getName());
 
       final Jst.Expression initializer = node.getInitializer();
       if (initializer != null) {
-        printer.print(' ').print('=').print(' ');
-        print(initializer);
+        print(' ').print('=').print(' ').print(initializer);
       }
 
       if (isInBlock) {
-        printer.print(';');
+        print(';');
       }
     }
 
     @Override
     public void visitReturn(@Nonnull Jst.Return node) throws IOException {
-      printer.print("return");
+      print("return");
       final Jst.Expression expression = node.getExpression();
       if (expression != null) {
-        printer.print(' ');
-        print(expression);
+        print(' ').print(expression);
       }
-      printer.print(';');
+      print(';');
     }
 
     @Override
@@ -220,35 +221,27 @@ public final class JstPrinter {
 
     @Override
     public void visitIdentifier(@Nonnull Jst.Identifier node) throws IOException {
-      printer.print(node.getName());
+      print(node.getName());
     }
 
     @Override
     public void visitSelector(@Nonnull Jst.Selector node) throws IOException {
-      print(node.getExpression());
-      printer.print('.').print(node.getName());
+      print(node.getExpression()).print('.').print(node.getName());
     }
 
     @Override
     public void visitBlock(@Nonnull Jst.Block node) throws IOException {
-      printer.print('{');
-      printStatements(node.getStatements());
-      printer.print('}');
+      print('{').printStatements(node.getStatements()).print('}');
     }
 
     @Override
     public void visitAssignment(@Nonnull Jst.Assignment node) throws IOException {
-      print(node.getLeftExpression());
-      printer.print(' ').print('=').print(' ');
-      print(node.getRightExpression());
+      print(node.getLeftExpression()).print(' ').print('=').print(' ').print(node.getRightExpression());
     }
 
     @Override
     public void visitCompoundAssignment(@Nonnull Jst.CompoundAssignment node) throws IOException {
-      print(node.getLeftExpression());
-      printer.print(' ');
-      printOperator(node.getOperator());
-      printer.print('=').print(' ');
+      print(node.getLeftExpression()).print(' ').printOperator(node.getOperator()).print('=').print(' ');
       print(node.getRightExpression());
     }
 
@@ -257,7 +250,7 @@ public final class JstPrinter {
       boolean isInBlock = parents.getParent() instanceof Jst.Block;
       print(node.getExpression());
       if (isInBlock) {
-        printer.print(';');
+        print(';');
       }
     }
 
@@ -280,16 +273,14 @@ public final class JstPrinter {
           // print type parameters before last name in a selector, like ImmutableList.<MyType>copyOf(something)
           final Jst.Selector selectorMethodName = (Jst.Selector) methodName;
           print(selectorMethodName.getExpression());
-          printer.print('.');
+          print('.');
           printTypeParameters(node.getTypeParameters());
-          printer.print(selectorMethodName.getName());
+          print(selectorMethodName.getName());
         }
       }
 
       // print arguments
-      printer.print('(');
-      printCommaSeparated(node.getArguments());
-      printer.print(')');
+      print('(').printCommaSeparated(node.getArguments()).print(')');
     }
 
     @Override public void visitEmptyExpression(@Nonnull Jst.EmptyExpression node) throws IOException {
@@ -301,180 +292,268 @@ public final class JstPrinter {
     }
 
     @Override public void visitImport(@Nonnull Jst.Import node) throws IOException {
-      printer.print("import").print(' ');
+      print("import").print(' ');
       if (node.isStatic()) {
-        printer.print("static").print(' ');
+        print("static").print(' ');
       }
-      printer.print(node.getImportName()).print(';');
+      print(node.getImportName()).print(';');
     }
 
     @Override public void visitIf(@Nonnull Jst.If node) throws IOException {
-      printer.print("if").print(' ').print('(');
-      print(node.getCondition());
-      printer.print(')').print(' ');
-      print(node.getThenPart());
+      print("if").print(' ').print('(').print(node.getCondition()).print(')').print(' ').print(node.getThenPart());
       // optional else part
       final Jst.Statement elsePart = node.getElsePart();
       if (elsePart != null) {
-        printer.print(' ').print("else").print(' ');
+        print(' ').print("else").print(' ');
         print(elsePart);
       }
     }
 
     @Override public void visitContinue(@Nonnull Jst.Continue node) throws IOException {
-      printer.print("continue");
+      print("continue");
       final String label = node.getLabel();
       if (label != null) {
-        printer.print(' ').print(label);
+        print(' ').print(label);
       }
-      printer.print(';');
+      print(';');
     }
 
     @Override public void visitBreak(@Nonnull Jst.Break node) throws IOException {
-      printer.print("break");
+      print("break");
       final String label = node.getLabel();
       if (label != null) {
-        printer.print(' ').print(label);
+        print(' ').print(label);
       }
-      printer.print(';');
+      print(';');
     }
 
     @Override public void visitThrow(@Nonnull Jst.Throw node) throws IOException {
-      printer.print("throw").print(' ');
-      print(node.getExpression());
-      printer.print(';');
+      print("throw").print(' ').print(node.getExpression()).print(';');
     }
 
     @Override public void visitUnary(@Nonnull Jst.Unary node) throws IOException {
-      printOperator(node.getOperator());
-      print(node.getExpression());
+      printOperator(node.getOperator()).print(node.getExpression());
     }
 
     @Override public void visitBinary(@Nonnull Jst.Binary node) throws IOException {
-      print(node.getLeftExpression());
-      printer.print(' ');
-      printOperator(node.getOperator());
-      printer.print(' ');
-      print(node.getRightExpression());
+      print(node.getLeftExpression()).print(' ').printOperator(node.getOperator()).print(' ').print(node.getRightExpression());
     }
 
     @Override public void visitInstanceOf(@Nonnull Jst.InstanceOf node) throws IOException {
-      print(node.getExpression());
-      printer.print(' ').print("instanceof").print(' ');
-      print(node.getType());
+      print(node.getExpression()).print(' ').print("instanceof").print(' ').print(node.getType());
     }
 
     @Override public void visitInitializerBlock(@Nonnull Jst.InitializerBlock node) throws IOException {
       if (node.isStatic()) {
-        printer.print("static").print(' ');
+        print("static").print(' ');
       }
-      printer.print('{');
-      printStatements(node.getStatements());
-      printer.print('}');
+      print('{').printStatements(node.getStatements()).print('}');
     }
 
     @Override public void visitWhileLoop(@Nonnull Jst.WhileLoop node) throws IOException {
-      printer.print("while").print(' ').print('(');
-      print(node.getCondition());
-      printer.print(')').print(' ');
-      print(node.getBody());
+      print("while").print(' ').print('(').print(node.getCondition()).print(')').print(' ').print(node.getBody());
     }
 
     @Override public void visitDoWhileLoop(@Nonnull Jst.DoWhileLoop node) throws IOException {
-      printer.print("do").print(' ');
-      print(node.getBody());
-      printer.print(' ').print("while").print('(');
-      print(node.getCondition());
-      printer.print(')').print(';');
+      print("do").print(' ').print(node.getBody()).print(' ').print("while").print('(').print(node.getCondition());
+      print(')').print(';');
     }
 
     @Override public void visitParens(@Nonnull Jst.Parens node) throws IOException {
-      printer.print('(');
+      print('(').print(node.getExpression()).print(')');
+    }
+
+    @Override public void visitForLoop(@Nonnull Jst.ForLoop node) throws IOException {
+      print("for").print(' ').print('(').printCommaSeparated(node.getInitializers());
+      print("; ").print(node.getCondition());
+      print("; ").print(node.getStep());
+      print(')').print(' ').print(node.getBody());
+    }
+
+    @Override public void visitForEachLoop(@Nonnull Jst.ForEachLoop node) throws IOException {
+      print("for").print(' ').print('(').print(node.getVariable()).print(' ').print(':').print(' ');
       print(node.getExpression());
-      printer.print(')');
+      print(')').print(' ');
+      print(node.getBody());
+    }
+
+    @Override public void visitLabeled(@Nonnull Jst.Labeled node) throws IOException {
+      print(node.getLabel()).print(':');
+      print(node.getBody());
+    }
+
+    @Override public void visitSwitch(@Nonnull Jst.Switch node) throws IOException {
+      print("switch").print('(').print(node.getSelector()).print(')').print(' ').print('{');
+      for (final Jst.Case c : node.getCases()) {
+        print(c);
+      }
+      print('}');
+    }
+
+    @Override
+    public void visitCase(@Nonnull Jst.Case node) throws IOException {
+      print('\n');
+
+      final Jst.Expression expression = node.getExpression();
+      if (expression != null) {
+        print("case").print(' ').print(expression);
+      } else {
+        print("default");
+      }
+      print(':').print('\n');
+
+      for (final Jst.Statement statement : node.getStatements()) {
+        print(statement);
+      }
+    }
+
+    @Override public void visitSynchronized(@Nonnull Jst.Synchronized node) throws IOException {
+      print("synchronized").print(' ').print('(').print(node.getLock()).print(')').print(' ').print(node.getBody());
+    }
+
+    @Override public void visitTry(@Nonnull Jst.Try node) throws IOException {
+      print("try").print(' ').print(node.getBody());
+      for (final Jst.Catch catcher : node.getCatchers()) {
+        print(catcher);
+      }
+      final Jst.Block finalizer = node.getFinalizer();
+      if (finalizer != null) {
+        print("finally").print(' ').print(finalizer);
+      }
+    }
+
+    @Override public void visitCatch(@Nonnull Jst.Catch node) throws IOException {
+      print("catch").print(' ').print('(').print(node.getParameter()).print(')').print(' ').print(node.getBody());
+    }
+
+    @Override public void visitConditional(@Nonnull Jst.Conditional node) throws IOException {
+      print(node.getCondition()).print(' ').print('?').print(' ');
+      print(node.getThenPart()).print(' ').print(':').print(' ').print(node.getThenPart());
+    }
+
+    @Override public void visitAssert(@Nonnull Jst.Assert node) throws IOException {
+      print("assert").print(' ').print(node.getExpression());
+      final Jst.Expression detail = node.getDetail();
+      if (detail != null) {
+        print(' ').print(':').print(' ').print(detail);
+      }
+      print(';');
+    }
+
+    @Override public void visitWildcard(@Nonnull Jst.Wildcard node) throws IOException {
+      print('*');
+      final Jst.TypeBoundExpression typeBoundExpression = node.getBoundExpression();
+      if (typeBoundExpression != null) {
+        print(' ').print(typeBoundExpression);
+      }
+    }
+
+    @Override public void visitTypeBoundExpression(@Nonnull Jst.TypeBoundExpression node) throws IOException {
+      switch (node.getKind()) {
+        case UNBOUND:
+          assert node.getExpression() == null; // TODO: type safety, refactor TypeBoundExpression?
+          return;
+
+        case SUPER:
+          print("super");
+          break;
+
+        case EXTENDS:
+          print("extends");
+          break;
+
+        default:
+          throw new IllegalStateException("Unknown type bound kind: " + node.getKind());
+      }
+
+      print(' ').print(node.getExpression());
     }
 
     //
     // Private
     //
 
-    private void printTypeParameters(@Nonnull List<Jst.TypeParameter> typeParameters) throws IOException {
-      printer.print('<');
-      printCommaSeparated(typeParameters);
-      printer.print('>');
+    @Nonnull private PrintVisitor printTypeParameters(@Nonnull List<Jst.TypeParameter> typeParameters) throws IOException {
+      print('<').printCommaSeparated(typeParameters).print('>');
+      return this;
     }
 
-    private void printCommaSeparated(@Nonnull List<? extends Jst.Node> nodes) throws IOException {
+    @Nonnull private PrintVisitor printCommaSeparated(@Nonnull List<? extends Jst.Node> nodes) throws IOException {
       final int size = nodes.size();
       for (int i = 0; i < size; ++i) {
         if (i > 0) {
-          printer.print(',').print(' ');
+          print(',').print(' ');
         }
         print(nodes.get(i));
       }
+      return this;
     }
 
-    private void printNamedStatement(@Nonnull Jst.NamedStatement namedStatement, boolean inlineAnnotations) throws IOException {
+    @Nonnull private PrintVisitor printNamedStatement(@Nonnull Jst.NamedStatement namedStatement, boolean inlineAnnotations) throws IOException {
       final char annotationSeparatorChar = inlineAnnotations ? ' ' : '\n';
       for (final Jst.Annotation annotation : namedStatement.getAnnotations()) {
         visitAnnotation(annotation);
-        printer.print(annotationSeparatorChar);
+        print(annotationSeparatorChar);
       }
 
       for (final JstFlag flag : namedStatement.getFlags()) {
         if (!flag.isModifier()) {
           continue;
         }
-        printer.print(flag.toString()).print(' ');
+        print(flag.toString()).print(' ');
       }
+      return this;
     }
 
-    private void printStatements(@Nonnull List<Jst.Statement> statements) throws IOException {
+    @Nonnull private PrintVisitor printStatements(@Nonnull List<Jst.Statement> statements) throws IOException {
       for (final Jst.Statement statement : statements) {
         print(statement);
       }
+      return this;
     }
 
-    private void printLiteral(@Nullable Object value) throws IOException {
+    @Nonnull private PrintVisitor printLiteral(@Nullable Object value) throws IOException {
       if (value == null) {
-        printer.print("null");
+        print("null");
       } else if (value instanceof String) {
-        printer.print('\"');
-        printer.print(EscapeUtil.escape((String) value));
-        printer.print('\"');
+        print('\"');
+        print(EscapeUtil.escape((String) value));
+        print('\"');
       } else if (value instanceof Character) {
-        printer.print('\'');
-        printer.print(EscapeUtil.escape((Character) value));
-        printer.print('\'');
+        print('\'');
+        print(EscapeUtil.escape((Character) value));
+        print('\'');
       } else if (value instanceof Boolean) {
-        printer.print(value.toString());
+        print(value.toString());
       } else if (value instanceof Number) {
-        printer.print(value.toString());
+        print(value.toString());
         // suffix
         if (value instanceof Double) {
-          printer.print('D');
+          print('D');
         } else if (value instanceof Float) {
-          printer.print('F');
+          print('F');
         } else if (value instanceof Long) {
-          printer.print('L');
+          print('L');
         }
       } else {
         throw new IllegalArgumentException("Unknown literal: " + value);
       }
+
+      return this;
     }
 
-    private void printOperator(@Nonnull Operator operator) throws IOException {
-      printer.print(operator.getValue());
+    @Nonnull private PrintVisitor printOperator(@Nonnull Operator operator) throws IOException {
+      return print(operator.getValue());
     }
 
-    private void printClassNameReference(@Nonnull FqName className) throws IOException {
+    @Nonnull private PrintVisitor printClassNameReference(@Nonnull FqName className) throws IOException {
       if (!className.isRoot() && className.getParent().equals(JAVA_LANG_PACKAGE)) {
         // standard JDK class from java.lang
-        printer.print(className.getName());
-        return;
+        print(className.getName());
+      } else {
+        print(className);
       }
-
-      printer.print(className);
+      return this;
     }
   }
 }

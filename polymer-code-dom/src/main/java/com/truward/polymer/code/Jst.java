@@ -500,7 +500,7 @@ public interface Jst {
    * @see "JLS 3, section 14.11"
    */
   interface Case extends Statement, StatementList {
-    @Nonnull Expression getExpression();
+    @Nullable Expression getExpression();
   }
 
   /**
