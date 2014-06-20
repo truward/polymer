@@ -90,13 +90,13 @@ public interface JstFactory {
 
   @Nonnull Jst.NewClass jstNewClass(@Nullable Jst.Expression enclosingExpression,
                                     @Nonnull Jst.TypeExpression type,
-                                    @Nonnull List<Jst.TypeParameter> typeParameters,
-                                    @Nonnull List<Jst.Expression> arguments,
+                                    @Nonnull Collection<? extends Jst.TypeParameter> typeParameters,
+                                    @Nonnull Collection<? extends Jst.Expression> arguments,
                                     @Nullable Jst.ClassDeclaration classDeclaration);
 
   @Nonnull Jst.NewArray jstNewArray(@Nonnull Jst.TypeExpression type,
-                                    @Nonnull List<Jst.Expression> dimensions,
-                                    @Nonnull List<Jst.Expression> initializers);
+                                    @Nonnull Collection<? extends Jst.Expression> dimensions,
+                                    @Nonnull Collection<? extends Jst.Expression> initializers);
 
   @Nonnull Jst.Parens jstParens(@Nonnull Jst.Expression expression);
 
@@ -117,7 +117,7 @@ public interface JstFactory {
   @Nonnull Jst.Array jstArray(@Nonnull Jst.TypeExpression elementType);
 
   @Nonnull Jst.ParameterizedType jstParameterizedType(@Nonnull Jst.TypeExpression type,
-                                                      @Nonnull List<Jst.Expression> arguments);
+                                                      @Nonnull Collection<? extends Jst.Expression> arguments);
 
   @Nonnull Jst.Wildcard jstWildcard(@Nullable Jst.TypeBoundExpression typeBoundExpression);
 

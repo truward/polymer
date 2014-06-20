@@ -145,9 +145,9 @@ public final class JstParentAwareVisitor<T extends Exception> extends JstVisitor
     parents.pop();
   }
 
-  @Override public void visitConditionalExpression(@Nonnull Jst.Conditional node) throws T {
+  @Override public void visitConditional(@Nonnull Jst.Conditional node) throws T {
     parents.push(node);
-    delegate.visitConditionalExpression(node);
+    delegate.visitConditional(node);
     parents.pop();
   }
 
@@ -316,6 +316,12 @@ public final class JstParentAwareVisitor<T extends Exception> extends JstVisitor
   @Override public void visitParameterizedType(@Nonnull Jst.ParameterizedType node) throws T {
     parents.push(node);
     delegate.visitParameterizedType(node);
+    parents.pop();
+  }
+
+  @Override public void visitTypeBoundExpression(@Nonnull Jst.TypeBoundExpression node) throws T {
+    parents.push(node);
+    delegate.visitTypeBoundExpression(node);
     parents.pop();
   }
 }

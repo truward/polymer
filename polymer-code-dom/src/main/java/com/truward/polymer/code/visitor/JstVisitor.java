@@ -53,7 +53,7 @@ public abstract class JstVisitor<E extends Exception> {
 
   public void visitCatch(@Nonnull Jst.Catch node) throws E { visitNode(node); }
 
-  public void visitConditionalExpression(@Nonnull Jst.Conditional node) throws E { visitNode(node); }
+  public void visitConditional(@Nonnull Jst.Conditional node) throws E { visitNode(node); }
 
   public void visitIf(@Nonnull Jst.If node) throws E { visitNode(node); }
 
@@ -112,4 +112,6 @@ public abstract class JstVisitor<E extends Exception> {
   public void visitParameterizedType(@Nonnull Jst.ParameterizedType node) throws E { visitType(node); }
 
   public void visitWildcard(@Nonnull Jst.Wildcard node) throws E { visitType(node); }
+
+  public void visitTypeBoundExpression(@Nonnull Jst.TypeBoundExpression node) throws E { visitType(node); }
 }

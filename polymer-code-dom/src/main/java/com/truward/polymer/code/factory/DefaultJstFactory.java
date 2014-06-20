@@ -75,32 +75,32 @@ public class DefaultJstFactory implements JstFactory {
   }
 
   @Nonnull @Override public Jst.DoWhileLoop jstDoWhileLoop(@Nonnull Jst.Expression condition, @Nonnull Jst.Statement body) {
-    throw new UnsupportedOperationException();
+    return new DoWhileLoop(condition, body);
   }
 
   @Nonnull @Override public Jst.WhileLoop jstWhileLoop(@Nonnull Jst.Expression condition, @Nonnull Jst.Statement body) {
-    throw new UnsupportedOperationException();
+    return new WhileLoop(condition, body);
   }
 
   @Nonnull @Override public Jst.ForLoop jstForLoop(@Nonnull List<Jst.Statement> initializers,
                                                    @Nonnull Jst.Expression condition,
                                                    @Nonnull Jst.Expression step,
                                                    @Nonnull Jst.Statement body) {
-    throw new UnsupportedOperationException();
+    return new ForLoop(initializers, condition, step, body);
   }
 
   @Nonnull @Override public Jst.ForEachLoop jstForEachLoop(@Nonnull Jst.VarDeclaration var,
                                                            @Nonnull Jst.Expression expression,
                                                            @Nonnull Jst.Statement body) {
-    throw new UnsupportedOperationException();
+    return new ForEachLoop(var, expression, body);
   }
 
   @Nonnull @Override public Jst.Labeled jstLabeled(@Nonnull String label, @Nonnull Jst.Statement body) {
-    throw new UnsupportedOperationException();
+    return new Labeled(label, body);
   }
 
   @Nonnull @Override public Jst.Switch jstSwitch(@Nonnull Jst.Expression selector, @Nonnull List<Jst.Case> cases) {
-    throw new UnsupportedOperationException();
+    return new Switch(selector, cases);
   }
 
   @Nonnull @Override public Jst.Case jstCase(@Nonnull Jst.Expression expression) {
@@ -108,17 +108,17 @@ public class DefaultJstFactory implements JstFactory {
   }
 
   @Nonnull @Override public Jst.Synchronized jstSynchronized(@Nonnull Jst.Expression lock, @Nonnull Jst.Block body) {
-    throw new UnsupportedOperationException();
+    return new Synchronized(lock, body);
   }
 
   @Nonnull @Override public Jst.Try jstTry(@Nonnull Jst.Block body,
                                            @Nonnull List<Jst.Catch> catchers,
                                            @Nullable Jst.Block finalizer) {
-    throw new UnsupportedOperationException();
+    return new Try(body, catchers, finalizer);
   }
 
   @Nonnull @Override public Jst.Catch jstCatch(@Nonnull Jst.VarDeclaration parameter, @Nonnull Jst.Block body) {
-    throw new UnsupportedOperationException();
+    return new Catch(parameter, body);
   }
 
   @Nonnull @Override public Jst.If jstIf(@Nonnull Jst.Expression condition,
@@ -130,15 +130,15 @@ public class DefaultJstFactory implements JstFactory {
   @Nonnull @Override public Jst.Conditional jstConditional(@Nonnull Jst.Expression condition,
                                                            @Nonnull Jst.Expression thenPart,
                                                            @Nonnull Jst.Expression elsePart) {
-    throw new UnsupportedOperationException();
+    return new Conditional(condition, thenPart, elsePart);
   }
 
   @Nonnull @Override public Jst.Break jstBreak(@Nullable String label) {
-    throw new UnsupportedOperationException();
+    return new Break(label);
   }
 
   @Nonnull @Override public Jst.Continue jstContinue(@Nullable String label) {
-    throw new UnsupportedOperationException();
+    return new Continue(label);
   }
 
   @Nonnull @Override public Jst.Return jstReturn(@Nullable Jst.Expression expression) {
@@ -162,16 +162,16 @@ public class DefaultJstFactory implements JstFactory {
 
   @Nonnull @Override public Jst.NewClass jstNewClass(@Nullable Jst.Expression enclosingExpression,
                                                      @Nonnull Jst.TypeExpression type,
-                                                     @Nonnull List<Jst.TypeParameter> typeParameters,
-                                                     @Nonnull List<Jst.Expression> arguments,
+                                                     @Nonnull Collection<? extends Jst.TypeParameter> typeParameters,
+                                                     @Nonnull Collection<? extends Jst.Expression> arguments,
                                                      @Nullable Jst.ClassDeclaration classDeclaration) {
-    throw new UnsupportedOperationException();
+    return new NewClass(enclosingExpression, type, typeParameters, arguments, classDeclaration);
   }
 
   @Nonnull @Override public Jst.NewArray jstNewArray(@Nonnull Jst.TypeExpression type,
-                                                     @Nonnull List<Jst.Expression> dimensions,
-                                                     @Nonnull List<Jst.Expression> initializers) {
-    throw new UnsupportedOperationException();
+                                                     @Nonnull Collection<? extends Jst.Expression> dimensions,
+                                                     @Nonnull Collection<? extends Jst.Expression> initializers) {
+    return new NewArray(type, dimensions, initializers);
   }
 
   @Nonnull @Override public Jst.Parens jstParens(@Nonnull Jst.Expression expression) {
@@ -230,21 +230,21 @@ public class DefaultJstFactory implements JstFactory {
   }
 
   @Nonnull @Override public Jst.Array jstArray(@Nonnull Jst.TypeExpression elementType) {
-    throw new UnsupportedOperationException();
+    return new Array(elementType);
   }
 
   @Nonnull @Override public Jst.ParameterizedType jstParameterizedType(@Nonnull Jst.TypeExpression type,
-                                                                       @Nonnull List<Jst.Expression> arguments) {
-    throw new UnsupportedOperationException();
+                                                                       @Nonnull Collection<? extends Jst.Expression> arguments) {
+    return new ParameterizedType(type, arguments);
   }
 
   @Nonnull @Override public Jst.Wildcard jstWildcard(@Nullable Jst.TypeBoundExpression typeBoundExpression) {
-    throw new UnsupportedOperationException();
+    return new Wildcard(typeBoundExpression);
   }
 
   @Nonnull @Override public Jst.TypeBoundExpression jstTypeBound(@Nonnull TypeBoundKind kind,
                                                                  @Nonnull Jst.Expression expression) {
-    throw new UnsupportedOperationException();
+    return new TypeBoundExpression(kind, expression);
   }
 
 
@@ -485,6 +485,161 @@ public class DefaultJstFactory implements JstFactory {
     }
   }
 
+  private static final class DoWhileLoop extends AbstractNode implements Jst.DoWhileLoop {
+    private final Jst.Expression condition;
+    private final Jst.Statement body;
+
+    DoWhileLoop(@Nonnull Jst.Expression condition, @Nonnull Jst.Statement body) {
+      this.condition = condition;
+      this.body = body;
+    }
+
+    @Nonnull @Override public Jst.Expression getCondition() {
+      return condition;
+    }
+
+    @Nonnull @Override public Jst.Statement getBody() {
+      return body;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitDoWhileLoop(this);
+    }
+  }
+
+  private static final class WhileLoop extends AbstractNode implements Jst.WhileLoop {
+    private final Jst.Expression condition;
+    private final Jst.Statement body;
+
+    WhileLoop(@Nonnull Jst.Expression condition, @Nonnull Jst.Statement body) {
+      this.condition = condition;
+      this.body = body;
+    }
+
+    @Nonnull @Override public Jst.Expression getCondition() {
+      return condition;
+    }
+
+    @Nonnull @Override public Jst.Statement getBody() {
+      return body;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitWhileLoop(this);
+    }
+  }
+
+  private static final class ForLoop extends AbstractNode implements Jst.ForLoop {
+    private final List<Jst.Statement> initializers;
+    private final Jst.Expression condition;
+    private final Jst.Expression step;
+    private final Jst.Statement body;
+
+    ForLoop(@Nonnull Collection<? extends Jst.Statement> initializers,
+                    @Nonnull Jst.Expression condition,
+                    @Nonnull Jst.Expression step,
+                    @Nonnull Jst.Statement body) {
+      this.initializers = ImmutableList.copyOf(initializers);
+      this.condition = condition;
+      this.step = step;
+      this.body = body;
+    }
+
+    @Nonnull @Override public List<Jst.Statement> getInitializers() {
+      return initializers;
+    }
+
+    @Nonnull @Override public Jst.Expression getCondition() {
+      return condition;
+    }
+
+    @Nonnull @Override public Jst.Expression getStep() {
+      return step;
+    }
+
+    @Nonnull @Override public Jst.Statement getBody() {
+      return body;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitForLoop(this);
+    }
+  }
+
+  private static final class ForEachLoop extends AbstractNode implements Jst.ForEachLoop {
+    private final Jst.VarDeclaration variable;
+    private final Jst.Expression expression;
+    private final Jst.Statement body;
+
+    ForEachLoop(@Nonnull Jst.VarDeclaration variable,
+                @Nonnull Jst.Expression expression,
+                @Nonnull Jst.Statement body) {
+      this.variable = variable;
+      this.expression = expression;
+      this.body = body;
+    }
+
+    @Nonnull @Override public Jst.VarDeclaration getVariable() {
+      return variable;
+    }
+
+    @Nonnull @Override public Jst.Expression getExpression() {
+      return expression;
+    }
+
+    @Nonnull @Override public Jst.Statement getBody() {
+      return body;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitForEachLoop(this);
+    }
+  }
+
+  private static final class Labeled extends AbstractNode implements Jst.Labeled {
+    private final String label;
+    private final Jst.Statement body;
+
+    Labeled(@Nonnull String label, @Nonnull Jst.Statement body) {
+      this.label = label;
+      this.body = body;
+    }
+
+    @Nonnull @Override public String getLabel() {
+      return label;
+    }
+
+    @Nonnull @Override public Jst.Statement getBody() {
+      return body;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitLabeled(this);
+    }
+  }
+
+  private static final class Switch extends AbstractNode implements Jst.Switch {
+    private final Jst.Expression selector;
+    private final List<Jst.Case> cases;
+
+    Switch(@Nonnull Jst.Expression selector, @Nonnull List<Jst.Case> cases) {
+      this.selector = selector;
+      this.cases = ImmutableList.copyOf(cases);
+    }
+
+    @Nonnull @Override public Jst.Expression getSelector() {
+      return selector;
+    }
+
+    @Nonnull @Override public List<Jst.Case> getCases() {
+      return cases;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitSwitch(this);
+    }
+  }
+
   private static final class Case extends StatementList implements Jst.Case {
     private final Jst.Expression expression;
 
@@ -499,6 +654,78 @@ public class DefaultJstFactory implements JstFactory {
     @Override
     public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
       visitor.visitCase(this);
+    }
+  }
+
+  private static final class Synchronized extends AbstractNode implements Jst.Synchronized {
+    private final Jst.Expression lock;
+    private final Jst.Block body;
+
+    Synchronized(@Nonnull Jst.Expression lock, @Nonnull Jst.Block body) {
+      this.lock = lock;
+      this.body = body;
+    }
+
+    @Nonnull @Override public Jst.Expression getLock() {
+      return lock;
+    }
+
+    @Nonnull @Override public Jst.Block getBody() {
+      return body;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitSynchronized(this);
+    }
+  }
+
+  private static final class Try extends AbstractNode implements Jst.Try {
+    private final Jst.Block body;
+    private final List<Jst.Catch> catchers;
+    private final Jst.Block finalizer;
+
+    Try(@Nonnull Jst.Block body, @Nonnull List<Jst.Catch> catchers, @Nullable Jst.Block finalizer) {
+      this.body = body;
+      this.catchers = ImmutableList.copyOf(catchers);
+      this.finalizer = finalizer;
+    }
+
+    @Nonnull @Override public Jst.Block getBody() {
+      return body;
+    }
+
+    @Nonnull @Override public List<Jst.Catch> getCatchers() {
+      return catchers;
+    }
+
+    @Nullable @Override public Jst.Block getFinalizer() {
+      return finalizer;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitTry(this);
+    }
+  }
+
+  private static final class Catch extends AbstractNode implements Jst.Catch {
+    private final Jst.VarDeclaration parameter;
+    private final Jst.Block body;
+
+    Catch(@Nonnull Jst.VarDeclaration parameter, @Nonnull Jst.Block body) {
+      this.parameter = parameter;
+      this.body = body;
+    }
+
+    @Nonnull @Override public Jst.VarDeclaration getParameter() {
+      return parameter;
+    }
+
+    @Nonnull @Override public Jst.Block getBody() {
+      return body;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitCatch(this);
     }
   }
 
@@ -691,6 +918,68 @@ public class DefaultJstFactory implements JstFactory {
     }
   }
 
+  private static final class Conditional extends AbstractNode implements Jst.Conditional {
+    private final Jst.Expression condition;
+    private final Jst.Expression thenPart;
+    private final Jst.Expression elsePart;
+
+    Conditional(@Nonnull Jst.Expression condition, @Nonnull Jst.Expression thenPart, @Nonnull Jst.Expression elsePart) {
+      this.condition = condition;
+      this.thenPart = thenPart;
+      this.elsePart = elsePart;
+    }
+
+    @Nonnull @Override public Jst.Expression getCondition() {
+      return condition;
+    }
+
+    @Nonnull @Override public Jst.Expression getThenPart() {
+      return thenPart;
+    }
+
+    @Nonnull @Override public Jst.Expression getElsePart() {
+      return elsePart;
+    }
+
+    @Override
+    public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitConditional(this);
+    }
+  }
+
+  private static final class Break extends AbstractNode implements Jst.Break {
+    private final String label;
+
+    Break(@Nullable String label) {
+      this.label = label;
+    }
+
+    @Nullable @Override public String getLabel() {
+      return label;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitBreak(this);
+    }
+  }
+
+  private static final class Continue extends AbstractNode implements Jst.Continue {
+    private final String label;
+
+    Continue(@Nullable String label) {
+      this.label = label;
+    }
+
+    @Nullable @Override public String getLabel() {
+      return label;
+    }
+
+    @Override
+    public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitContinue(this);
+    }
+  }
+
   private static final class Return extends AbstractNode implements Jst.Return {
     private final Jst.Expression expression;
 
@@ -766,6 +1055,80 @@ public class DefaultJstFactory implements JstFactory {
 
     @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
       visitor.visitCall(this);
+    }
+  }
+
+  private static final class NewClass extends AbstractNode implements Jst.NewClass {
+    private final Jst.Expression enclosingExpression;
+    private final Jst.TypeExpression type;
+    private final List<Jst.TypeParameter> typeParameters;
+    private final List<Jst.Expression> arguments;
+    private final Jst.ClassDeclaration classDeclaration;
+
+    NewClass(@Nullable Jst.Expression enclosingExpression,
+             @Nonnull Jst.TypeExpression type,
+             @Nonnull Collection<? extends Jst.TypeParameter> typeParameters,
+             @Nonnull Collection<? extends Jst.Expression> arguments,
+             @Nullable Jst.ClassDeclaration classDeclaration) {
+      this.enclosingExpression = enclosingExpression;
+      this.type = type;
+      this.typeParameters = ImmutableList.copyOf(typeParameters);
+      this.arguments = ImmutableList.copyOf(arguments);
+      this.classDeclaration = classDeclaration;
+    }
+
+    @Nullable @Override public Jst.Expression getEnclosingExpression() {
+      return enclosingExpression;
+    }
+
+    @Nonnull @Override public Jst.TypeExpression getType() {
+      return type;
+    }
+
+    @Nonnull @Override public List<Jst.TypeParameter> getTypeParameters() {
+      return typeParameters;
+    }
+
+    @Nonnull @Override public List<Jst.Expression> getArguments() {
+      return arguments;
+    }
+
+    @Nullable @Override public Jst.ClassDeclaration getClassDeclaration() {
+      return classDeclaration;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitNewClass(this);
+    }
+  }
+
+  private static final class NewArray extends AbstractNode implements Jst.NewArray {
+    private final Jst.TypeExpression type;
+    private final List<Jst.Expression> dimensions;
+    private final List<Jst.Expression> initializers;
+
+    NewArray(@Nonnull Jst.TypeExpression type,
+             @Nonnull Collection<? extends Jst.Expression> dimensions,
+             @Nonnull Collection<? extends Jst.Expression> initializers) {
+      this.type = type;
+      this.dimensions = ImmutableList.copyOf(dimensions);
+      this.initializers = ImmutableList.copyOf(initializers);
+    }
+
+    @Nonnull @Override public Jst.TypeExpression getType() {
+      return type;
+    }
+
+    @Nonnull @Override public List<Jst.Expression> getDimensions() {
+      return dimensions;
+    }
+
+    @Nonnull @Override public List<Jst.Expression> getInitializers() {
+      return initializers;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitNewArray(this);
     }
   }
 
@@ -904,6 +1267,82 @@ public class DefaultJstFactory implements JstFactory {
 
     @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
       visitor.visitCompoundAssignment(this);
+    }
+  }
+
+  private static final class Array extends AbstractNode implements Jst.Array {
+    private final Jst.TypeExpression type;
+
+    Array(@Nonnull Jst.TypeExpression type) {
+      this.type = type;
+    }
+
+    @Nonnull @Override public Jst.TypeExpression getType() {
+      return type;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitArray(this);
+    }
+  }
+
+  private static final class ParameterizedType extends AbstractNode implements Jst.ParameterizedType {
+    private final Jst.TypeExpression type;
+    private final List<Jst.Expression> arguments;
+
+    ParameterizedType(@Nonnull Jst.TypeExpression type, @Nonnull Collection<? extends Jst.Expression> arguments) {
+      this.type = type;
+      this.arguments = ImmutableList.copyOf(arguments);
+    }
+
+    @Nonnull @Override public Jst.TypeExpression getType() {
+      return type;
+    }
+
+    @Nonnull @Override public List<Jst.Expression> getArguments() {
+      return arguments;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitParameterizedType(this);
+    }
+  }
+
+  private static final class Wildcard extends AbstractNode implements Jst.Wildcard {
+    private final Jst.TypeBoundExpression boundExpression;
+
+    Wildcard(@Nullable Jst.TypeBoundExpression boundExpression) {
+      this.boundExpression = boundExpression;
+    }
+
+    @Nullable @Override public Jst.TypeBoundExpression getBoundExpression() {
+      return boundExpression;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitWildcard(this);
+    }
+  }
+
+  private static final class TypeBoundExpression extends AbstractNode implements Jst.TypeBoundExpression {
+    private final TypeBoundKind kind;
+    private final Jst.Expression expression;
+
+    TypeBoundExpression(@Nonnull TypeBoundKind kind, @Nonnull Jst.Expression expression) {
+      this.kind = kind;
+      this.expression = expression;
+    }
+
+    @Nonnull @Override public TypeBoundKind getKind() {
+      return kind;
+    }
+
+    @Nonnull @Override public Jst.Expression getExpression() {
+      return expression;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitTypeBoundExpression(this);
     }
   }
 }
