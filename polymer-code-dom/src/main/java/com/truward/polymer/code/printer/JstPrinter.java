@@ -428,7 +428,7 @@ public final class JstPrinter {
 
     @Override public void visitConditional(@Nonnull Jst.Conditional node) throws IOException {
       print(node.getCondition()).print(' ').print('?').print(' ');
-      print(node.getThenPart()).print(' ').print(':').print(' ').print(node.getThenPart());
+      print(node.getThenPart()).print(' ').print(':').print(' ').print(node.getElsePart());
     }
 
     @Override public void visitAssert(@Nonnull Jst.Assert node) throws IOException {
@@ -441,32 +441,61 @@ public final class JstPrinter {
     }
 
     @Override public void visitWildcard(@Nonnull Jst.Wildcard node) throws IOException {
-      print('*');
-      final Jst.TypeBoundExpression typeBoundExpression = node.getBoundExpression();
-      if (typeBoundExpression != null) {
-        print(' ').print(typeBoundExpression);
-      }
-    }
-
-    @Override public void visitTypeBoundExpression(@Nonnull Jst.TypeBoundExpression node) throws IOException {
+      print('?');
+      final Jst.Expression expression = node.getExpression();
       switch (node.getKind()) {
         case UNBOUND:
-          assert node.getExpression() == null; // TODO: type safety, refactor TypeBoundExpression?
+          assert expression == null : "Unbound type expression should be null";
           return;
 
         case SUPER:
-          print("super");
+          print(' ').print("extends").print(' ');
           break;
 
         case EXTENDS:
-          print("extends");
+          print(' ').print("super").print(' ');
           break;
 
         default:
-          throw new IllegalStateException("Unknown type bound kind: " + node.getKind());
+          throw new UnsupportedOperationException("Unsupported bound kind = " + node.getKind());
+      }
+      assert expression != null : "Bound expression should not be null";
+      print(expression);
+    }
+
+    @Override public void visitParameterizedType(@Nonnull Jst.ParameterizedType node) throws IOException {
+      print(node.getType()).print('<').printCommaSeparated(node.getArguments()).print('>');
+    }
+
+    @Override public void visitUnionType(@Nonnull Jst.UnionType node) throws IOException {
+      final int count = node.getTypes().size();
+      for (int i = 0; i < count; ++i) {
+        if (i > 0) {
+          print(' ').print('|').print(' ');
+        }
+        print(node.getTypes().get(i));
+      }
+    }
+
+    @Override public void visitTypeParameter(@Nonnull Jst.TypeParameter node) throws IOException {
+      print(node.getName());
+      if (node.getBounds().isEmpty()) {
+        return;
       }
 
-      print(' ').print(node.getExpression());
+      print(' ').print("extends").print(' ');
+      final int count = node.getBounds().size();
+      for (int i = 0; i < count; ++i) {
+        if (i > 0) {
+          print(' ').print('&').print(' ');
+        }
+        print(node.getBounds().get(i));
+      }
+    }
+
+    @Override public void visitArray(@Nonnull Jst.Array node) throws IOException {
+      print(node.getType());
+      print('[').print(']');
     }
 
     //

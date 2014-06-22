@@ -2,8 +2,6 @@ package com.truward.polymer.code.printer;
 
 import com.google.common.collect.ImmutableList;
 import com.truward.polymer.code.Jst;
-import static com.truward.polymer.code.JstFlag.*;
-
 import com.truward.polymer.code.Operator;
 import com.truward.polymer.code.factory.DefaultJstFactory;
 import com.truward.polymer.code.factory.JstFactory;
@@ -18,6 +16,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.Serializable;
 
+import static com.truward.polymer.code.JstFlag.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

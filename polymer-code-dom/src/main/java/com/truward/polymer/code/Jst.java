@@ -131,7 +131,7 @@ public interface Jst {
    * @see "JLS 3, section 4.4"
    */
   interface TypeParameter extends TypeExpression, Named {
-    @Nonnull List<TypeExpression> getTypeBounds();
+    @Nonnull List<Expression> getBounds();
   }
 
   /**
@@ -139,16 +139,16 @@ public interface Jst {
    * @see "JLS 3, section 4.5.1"
    */
   interface Wildcard extends TypeExpression {
-    @Nullable TypeBoundExpression getBoundExpression();
+    @Nonnull TypeBoundKind getKind();
+
+    @Nullable Expression getExpression();
   }
 
   /**
-   * Represents a part of type parameter, e.g. 'extends Serializable' or 'super T'
+   * Represents a union type, used in the exception block, like (IOException | NetworkException e)
    */
-  interface TypeBoundExpression extends TypeExpression {
-    @Nonnull TypeBoundKind getKind();
-
-    @Nonnull Expression getExpression();
+  interface UnionType extends TypeExpression {
+    @Nonnull List<TypeExpression> getTypes();
   }
 
   /**

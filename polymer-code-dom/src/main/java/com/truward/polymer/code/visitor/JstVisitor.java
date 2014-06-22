@@ -111,7 +111,9 @@ public abstract class JstVisitor<E extends Exception> {
 
   public void visitParameterizedType(@Nonnull Jst.ParameterizedType node) throws E { visitType(node); }
 
+  public void visitTypeParameter(@Nonnull Jst.TypeParameter node) throws E { visitType(node); }
+
   public void visitWildcard(@Nonnull Jst.Wildcard node) throws E { visitType(node); }
 
-  public void visitTypeBoundExpression(@Nonnull Jst.TypeBoundExpression node) throws E { visitType(node); }
+  public void visitUnionType(@Nonnull Jst.UnionType node) throws E { visitType(node); }
 }

@@ -238,15 +238,17 @@ public final class DefaultJstFactory implements JstFactory {
     return new ParameterizedType(type, arguments);
   }
 
-  @Nonnull @Override public Jst.Wildcard jstWildcard(@Nullable Jst.TypeBoundExpression typeBoundExpression) {
-    return new Wildcard(typeBoundExpression);
+  @Nonnull @Override public Jst.Wildcard jstWildcard(@Nonnull TypeBoundKind kind, @Nullable Jst.Expression typeBound) {
+    return new Wildcard(kind, typeBound);
   }
 
-  @Nonnull @Override public Jst.TypeBoundExpression jstTypeBound(@Nonnull TypeBoundKind kind,
-                                                                 @Nonnull Jst.Expression expression) {
-    return new TypeBoundExpression(kind, expression);
+  @Nonnull @Override public Jst.TypeParameter jstTypeParameter(@Nonnull String name, @Nonnull Collection<? extends Jst.Expression> bounds) {
+    return new TypeParameter(name, bounds);
   }
 
+  @Nonnull @Override public Jst.UnionType jstUnionType(@Nonnull Collection<? extends Jst.TypeExpression> types) {
+    return new UnionType(types);
+  }
 
   //
   // Private
@@ -1309,26 +1311,10 @@ public final class DefaultJstFactory implements JstFactory {
   }
 
   private static final class Wildcard extends AbstractNode implements Jst.Wildcard {
-    private final Jst.TypeBoundExpression boundExpression;
-
-    Wildcard(@Nullable Jst.TypeBoundExpression boundExpression) {
-      this.boundExpression = boundExpression;
-    }
-
-    @Nullable @Override public Jst.TypeBoundExpression getBoundExpression() {
-      return boundExpression;
-    }
-
-    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
-      visitor.visitWildcard(this);
-    }
-  }
-
-  private static final class TypeBoundExpression extends AbstractNode implements Jst.TypeBoundExpression {
     private final TypeBoundKind kind;
     private final Jst.Expression expression;
 
-    TypeBoundExpression(@Nonnull TypeBoundKind kind, @Nonnull Jst.Expression expression) {
+    Wildcard(@Nonnull TypeBoundKind kind, @Nullable Jst.Expression expression) {
       this.kind = kind;
       this.expression = expression;
     }
@@ -1337,12 +1323,52 @@ public final class DefaultJstFactory implements JstFactory {
       return kind;
     }
 
-    @Nonnull @Override public Jst.Expression getExpression() {
+    @Nullable @Override public Jst.Expression getExpression() {
       return expression;
     }
 
     @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
-      visitor.visitTypeBoundExpression(this);
+      visitor.visitWildcard(this);
+    }
+  }
+
+  private static final class TypeParameter extends AbstractNode implements Jst.TypeParameter {
+    private final String name;
+    private final List<Jst.Expression> typeBounds;
+
+    TypeParameter(@Nonnull String name, @Nonnull Collection<? extends Jst.Expression> typeBounds) {
+      this.name = name;
+      this.typeBounds = ImmutableList.copyOf(typeBounds);
+    }
+
+    @Nonnull @Override public List<Jst.Expression> getBounds() {
+      return typeBounds;
+    }
+
+    @Nonnull @Override public String getName() {
+      return name;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitTypeParameter(this);
+    }
+  }
+
+  private static final class UnionType extends AbstractNode implements Jst.UnionType {
+    private final List<Jst.TypeExpression> types;
+
+    UnionType(@Nonnull Collection<? extends Jst.TypeExpression> types) {
+      assert types.size() > 1;
+      this.types = ImmutableList.copyOf(types);
+    }
+
+    @Nonnull @Override public List<Jst.TypeExpression> getTypes() {
+      return types;
+    }
+
+    @Override
+    public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitUnionType(this);
     }
   }
 }

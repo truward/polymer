@@ -319,9 +319,16 @@ public final class JstParentAwareVisitor<T extends Exception> extends JstVisitor
     parents.pop();
   }
 
-  @Override public void visitTypeBoundExpression(@Nonnull Jst.TypeBoundExpression node) throws T {
+  @Override
+  public void visitTypeParameter(@Nonnull Jst.TypeParameter node) throws T {
     parents.push(node);
-    delegate.visitTypeBoundExpression(node);
+    delegate.visitTypeParameter(node);
+    parents.pop();
+  }
+
+  @Override public void visitUnionType(@Nonnull Jst.UnionType node) throws T {
+    parents.push(node);
+    delegate.visitUnionType(node);
     parents.pop();
   }
 }

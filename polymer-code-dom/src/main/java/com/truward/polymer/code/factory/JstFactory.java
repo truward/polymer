@@ -119,7 +119,9 @@ public interface JstFactory {
   @Nonnull Jst.ParameterizedType jstParameterizedType(@Nonnull Jst.TypeExpression type,
                                                       @Nonnull Collection<? extends Jst.Expression> arguments);
 
-  @Nonnull Jst.Wildcard jstWildcard(@Nullable Jst.TypeBoundExpression typeBoundExpression);
+  @Nonnull Jst.Wildcard jstWildcard(@Nonnull TypeBoundKind kind, @Nullable Jst.Expression typeBound);
 
-  @Nonnull Jst.TypeBoundExpression jstTypeBound(@Nonnull TypeBoundKind kind, @Nonnull Jst.Expression expression);
+  @Nonnull Jst.TypeParameter jstTypeParameter(@Nonnull String name, @Nonnull Collection<? extends Jst.Expression> bounds);
+
+  @Nonnull Jst.UnionType jstUnionType(@Nonnull Collection<? extends Jst.TypeExpression> types);
 }
