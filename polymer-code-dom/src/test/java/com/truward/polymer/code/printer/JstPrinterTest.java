@@ -15,6 +15,8 @@ import javax.annotation.Generated;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 import static com.truward.polymer.code.JstFlag.*;
 import static org.junit.Assert.assertEquals;
@@ -53,6 +55,21 @@ public final class JstPrinterTest extends JstFactorySupport {
 
     // Then:
     assertSameGeneratedContent("package my.pkg;\n\n\nclass FooClass {\n}", "my/pkg/FooClass.java");
+  }
+
+  @Test
+  public void shouldPrintAnnotationDecl() throws IOException {
+    // Given:
+    unit("my.pkg", classDecl(flags(PUBLIC, ANNOTATION),
+        annotations(annotation(Retention.class, literal(RetentionPolicy.RUNTIME))), "Foo"));
+
+    // When:
+    printer.print(unit);
+
+    // Then:
+    assertSameGeneratedContent("package my.pkg;\n\n\n" +
+        "@java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)\n" +
+        "public @interface Foo {\n}", "my/pkg/Foo.java");
   }
 
   @Test

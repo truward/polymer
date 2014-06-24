@@ -162,13 +162,12 @@ public final class DefaultJstFactory implements JstFactory {
 
   @Nonnull @Override public Jst.NewClass jstNewClass(@Nullable Jst.Expression enclosingExpression,
                                                      @Nonnull Jst.TypeExpression type,
-                                                     @Nonnull Collection<? extends Jst.TypeParameter> typeParameters,
                                                      @Nonnull Collection<? extends Jst.Expression> arguments,
-                                                     @Nullable Jst.ClassDeclaration classDeclaration) {
-    return new NewClass(enclosingExpression, type, typeParameters, arguments, classDeclaration);
+                                                     @Nullable Jst.Block classDeclaration) {
+    return new NewClass(enclosingExpression, type, arguments, classDeclaration);
   }
 
-  @Nonnull @Override public Jst.NewArray jstNewArray(@Nonnull Jst.TypeExpression type,
+  @Nonnull @Override public Jst.NewArray jstNewArray(@Nullable Jst.TypeExpression type,
                                                      @Nonnull Collection<? extends Jst.Expression> dimensions,
                                                      @Nonnull Collection<? extends Jst.Expression> initializers) {
     return new NewArray(type, dimensions, initializers);
@@ -196,6 +195,10 @@ public final class DefaultJstFactory implements JstFactory {
                                                  @Nonnull Jst.Expression left,
                                                  @Nonnull Jst.Expression right) {
     return new Binary(operator, left, right);
+  }
+
+  @Nonnull @Override public Jst.TypeCast jstTypeCast(@Nonnull Jst.TypeExpression type, @Nonnull Jst.Expression expression) {
+    return new TypeCast(type, expression);
   }
 
   @Nonnull @Override public Jst.ClassType jstClassType(@Nonnull Class<?> clazz) {
@@ -1063,18 +1066,15 @@ public final class DefaultJstFactory implements JstFactory {
   private static final class NewClass extends AbstractNode implements Jst.NewClass {
     private final Jst.Expression enclosingExpression;
     private final Jst.TypeExpression type;
-    private final List<Jst.TypeParameter> typeParameters;
     private final List<Jst.Expression> arguments;
-    private final Jst.ClassDeclaration classDeclaration;
+    private final Jst.Block classDeclaration;
 
     NewClass(@Nullable Jst.Expression enclosingExpression,
              @Nonnull Jst.TypeExpression type,
-             @Nonnull Collection<? extends Jst.TypeParameter> typeParameters,
              @Nonnull Collection<? extends Jst.Expression> arguments,
-             @Nullable Jst.ClassDeclaration classDeclaration) {
+             @Nullable Jst.Block classDeclaration) {
       this.enclosingExpression = enclosingExpression;
       this.type = type;
-      this.typeParameters = ImmutableList.copyOf(typeParameters);
       this.arguments = ImmutableList.copyOf(arguments);
       this.classDeclaration = classDeclaration;
     }
@@ -1087,15 +1087,11 @@ public final class DefaultJstFactory implements JstFactory {
       return type;
     }
 
-    @Nonnull @Override public List<Jst.TypeParameter> getTypeParameters() {
-      return typeParameters;
-    }
-
     @Nonnull @Override public List<Jst.Expression> getArguments() {
       return arguments;
     }
 
-    @Nullable @Override public Jst.ClassDeclaration getClassDeclaration() {
+    @Nullable @Override public Jst.Block getClassDeclaration() {
       return classDeclaration;
     }
 
@@ -1109,7 +1105,7 @@ public final class DefaultJstFactory implements JstFactory {
     private final List<Jst.Expression> dimensions;
     private final List<Jst.Expression> initializers;
 
-    NewArray(@Nonnull Jst.TypeExpression type,
+    NewArray(@Nullable Jst.TypeExpression type,
              @Nonnull Collection<? extends Jst.Expression> dimensions,
              @Nonnull Collection<? extends Jst.Expression> initializers) {
       this.type = type;
@@ -1117,7 +1113,7 @@ public final class DefaultJstFactory implements JstFactory {
       this.initializers = ImmutableList.copyOf(initializers);
     }
 
-    @Nonnull @Override public Jst.TypeExpression getType() {
+    @Nullable @Override public Jst.TypeExpression getType() {
       return type;
     }
 
@@ -1197,6 +1193,28 @@ public final class DefaultJstFactory implements JstFactory {
 
     @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
       visitor.visitBinary(this);
+    }
+  }
+
+  private static final class TypeCast extends AbstractNode implements Jst.TypeCast {
+    private final Jst.TypeExpression type;
+    private final Jst.Expression expression;
+
+    TypeCast(@Nonnull Jst.TypeExpression type, @Nonnull Jst.Expression expression) {
+      this.type = type;
+      this.expression = expression;
+    }
+
+    @Nonnull @Override public Jst.TypeExpression getType() {
+      return type;
+    }
+
+    @Nonnull @Override public Jst.Expression getExpression() {
+      return expression;
+    }
+
+    @Override public <E extends Exception> void accept(@Nonnull JstVisitor<E> visitor) throws E {
+      visitor.visitTypeCast(this);
     }
   }
 

@@ -58,6 +58,13 @@ public abstract class JstFactorySupport {
     return getFactory().jstAnnotation(type(annotationClass));
   }
 
+  @Nonnull public Jst.Annotation annotation(@Nonnull Class<? extends Annotation> annotationClass,
+                                            @Nonnull Jst.Expression... arguments) {
+    final Jst.Annotation result = annotation(annotationClass);
+    result.setArguments(ImmutableList.copyOf(arguments));
+    return result;
+  }
+
   @Nonnull public Jst.Annotation override() {
     return annotation(Override.class);
   }

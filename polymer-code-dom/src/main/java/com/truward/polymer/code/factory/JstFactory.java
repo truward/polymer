@@ -90,11 +90,10 @@ public interface JstFactory {
 
   @Nonnull Jst.NewClass jstNewClass(@Nullable Jst.Expression enclosingExpression,
                                     @Nonnull Jst.TypeExpression type,
-                                    @Nonnull Collection<? extends Jst.TypeParameter> typeParameters,
                                     @Nonnull Collection<? extends Jst.Expression> arguments,
-                                    @Nullable Jst.ClassDeclaration classDeclaration);
+                                    @Nullable Jst.Block classDeclaration);
 
-  @Nonnull Jst.NewArray jstNewArray(@Nonnull Jst.TypeExpression type,
+  @Nonnull Jst.NewArray jstNewArray(@Nullable Jst.TypeExpression type,
                                     @Nonnull Collection<? extends Jst.Expression> dimensions,
                                     @Nonnull Collection<? extends Jst.Expression> initializers);
 
@@ -109,6 +108,8 @@ public interface JstFactory {
   @Nonnull Jst.Unary jstUnary(@Nonnull Operator operator, @Nonnull Jst.Expression expression);
 
   @Nonnull Jst.Binary jstBinary(@Nonnull Operator operator, @Nonnull Jst.Expression left, @Nonnull Jst.Expression right);
+
+  @Nonnull Jst.TypeCast jstTypeCast(@Nonnull Jst.TypeExpression type, @Nonnull Jst.Expression expression);
 
   @Nonnull Jst.ClassType jstClassType(@Nonnull Class<?> clazz);
 

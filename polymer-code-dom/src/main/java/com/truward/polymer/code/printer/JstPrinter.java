@@ -100,6 +100,9 @@ public final class JstPrinter {
 
     @Override
     public void visitUnit(@Nonnull Jst.Unit node) throws IOException {
+      if (!node.getAnnotations().isEmpty()) {
+        printSeparated(node.getAnnotations(), "\n");
+      }
       print("package").print(' ').print(node.getPackageName()).print(';').print('\n');
 
       if (!node.getImports().isEmpty()) {
@@ -137,6 +140,8 @@ public final class JstPrinter {
           print("interface");
         } else if (node.getFlags().contains(JstFlag.ENUM)) {
           print("enum");
+        } else if (node.getFlags().contains(JstFlag.ANNOTATION)) {
+          print("@interface");
         } else {
           print("class");
         }
@@ -178,6 +183,15 @@ public final class JstPrinter {
       }
       print(node.getReturnType()).print(' ').print(node.getName());
       print('(').printCommaSeparated(node.getArguments()).print(')');
+
+      if (!node.getThrown().isEmpty()) {
+        print(' ').print("throws").print(' ').printCommaSeparated(node.getThrown());
+      }
+
+      final Jst.Expression defaultValue = node.getDefaultValue();
+      if (defaultValue != null) {
+        print(' ').print('=').print(' ').print(defaultValue); // annotation method
+      }
 
       final Jst.Block body = node.getBody();
       if (body != null) {
@@ -468,13 +482,8 @@ public final class JstPrinter {
     }
 
     @Override public void visitUnionType(@Nonnull Jst.UnionType node) throws IOException {
-      final int count = node.getTypes().size();
-      for (int i = 0; i < count; ++i) {
-        if (i > 0) {
-          print(' ').print('|').print(' ');
-        }
-        print(node.getTypes().get(i));
-      }
+      assert node.getTypes().size() > 1 : "Union types should be represented with a list of at least two elements";
+      printSeparated(node.getTypes(), " | ");
     }
 
     @Override public void visitTypeParameter(@Nonnull Jst.TypeParameter node) throws IOException {
@@ -498,6 +507,44 @@ public final class JstPrinter {
       print('[').print(']');
     }
 
+    @Override public void visitTypeCast(@Nonnull Jst.TypeCast node) throws IOException {
+      print('(').print(node.getType()).print(')').print(' ').print(node.getExpression());
+    }
+
+    @Override public void visitArrayAccess(@Nonnull Jst.ArrayAccess node) throws IOException {
+      print(node.getExpression()).print('[').print(node.getIndex()).print(']');
+    }
+
+    @Override public void visitNewArray(@Nonnull Jst.NewArray node) throws IOException {
+      final Jst.TypeExpression type = node.getType();
+      if (type != null) {
+        print("new").print(' ').print(type);
+        for (final Jst.Expression expression : node.getDimensions()) {
+          print('[').print(expression).print(']');
+        }
+        assert node.getInitializers().isEmpty();
+      }
+
+      if (!node.getInitializers().isEmpty()) {
+        // special case: inline array initializer, curly braces should be printed as string
+        print("{").printCommaSeparated(node.getInitializers()).print("}");
+      }
+    }
+
+    @Override public void visitNewClass(@Nonnull Jst.NewClass node) throws IOException {
+      final Jst.Expression enclosingExpression = node.getEnclosingExpression();
+      if (enclosingExpression != null) {
+        print(enclosingExpression);
+      }
+      print('.').print(' ').print("new").print(' ').print(node.getType());
+      print('(').printCommaSeparated(node.getArguments()).print(')');
+
+      final Jst.Block classDeclaration = node.getClassDeclaration();
+      if (classDeclaration != null) {
+        print(' ').print(classDeclaration);
+      }
+    }
+
     //
     // Private
     //
@@ -508,10 +555,18 @@ public final class JstPrinter {
     }
 
     @Nonnull private PrintVisitor printCommaSeparated(@Nonnull List<? extends Jst.Node> nodes) throws IOException {
+      return printSeparated(nodes, ", ");
+    }
+
+    @Nonnull private PrintVisitor printSeparated(@Nonnull List<? extends Jst.Node> nodes,
+                                                 @Nonnull CharSequence separator) throws IOException {
+      final int separatorSize = separator.length();
       final int size = nodes.size();
       for (int i = 0; i < size; ++i) {
         if (i > 0) {
-          print(',').print(' ');
+          for (int j = 0; j < separatorSize; ++j) {
+            print(separator.charAt(j));
+          }
         }
         print(nodes.get(i));
       }
@@ -564,6 +619,9 @@ public final class JstPrinter {
         } else if (value instanceof Long) {
           print('L');
         }
+      } else if (value instanceof Enum) {
+        final Enum<?> e = (Enum<?>) value;
+        printClassNameReference(FqName.valueOf(value.getClass().getName())).print('.').print(e.name());
       } else {
         throw new IllegalArgumentException("Unknown literal: " + value);
       }

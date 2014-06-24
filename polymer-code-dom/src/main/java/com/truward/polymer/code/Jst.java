@@ -312,11 +312,9 @@ public interface Jst {
 
     @Nonnull TypeExpression getType();
 
-    @Nonnull List<TypeParameter> getTypeParameters();
-
     @Nonnull List<Expression> getArguments();
 
-    @Nullable ClassDeclaration getClassDeclaration();
+    @Nullable Block getClassDeclaration();
   }
 
   /**
@@ -324,7 +322,7 @@ public interface Jst {
    * @see "JLS 3, section 15.10"
    */
   interface NewArray extends Expression {
-    @Nonnull TypeExpression getType();
+    @Nullable TypeExpression getType();
 
     @Nonnull List<Expression> getDimensions();
 
@@ -343,10 +341,6 @@ public interface Jst {
     @Nonnull Set<JstFlag> getFlags();
 
     void setFlags(@Nonnull Collection<JstFlag> flags);
-  }
-
-  interface Package extends NamedStatement {
-    boolean isRoot();
   }
 
   interface VarDeclaration extends NamedStatement {

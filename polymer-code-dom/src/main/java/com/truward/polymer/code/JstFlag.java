@@ -12,21 +12,22 @@ import java.util.Set;
  * @author Alexander Shabanov
  */
 public enum JstFlag {
-  /** The modifier {@code public} */          PUBLIC,
-  /** The modifier {@code protected} */       PROTECTED,
-  /** The modifier {@code private} */         PRIVATE,
-  /** The modifier {@code abstract} */        ABSTRACT,
-  /** The modifier {@code static} */          STATIC,
-  /** The modifier {@code final} */           FINAL,
-  /** The modifier {@code transient} */       TRANSIENT,
-  /** The modifier {@code volatile} */        VOLATILE,
-  /** The modifier {@code synchronized} */    SYNCHRONIZED,
-  /** The modifier {@code native} */          NATIVE,
-  /** The modifier {@code strictfp} */        STRICTFP,
+  /** The modifier {@code public} */                PUBLIC,
+  /** The modifier {@code protected} */             PROTECTED,
+  /** The modifier {@code private} */               PRIVATE,
+  /** The modifier {@code abstract} */              ABSTRACT,
+  /** The modifier {@code static} */                STATIC,
+  /** The modifier {@code final} */                 FINAL,
+  /** The modifier {@code transient} */             TRANSIENT,
+  /** The modifier {@code volatile} */              VOLATILE,
+  /** The modifier {@code synchronized} */          SYNCHRONIZED,
+  /** The modifier {@code native} */                NATIVE,
+  /** The modifier {@code strictfp} */              STRICTFP,
 
-  /** Non-modifier - designates interface */ INTERFACE,
-  /** Non-modifier - designates enumeration */ ENUM,
-  /** Non-modifier - designates anonymous class */ ANONYMOUS;
+  /** Non-modifier - designates interface */        INTERFACE,
+  /** Non-modifier - designates enumeration */      ENUM,
+  /** Non-modifier - designates annotation */       ANNOTATION,
+  /** Non-modifier - designates anonymous class */  ANONYMOUS;
 
   private String lowercase;
   private Boolean modifier;
