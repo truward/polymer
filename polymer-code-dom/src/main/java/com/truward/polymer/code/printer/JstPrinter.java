@@ -21,6 +21,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
+ * Class, responsible for printing java compilation units into the output stream provider.
+ *
  * @author Alexander Shabanov
  */
 public final class JstPrinter {
@@ -48,8 +50,7 @@ public final class JstPrinter {
   // Private
   //
 
-  @Nonnull
-  private Writer getWriter(@Nonnull Jst.Unit unit) throws IOException {
+  @Nonnull private Writer getWriter(@Nonnull Jst.Unit unit) throws IOException {
     FqName result = unit.getPackageName();
 
     if (!unit.getClasses().isEmpty()) {
@@ -98,8 +99,7 @@ public final class JstPrinter {
       return this;
     }
 
-    @Override
-    public void visitUnit(@Nonnull Jst.Unit node) throws IOException {
+    @Override public void visitUnit(@Nonnull Jst.Unit node) throws IOException {
       if (!node.getAnnotations().isEmpty()) {
         printSeparated(node.getAnnotations(), "\n");
       }
@@ -118,16 +118,14 @@ public final class JstPrinter {
       }
     }
 
-    @Override
-    public void visitAnnotation(@Nonnull Jst.Annotation node) throws IOException {
+    @Override public void visitAnnotation(@Nonnull Jst.Annotation node) throws IOException {
       print('@').print(node.getTypeExpression());
       if (!node.getArguments().isEmpty()) {
         print('(').printCommaSeparated(node.getArguments()).print(')');
       }
     }
 
-    @Override
-    public void visitClass(@Nonnull Jst.ClassDeclaration node) throws IOException {
+    @Override public void visitClass(@Nonnull Jst.ClassDeclaration node) throws IOException {
       if (node.getFlags().contains(JstFlag.ANONYMOUS)) {
         // special case: anonymous class
         assert node.getSuperclass() == null : "Anonymous class should not extend any class";
@@ -174,8 +172,7 @@ public final class JstPrinter {
       print(node.getBody());
     }
 
-    @Override
-    public void visitMethod(@Nonnull Jst.MethodDeclaration node) throws IOException {
+    @Override public void visitMethod(@Nonnull Jst.MethodDeclaration node) throws IOException {
       print('\n').print('\n');
       printNamedStatement(node, false);
       if (!node.getTypeParameters().isEmpty()) {
@@ -201,8 +198,7 @@ public final class JstPrinter {
       }
     }
 
-    @Override
-    public void visitVar(@Nonnull Jst.VarDeclaration node) throws IOException {
+    @Override public void visitVar(@Nonnull Jst.VarDeclaration node) throws IOException {
       boolean isInBlock = parents.getParent() instanceof Jst.Block; // parent is a block (variable or field)
 
       printNamedStatement(node, !isInBlock); // inline annotations if not in block (e.g. for arguments)
@@ -218,8 +214,7 @@ public final class JstPrinter {
       }
     }
 
-    @Override
-    public void visitReturn(@Nonnull Jst.Return node) throws IOException {
+    @Override public void visitReturn(@Nonnull Jst.Return node) throws IOException {
       print("return");
       final Jst.Expression expression = node.getExpression();
       if (expression != null) {
@@ -228,39 +223,32 @@ public final class JstPrinter {
       print(';');
     }
 
-    @Override
-    public void visitLiteral(@Nonnull Jst.Literal node) throws IOException {
+    @Override public void visitLiteral(@Nonnull Jst.Literal node) throws IOException {
       printLiteral(node.getValue());
     }
 
-    @Override
-    public void visitIdentifier(@Nonnull Jst.Identifier node) throws IOException {
+    @Override public void visitIdentifier(@Nonnull Jst.Identifier node) throws IOException {
       print(node.getName());
     }
 
-    @Override
-    public void visitSelector(@Nonnull Jst.Selector node) throws IOException {
+    @Override public void visitSelector(@Nonnull Jst.Selector node) throws IOException {
       print(node.getExpression()).print('.').print(node.getName());
     }
 
-    @Override
-    public void visitBlock(@Nonnull Jst.Block node) throws IOException {
+    @Override public void visitBlock(@Nonnull Jst.Block node) throws IOException {
       print('{').printStatements(node.getStatements()).print('}');
     }
 
-    @Override
-    public void visitAssignment(@Nonnull Jst.Assignment node) throws IOException {
+    @Override public void visitAssignment(@Nonnull Jst.Assignment node) throws IOException {
       print(node.getLeftExpression()).print(' ').print('=').print(' ').print(node.getRightExpression());
     }
 
-    @Override
-    public void visitCompoundAssignment(@Nonnull Jst.CompoundAssignment node) throws IOException {
+    @Override public void visitCompoundAssignment(@Nonnull Jst.CompoundAssignment node) throws IOException {
       print(node.getLeftExpression()).print(' ').printOperator(node.getOperator()).print('=').print(' ');
       print(node.getRightExpression());
     }
 
-    @Override
-    public void visitExpressionStatement(@Nonnull Jst.ExpressionStatement node) throws IOException {
+    @Override public void visitExpressionStatement(@Nonnull Jst.ExpressionStatement node) throws IOException {
       boolean isInBlock = parents.getParent() instanceof Jst.Block;
       print(node.getExpression());
       if (isInBlock) {
@@ -268,8 +256,7 @@ public final class JstPrinter {
       }
     }
 
-    @Override
-    public void visitSimpleClass(@Nonnull Jst.SimpleClassType node) throws IOException {
+    @Override public void visitSimpleClass(@Nonnull Jst.SimpleClassType node) throws IOException {
       printClassNameReference(node.getFqName());
     }
 

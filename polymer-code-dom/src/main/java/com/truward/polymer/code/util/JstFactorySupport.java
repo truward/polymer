@@ -153,10 +153,12 @@ public abstract class JstFactorySupport {
     return getFactory().jstUnary(operator, expression);
   }
 
+  // if-statement
   @Nonnull public Jst.If ifs(@Nonnull Jst.Expression condition, @Nonnull Jst.Statement then, @Nullable Jst.Statement els) {
     return getFactory().jstIf(condition, then, els);
   }
 
+  // return-statement
   @Nonnull public Jst.Return returns(@Nullable Jst.Expression expression) {
     return getFactory().jstReturn(expression);
   }

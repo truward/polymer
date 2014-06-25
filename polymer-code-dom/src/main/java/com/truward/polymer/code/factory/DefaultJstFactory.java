@@ -426,8 +426,14 @@ public final class DefaultJstFactory implements JstFactory {
   private static final class ClassType extends SimpleClassType implements Jst.ClassType {
     private final Class<?> wrappedClass;
 
+    @Nonnull static FqName toFqName(@Nonnull Class<?> wrappedClass) {
+      String className = wrappedClass.getName();
+      className = className.replace('$', '.');
+      return FqName.valueOf(className);
+    }
+
     ClassType(@Nonnull Class<?> wrappedClass) {
-      super(FqName.valueOf(wrappedClass.getName()));
+      super(toFqName(wrappedClass));
       if (wrappedClass.isArray() || wrappedClass.isAnonymousClass() || wrappedClass.isSynthetic()) {
         throw new UnsupportedOperationException("Unsupported class: " + wrappedClass +
             " - array, anonymous and syntetic classes are not supported");

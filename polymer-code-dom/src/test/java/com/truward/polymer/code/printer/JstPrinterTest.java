@@ -33,6 +33,9 @@ public final class JstPrinterTest extends JstFactorySupport {
   private JstFactory factory;
   private Jst.Unit unit;
 
+  public interface Sample {
+  }
+
   @Nonnull @Override protected JstFactory getFactory() {
     return factory;
   }
@@ -70,6 +73,20 @@ public final class JstPrinterTest extends JstFactorySupport {
     assertSameGeneratedContent("package my.pkg;\n\n\n" +
         "@java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)\n" +
         "public @interface Foo {\n}", "my/pkg/Foo.java");
+  }
+
+  @Test
+  public void shouldPrintFullNestedClassName() throws IOException {
+    // Given:
+    unit("my.pkg", classDecl(flags(), annotations(), "FooClass", null, types(type(Sample.class)), statements()));
+
+    // When:
+    printer.print(unit);
+
+    // Then:
+    assertSameGeneratedContent("package my.pkg;\n\n\nclass FooClass implements " +
+        JstPrinterTest.class.getName() + ".Sample" + " {\n" +
+        "}", "my/pkg/FooClass.java");
   }
 
   @Test
