@@ -23,6 +23,12 @@
       <artifactId>polymer-output</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.truward.polymer</groupId>
+      <artifactId>polymer-code-dom</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- JSR Non-Null annotation -->
     <dependency>
       <groupId>com.google.code.findbugs</groupId>

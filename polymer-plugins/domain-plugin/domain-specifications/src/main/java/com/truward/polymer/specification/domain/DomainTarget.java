@@ -18,15 +18,15 @@ public interface DomainTarget<T> extends SpecificationTarget<T> {
   @Nonnull
   DomainTarget<T> generateSetters();
 
-  @Nonnull
-  DomainTarget<T> makeFreezable();
-
-  @Nonnull
-  DomainTarget<T> implementFreezableInterface(@Nonnull Class<?> freezableInterface);
-
-  @Nonnull
-  DomainTarget<T> generateValidationMethod();
-
-  @Nonnull
-  DomainTarget<T> implementValidationInterface(@Nonnull Class<?> validationInterface);
+//  @Nonnull
+//  DomainTarget<T> makeFreezable();
+//
+//  @Nonnull
+//  DomainTarget<T> implementFreezableInterface(@Nonnull Class<?> freezableInterface);
+//
+//  @Nonnull
+//  DomainTarget<T> generateValidationMethod();
+//
+//  @Nonnull
+//  DomainTarget<T> implementValidationInterface(@Nonnull Class<?> validationInterface);
 }

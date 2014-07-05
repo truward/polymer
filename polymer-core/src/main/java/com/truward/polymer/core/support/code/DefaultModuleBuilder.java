@@ -39,7 +39,7 @@ public final class DefaultModuleBuilder extends FreezableSupport implements Modu
   }
 
   @Override
-  protected void setFrozen() {
+  protected void beforeFreezing() {
     // set current package to the type manager
     typeManager.setPackageName(targetClassName);
 
@@ -55,6 +55,5 @@ public final class DefaultModuleBuilder extends FreezableSupport implements Modu
 
     this.codeStream.freeze();
     this.imports.freeze();
-    super.setFrozen();
   }
 }

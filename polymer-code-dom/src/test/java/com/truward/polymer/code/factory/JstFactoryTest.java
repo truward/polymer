@@ -32,6 +32,7 @@ public final class JstFactoryTest {
     final Jst.ClassType class2 = factory.jstClassType(String.class);
     assertEquals(class1, factory.jstClassType(Void.TYPE));
     assertEquals(class2, factory.jstClassType(String.class));
+    assertEquals(String.class, class2.getWrappedClass());
   }
 
   @Test(expected = IllegalStateException.class)

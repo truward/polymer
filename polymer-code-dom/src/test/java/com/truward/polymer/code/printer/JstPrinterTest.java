@@ -1,6 +1,5 @@
 package com.truward.polymer.code.printer;
 
-import com.google.common.collect.ImmutableList;
 import com.truward.polymer.code.Jst;
 import com.truward.polymer.code.Operator;
 import com.truward.polymer.code.factory.DefaultJstFactory;
@@ -225,8 +224,7 @@ public final class JstPrinterTest extends JstFactorySupport {
   //
 
   private void unit(@Nonnull String packageName, @Nonnull Jst.ClassDeclaration clazz) {
-    unit = factory.jstUnit(FqName.valueOf(packageName));
-    unit.setClasses(ImmutableList.of(clazz));
+    unit(FqName.valueOf(packageName), clazz);
   }
 
   private void assertSameGeneratedContent(@Nonnull String expected, @Nonnull String fileName) {

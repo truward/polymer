@@ -94,8 +94,7 @@ public final class DefaultDomainField extends FreezableSupport implements Domain
   }
 
   @Override
-  protected void setFrozen() {
+  protected void beforeFreezing() {
     this.originMethods = ImmutableMap.copyOf(this.originMethods);
-    super.setFrozen();
   }
 }

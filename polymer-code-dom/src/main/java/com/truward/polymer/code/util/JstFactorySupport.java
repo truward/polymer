@@ -6,6 +6,7 @@ import com.truward.polymer.code.Jst;
 import com.truward.polymer.code.JstFlag;
 import com.truward.polymer.code.Operator;
 import com.truward.polymer.code.factory.JstFactory;
+import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,6 +18,14 @@ import java.util.*;
  */
 public abstract class JstFactorySupport {
   @Nonnull protected abstract JstFactory getFactory();
+
+  @Nonnull public Jst.Unit unit(@Nonnull FqName packageName, @Nonnull Jst.ClassDeclaration... classes) {
+    final Jst.Unit u = getFactory().jstUnit(packageName);
+    u.setAnnotations(ImmutableList.<Jst.Annotation>of());
+    u.setImports(ImmutableList.<Jst.Import>of());
+    u.setClasses(ImmutableList.copyOf(classes));
+    return u;
+  }
 
   @Nonnull public static List<Jst.VarDeclaration> args(@Nonnull Jst.VarDeclaration... vars) {
     return ImmutableList.copyOf(vars);
@@ -87,6 +96,7 @@ public abstract class JstFactorySupport {
     classDeclaration.setSuperclass(superclass);
     classDeclaration.setInterfaces(interfaces);
     classDeclaration.getBody().setStatements(statements);
+    classDeclaration.setTypeParameters(ImmutableList.<Jst.TypeParameter>of());
     return classDeclaration;
   }
   @Nonnull public Jst.ClassDeclaration classDecl(@Nonnull Collection<JstFlag> flags,
@@ -129,6 +139,9 @@ public abstract class JstFactorySupport {
     m.setArguments(arguments);
     m.setAnnotations(annotations);
     m.setBody(body);
+    m.setDefaultValue(null);
+    m.setTypeParameters(ImmutableList.<Jst.TypeParameter>of());
+    m.setThrown(ImmutableList.<Jst.Expression>of());
     return m;
   }
 

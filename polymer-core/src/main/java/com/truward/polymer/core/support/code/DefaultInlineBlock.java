@@ -166,9 +166,8 @@ public final class DefaultInlineBlock extends FreezableSupport implements GenInl
   }
 
   @Override
-  protected void setFrozen() {
+  protected void beforeFreezing() {
     childs = ImmutableList.copyOf(childs);
-    super.setFrozen();
   }
 
   //

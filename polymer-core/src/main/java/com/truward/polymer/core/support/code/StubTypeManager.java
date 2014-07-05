@@ -3,6 +3,7 @@ package com.truward.polymer.core.support.code;
 import com.truward.polymer.core.code.builder.TypeManager;
 import com.truward.polymer.core.code.typed.GenClass;
 import com.truward.polymer.core.code.typed.GenType;
+import com.truward.polymer.freezable.EmptyFreezable;
 import com.truward.polymer.naming.FqName;
 
 import javax.annotation.Nonnull;
@@ -14,7 +15,7 @@ import java.util.List;
  *
  * @author Alexander Shabanov
  */
-public final class StubTypeManager implements TypeManager {
+public final class StubTypeManager extends EmptyFreezable implements TypeManager {
 
   public static final StubTypeManager INSTANCE = new StubTypeManager();
 
@@ -45,11 +46,6 @@ public final class StubTypeManager implements TypeManager {
 
   @Override
   public boolean isFqNameRequired(@Nonnull GenClass genClass) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void freeze() {
     throw new UnsupportedOperationException();
   }
 }

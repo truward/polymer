@@ -1,7 +1,8 @@
 package com.truward.polymer.freezable;
 
 /**
- * Basic support for {@link Freezable} interface for classes with nullable fields and complex 'can't be frozen' checks.
+ * Basic non-thread safe support for {@link Freezable} interface for classes with nullable fields and
+ * complex 'can't be frozen' checks.
  *
  * @author Alexander Shabanov
  */
@@ -20,11 +21,22 @@ public abstract class FreezableSupport implements Freezable {
     }
   }
 
-  protected void setFrozen() {
-    frozen = true;
+  /**
+   * Empty method which is supposed to be overriden if the underlying implementation needs to make final checks before
+   * finally freezing object.
+   */
+  protected void beforeFreezing() {
   }
 
-  protected void melt() {
+  /**
+   * Empty method which is supposed to be overriden if the underlying implementation needs to make final checks before
+   * melting (unfreezing) object.
+   */
+  protected void beforeMelt() {
+  }
+
+  protected final void melt() {
+    beforeMelt();
     frozen = false;
   }
 
@@ -40,6 +52,7 @@ public abstract class FreezableSupport implements Freezable {
     }
   }
 
+  @Override
   public final boolean isFrozen() {
     return frozen;
   }
@@ -50,6 +63,7 @@ public abstract class FreezableSupport implements Freezable {
       return;
     }
 
-    setFrozen();
+    beforeFreezing();
+    frozen = true;
   }
 }

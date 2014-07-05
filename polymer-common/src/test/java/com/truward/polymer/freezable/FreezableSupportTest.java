@@ -73,9 +73,9 @@ public final class FreezableSupportTest {
     }
 
     @Override
-    protected void setFrozen() {
+    protected void beforeFreezing() {
       cannotBeFrozenIf(bar <= 0, "bar value should be positive");
-      super.setFrozen();
+      super.beforeFreezing();
     }
   }
 }

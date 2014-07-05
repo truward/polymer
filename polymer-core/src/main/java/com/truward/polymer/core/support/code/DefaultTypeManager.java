@@ -83,7 +83,7 @@ public final class DefaultTypeManager extends FreezableSupport implements TypeMa
   }
 
   @Override
-  protected void setFrozen() {
+  protected void beforeFreezing() {
     cannotBeFrozenIf(currentPackage == null, "Current package is not initialized");
 
     final Map<String, GenClass> simpleNameToRef = new HashMap<>(genClasses.size() * 2);
@@ -119,7 +119,7 @@ public final class DefaultTypeManager extends FreezableSupport implements TypeMa
 
     classesWithSimpleNames = ImmutableSet.copyOf(simpleNameToRef.values());
 
-    super.setFrozen();
+    super.beforeFreezing();
   }
 
   @Override

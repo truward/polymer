@@ -247,6 +247,11 @@ public abstract class CodeStreamSupport implements CodeStream {
   }
 
   @Override
+  public boolean isFrozen() {
+    return getRootCodeStream().isFrozen();
+  }
+
+  @Override
   public void freeze() {
     getRootCodeStream().freeze();
   }

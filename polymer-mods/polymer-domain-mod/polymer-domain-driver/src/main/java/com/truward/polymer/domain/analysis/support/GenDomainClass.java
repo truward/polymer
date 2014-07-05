@@ -25,9 +25,9 @@ public final class GenDomainClass extends GenResultClass<DomainAnalysisResult> {
   }
 
   @Override
-  protected void setFrozen() {
+  protected void beforeFreezing() {
     genBuilderClass.freeze();
-    super.setFrozen();
+    super.beforeFreezing();
   }
 
   //
