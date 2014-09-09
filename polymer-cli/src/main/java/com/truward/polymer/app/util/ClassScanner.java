@@ -70,10 +70,6 @@ public final class ClassScanner {
       return;
     }
 
-    if (file.isDirectory()) {
-      throw new IllegalStateException("No nested files for " + file.getName());
-    }
-
     if (file.getPath().endsWith(CLASS_SUFFIX)) {
       final int endIndex = resource.length() - CLASS_SUFFIX.length();
       final String className = resource.substring(0, endIndex);

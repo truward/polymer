@@ -224,7 +224,7 @@ public final class JstPrinterTest extends JstFactorySupport {
   //
 
   private void unit(@Nonnull String packageName, @Nonnull Jst.ClassDeclaration clazz) {
-    unit(FqName.valueOf(packageName), clazz);
+    this.unit = unit(FqName.valueOf(packageName), clazz);
   }
 
   private void assertSameGeneratedContent(@Nonnull String expected, @Nonnull String fileName) {

@@ -17,5 +17,12 @@
       <groupId>com.truward.polymer</groupId>
       <artifactId>polymer-core-api</artifactId>
     </dependency>
+
+    <!-- Logging for test -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

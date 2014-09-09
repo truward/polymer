@@ -16,6 +16,10 @@ Also split polymer-core into polymer-core-api and polymer-core-impl
 * Transient/Calculated Fields for the domain objects
 * Constructor generator (reuse object construction)
 
+# Remarks
+
+* polymer-core should be deprecated
+
 # Done
 * Implement builder support
 * Make it possible to opt-out from the ImmutableList support

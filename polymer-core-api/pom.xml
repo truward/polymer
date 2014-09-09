@@ -23,6 +23,13 @@
       <artifactId>polymer-output</artifactId>
     </dependency>
 
+    <!-- Micro dependency injection -->
+    <dependency>
+      <groupId>com.truward.di</groupId>
+      <artifactId>micro-di</artifactId>
+      <version>1.0.11</version>
+    </dependency>
+
     <dependency>
       <groupId>com.truward.polymer</groupId>
       <artifactId>polymer-code-dom</artifactId>

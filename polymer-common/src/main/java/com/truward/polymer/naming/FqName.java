@@ -45,10 +45,6 @@ public final class FqName implements Comparable<FqName>, Serializable {
       }
     }
 
-    if (next == null) {
-      throw new IllegalArgumentException("Empty fully qualified name: " + fqName);
-    }
-
     return next;
   }
 
